@@ -15,16 +15,19 @@
         class="viewer-stage"
         :class="{ dragging: viewer.dragging }"
         @wheel.prevent="onViewerWheel"
-        @pointerdown="startViewerDrag"
+        @pointerdown="onViewerStagePointerDown"
         @pointermove="moveViewerDrag"
-        @pointerup="stopViewerDrag"
-        @pointercancel="stopViewerDrag"
+        @pointerup="onViewerStagePointerUp"
+        @pointercancel="onViewerStagePointerUp"
+        @lostpointercapture="onViewerStagePointerUp"
         @dblclick="resetViewer"
       >
         <img
+          ref="viewerImageRef"
           :src="viewer.image.objectUrl"
           :alt="viewer.image.fileName"
           draggable="false"
+          @dragstart.prevent
           :style="viewerImageStyle"
         >
       </div>
@@ -33,8 +36,11 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
+
+const viewerImageRef = ref<HTMLImageElement | null>(null);
 
 const {
   viewer,
@@ -47,4 +53,39 @@ const {
   moveViewerDrag,
   stopViewerDrag
 } = useImageTaggerContext();
+
+function onViewerStagePointerDown(event: PointerEvent): void {
+  const image = viewerImageRef.value;
+  const stage = event.currentTarget as HTMLElement | null;
+  const rect = image?.getBoundingClientRect();
+  event.preventDefault();
+
+  if (!rect || rect.width <= 0 || rect.height <= 0) {
+    closeViewer();
+    return;
+  }
+
+  const insideImage = event.clientX >= rect.left
+    && event.clientX <= rect.right
+    && event.clientY >= rect.top
+    && event.clientY <= rect.bottom;
+
+  if (!insideImage) {
+    closeViewer();
+    return;
+  }
+
+  stage?.setPointerCapture?.(event.pointerId);
+  startViewerDrag(event);
+}
+
+function onViewerStagePointerUp(event: PointerEvent | Event): void {
+  const stage = event.currentTarget as HTMLElement | null;
+  const pointerId = "pointerId" in event ? event.pointerId : null;
+  if (pointerId !== null && stage?.hasPointerCapture?.(pointerId)) {
+    stage.releasePointerCapture(pointerId);
+  }
+
+  stopViewerDrag();
+}
 </script>
