@@ -1,6 +1,14 @@
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-  css: ["~/assets/css/image-tagger.css"],
+  css: [
+    "~/assets/css/base.css",
+    "~/assets/css/controls.css",
+    "~/assets/css/layout.css",
+    "~/assets/css/stats.css",
+    "~/assets/css/image-rows.css",
+    "~/assets/css/viewer.css",
+    "~/assets/css/responsive.css"
+  ],
   devtools: { enabled: false },
   vite: {
     optimizeDeps: {

@@ -4,6 +4,6 @@
   </ClientOnly>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import ImageTaggerApp from "./components/ImageTaggerApp.client.vue";
 </script>

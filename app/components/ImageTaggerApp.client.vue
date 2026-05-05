@@ -1,23 +1,32 @@
 <template>
-  <div ref="appRoot" class="app-shell" />
+  <div class="app-layout" :data-theme="config.theme" :class="layoutClasses">
+    <AppHeader />
+    <QuickControls />
+
+    <main class="workspace-grid">
+      <SidePanel />
+      <DatasetPanel />
+    </main>
+
+    <datalist id="known-tags-list">
+      <option v-for="tag in autocompleteTags" :key="tag" :value="tag" />
+    </datalist>
+
+    <ImageViewer />
+  </div>
 </template>
 
-<script setup>
-import { onBeforeUnmount, onMounted, ref } from "vue";
-import { createImageTaggerApp } from "~/utils/createImageTaggerApp";
+<script setup lang="ts">
+import AppHeader from "~/components/AppHeader.vue";
+import DatasetPanel from "~/components/DatasetPanel.vue";
+import ImageViewer from "~/components/ImageViewer.vue";
+import QuickControls from "~/components/QuickControls.vue";
+import SidePanel from "~/components/SidePanel.vue";
+import { provideImageTagger } from "~/composables/useImageTagger";
 
-const appRoot = ref(null);
-let cleanup = null;
-
-onMounted(() => {
-  if (!appRoot.value) {
-    return;
-  }
-
-  cleanup = createImageTaggerApp(appRoot.value);
-});
-
-onBeforeUnmount(() => {
-  cleanup?.();
-});
+const {
+  config,
+  layoutClasses,
+  autocompleteTags
+} = provideImageTagger();
 </script>
