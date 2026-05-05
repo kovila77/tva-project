@@ -1,3 +1,5 @@
+import defaultConfig from "../config/default-config.json";
+
 export function createImageTaggerApp(appRoot) {
             "use strict";
 
@@ -25,14 +27,9 @@ export function createImageTaggerApp(appRoot) {
                 configPickerStart: "configPickerStart",
                 imagesPickerStart: "imagesPickerStart"
             };
-            const originalTagsBackupRootName = "temp";
-            const originalTagsBackupFolderName = "original_tags";
-            const originalTagsBackupPath = `${originalTagsBackupRootName}/${originalTagsBackupFolderName}`;
             const tempConfigFolderName = "temp";
             const tempConfigFileName = "config-autosave.json";
             const tempConfigPath = `${tempConfigFolderName}/${tempConfigFileName}`;
-            let logPersistTimer = 0;
-            let logPersistPromise = Promise.resolve();
 
             const resizeResolutions = [
                 "704x1408",
@@ -65,28 +62,29 @@ export function createImageTaggerApp(appRoot) {
                 return { width: parts[0], height: parts[1] };
             });
 
-            const defaultHeaderSectionOrder = [
-                "config",
-                "filter",
-                "common",
-                "known",
-                "highlighted-tags",
-                "highlighted-text",
-                "order",
-                "scripts",
-                "status"
-            ];
+            const defaultHeaderSectionOrder = Array.isArray(defaultConfig.headerSectionOrder)
+                ? [...defaultConfig.headerSectionOrder]
+                : [
+                    "config",
+                    "json-config",
+                    "filter",
+                    "common",
+                    "known",
+                    "highlighted-tags",
+                    "highlighted-text",
+                    "order",
+                    "scripts"
+                ];
 
             const state = {
                 configFileHandle: null,
                 configPickerHandle: null,
-                imagesDirHandle: null,
-                imagesPickerHandle: null,
                 headerDragSectionId: "",
                 configFilePath: "",
                 configFileHandleName: "",
                 imagesPath: "",
                 imagesHandleName: "",
+                uploadedFolderFiles: [],
                 images: [],
                 tagFilter: "",
                 commonTagsText: "",
@@ -113,13 +111,13 @@ export function createImageTaggerApp(appRoot) {
                 scriptRemoveTagsText: "",
                 scriptRemoveTags: [],
                 isConfigCollapsed1: false,
+                isJsonConfigCollapsed: true,
                 isFilterCollapsed2: true,
                 isCommonTagsCollapsed3: true,
                 isKnownTagsCollapsed4: true,
                 isHighlightedTagsCollapsed5: true,
                 isHighlightedTextsCollapsed6: true,
                 isOrderOfTagsCollapsed7: true,
-                isStatusCollapsed8: false,
                 isCollapsedAll: false,
                 isFilterRegex: false,
                 filterIgnoreCase: false,
@@ -128,15 +126,14 @@ export function createImageTaggerApp(appRoot) {
                 isCollapsedScripts: true,
                 headerSectionOrder: [...defaultHeaderSectionOrder],
                 configBackupCount: 10,
-                backupFolderForTagsCount: 5,
                 tagsStatisticsTableColumnsCount: 3,
+                toolbarMaxHeightVh: 80,
                 lastRecalc: 0,
-                logs: [],
-                logSessionFileName: "",
-                logFilePath: "",
                 tempConfigLoaded: false,
-                statusMessage: "Ready",
-                supportsFsAccess: typeof window.showDirectoryPicker === "function" && typeof window.showOpenFilePicker === "function",
+                configJsonText: "",
+                configJsonError: "",
+                configJsonDirty: false,
+                supportsFsAccess: typeof window.showOpenFilePicker === "function",
                 supportsSavePicker: typeof window.showSaveFilePicker === "function",
                 supportsOpfs: Boolean(navigator.storage?.getDirectory),
                 popupVisible: false,
@@ -166,14 +163,14 @@ export function createImageTaggerApp(appRoot) {
             function getHeaderSectionDefinitions() {
                 return [
                     { id: "config", label: "Cfg", icon: "gear", title: "Toggle configuration panel", action: "toggle-config", stateKey: "isConfigCollapsed1" },
+                    { id: "json-config", label: "JSON", icon: "code", title: "Toggle JSON configuration editor", action: "toggle-json-config", stateKey: "isJsonConfigCollapsed" },
                     { id: "filter", label: "Flt", icon: "filter", title: "Toggle filter settings panel", action: "toggle-filter-panel", stateKey: "isFilterCollapsed2" },
                     { id: "common", label: "Com", icon: "stack", title: "Toggle common tags panel", action: "toggle-common-panel", stateKey: "isCommonTagsCollapsed3" },
                     { id: "known", label: "Kno", icon: "bookmark", title: "Toggle known tags panel", action: "toggle-known-panel", stateKey: "isKnownTagsCollapsed4" },
                     { id: "highlighted-tags", label: "Hi", icon: "spark", title: "Toggle highlighted tags panel", action: "toggle-highlighted-tags-panel", stateKey: "isHighlightedTagsCollapsed5" },
                     { id: "highlighted-text", label: "Txt", icon: "type", title: "Toggle highlighted text panel", action: "toggle-highlighted-text-panel", stateKey: "isHighlightedTextsCollapsed6" },
                     { id: "order", label: "Ord", icon: "sort", title: "Toggle tag ordering panel", action: "toggle-order-panel", stateKey: "isOrderOfTagsCollapsed7" },
-                    { id: "scripts", label: "Scr", icon: "wrench", title: "Toggle scripts panel", action: "toggle-scripts-panel", stateKey: "isCollapsedScripts" },
-                    { id: "status", label: "Log", icon: "chart", title: "Toggle status and logs panel", action: "toggle-status-panel", stateKey: "isStatusCollapsed8" }
+                    { id: "scripts", label: "Scr", icon: "wrench", title: "Toggle scripts panel", action: "toggle-scripts-panel", stateKey: "isCollapsedScripts" }
                 ];
             }
 
@@ -385,21 +382,7 @@ export function createImageTaggerApp(appRoot) {
                 }));
             }
 
-            function setStatus(message) {
-                state.statusMessage = message;
-                refreshStatusPanel();
-            }
-
-            function log(message) {
-                const now = new Date();
-                const stamp = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-                state.logs.push({ stamp, iso: now.toISOString(), message });
-                if (state.logs.length > 400) {
-                    state.logs.shift();
-                }
-                setStatus(message);
-                console.log(message);
-                scheduleLogPersist();
+            function log(_message) {
             }
 
             function formatFileStamp(date = new Date()) {
@@ -418,6 +401,15 @@ export function createImageTaggerApp(appRoot) {
                 }
 
                 return "";
+            }
+
+            function clampNumber(value, min, max) {
+                const number = Number(value);
+                if (!Number.isFinite(number)) {
+                    return min;
+                }
+
+                return Math.min(max, Math.max(min, number));
             }
 
             function getPathBaseName(value) {
@@ -470,17 +462,6 @@ export function createImageTaggerApp(appRoot) {
                 return `path:${kind}:${normalized}`;
             }
 
-            function getConfigPathValidationErrors() {
-                const errors = [];
-                if (!isAbsolutePath(state.configFilePath)) {
-                    errors.push("Config file path");
-                }
-                if (!isAbsolutePath(state.imagesPath)) {
-                    errors.push("Images folder path");
-                }
-                return errors;
-            }
-
             function normalizeStoredPathValue(value) {
                 const text = String(value ?? "").trim();
                 return isAbsolutePath(text) ? text : "";
@@ -500,16 +481,8 @@ export function createImageTaggerApp(appRoot) {
                 return label ? `<${label}>` : "-";
             }
 
-            function getPathFieldPlaceholder(handleName, fallbackValue) {
-                const label = normalizeStoredHandleName(handleName);
-                return label ? `<${label}>` : fallbackValue;
-            }
-
-            function getPathFieldTitle(handleName) {
-                const label = normalizeStoredHandleName(handleName);
-                return label
-                    ? `Enter full path here to store it in the config. Browser label: ${label}`
-                    : "Enter full path here to store it in the config.";
+            function getBrowserLocationLabel(path, handleName, emptyLabel) {
+                return normalizeStoredHandleName(handleName) || getPathBaseName(path) || emptyLabel;
             }
 
             function handleNameMatchesStoredLabel(handle, desiredHandleName) {
@@ -578,117 +551,8 @@ export function createImageTaggerApp(appRoot) {
                 state.configFilePath = "";
             }
 
-            async function syncImagesPathFromHandle(handle, preserveTypedPath = false) {
-                if (!handle) {
-                    state.imagesHandleName = "";
-                    state.imagesPath = "";
-                    return;
-                }
-
-                state.imagesHandleName = normalizeStoredHandleName(handle.name);
-                const resolvedPath = normalizeStoredPathValue(await getHandleDisplayPath(handle));
-                const currentPath = normalizeStoredPathValue(state.imagesPath);
-                const currentBaseName = getPathBaseName(currentPath);
-                if (resolvedPath) {
-                    state.imagesPath = resolvedPath;
-                    return;
-                }
-
-                if (preserveTypedPath && currentPath && currentBaseName.toLowerCase() === state.imagesHandleName.toLowerCase()) {
-                    state.imagesPath = currentPath;
-                    return;
-                }
-
-                state.imagesPath = "";
-            }
-
-            function resetLogSessionForCurrentFolder() {
-                if (!state.imagesDirHandle) {
-                    state.logSessionFileName = "";
-                    state.logFilePath = "";
-                    return;
-                }
-
-                state.logSessionFileName = `session_${formatFileStamp()}.log`;
-                state.logFilePath = `_logs/${state.logSessionFileName}`;
-            }
-
-            function buildLogFileText() {
-                return [
-                    `Generated: ${new Date().toISOString()}`,
-                    `Config: ${getStoredLocationDisplay(state.configFilePath, state.configFileHandleName)}`,
-                    `Images: ${getStoredLocationDisplay(state.imagesPath, state.imagesHandleName)}`,
-                    `Status: ${state.statusMessage || "-"}`,
-                    "",
-                    ...state.logs.map((entry) => `[${entry.iso ?? entry.stamp ?? ""}] ${entry.message}`)
-                ].join("\n");
-            }
-
-            async function hasGrantedPermission(handle, mode = "readwrite") {
-                if (!handle || typeof handle.queryPermission !== "function") {
-                    return false;
-                }
-
-                try {
-                    return await handle.queryPermission({ mode }) === "granted";
-                } catch (error) {
-                    return false;
-                }
-            }
-
-            async function ensureLogFileHandle() {
-                if (!state.imagesDirHandle) {
-                    return null;
-                }
-
-                if (!await hasGrantedPermission(state.imagesDirHandle, "readwrite")) {
-                    return null;
-                }
-
-                if (!state.logSessionFileName) {
-                    resetLogSessionForCurrentFolder();
-                }
-
-                if (!state.logSessionFileName) {
-                    return null;
-                }
-
-                const logsDir = await state.imagesDirHandle.getDirectoryHandle("_logs", { create: true });
-                return await logsDir.getFileHandle(state.logSessionFileName, { create: true });
-            }
-
-            async function persistLogsNow() {
-                try {
-                    const logHandle = await ensureLogFileHandle();
-                    if (!logHandle) {
-                        return;
-                    }
-
-                    await writeToFileHandle(logHandle, buildLogFileText());
-                } catch (error) {
-                    console.warn("Could not persist session logs", error);
-                }
-            }
-
-            function scheduleLogPersist() {
-                if (logPersistTimer) {
-                    return;
-                }
-
-                logPersistTimer = window.setTimeout(() => {
-                    logPersistTimer = 0;
-                    logPersistPromise = logPersistPromise
-                        .catch(() => undefined)
-                        .then(() => persistLogsNow());
-                }, 250);
-            }
-
             function getPreferredConfigPickerHandle() {
-                return state.configFileHandle ?? state.configPickerHandle ?? state.imagesDirHandle ?? state.imagesPickerHandle ?? null;
-            }
-
-            function getPreferredImagesPickerHandle() {
-                return state.imagesDirHandle ?? state.imagesPickerHandle ?? state.configFileHandle ?? state.configPickerHandle ?? null;
+                return state.configFileHandle ?? state.configPickerHandle ?? null;
             }
 
             async function runPicker(pickerFn, options, startHandle = null) {
@@ -714,12 +578,18 @@ export function createImageTaggerApp(appRoot) {
                         return "Saving configuration to the original file...";
                     case "download-config":
                         return "Preparing config download...";
+                    case "apply-json-config":
+                        return "Applying JSON configuration...";
+                    case "reset-json-config":
+                        return "Loading project defaults into the JSON editor...";
+                    case "upload-json-config":
+                        return "Opening JSON configuration upload...";
                     case "unload-all":
                         return "Unloading current configuration and dataset...";
                     case "select-folder":
-                        return "Opening images folder picker...";
+                        return "Opening folder upload...";
                     case "load-images":
-                        return "Loading images folder...";
+                        return "Loading uploaded files into memory...";
                     case "filter-images":
                         return "Applying image filter...";
                     case "anti-filter-images":
@@ -733,15 +603,15 @@ export function createImageTaggerApp(appRoot) {
                     case "recalc-tags":
                         return "Rebuilding autocomplete tags...";
                     case "save-tags":
-                        return image ? `Saving tags for ${image.fileName}...` : "Saving tags...";
+                        return image ? `Saving tag version for ${image.fileName} in memory...` : "Saving tag version in memory...";
                     case "undo-tags":
-                        return image ? `Restoring original tags for ${image.fileName}...` : "Restoring original tags...";
+                        return image ? `Restoring previous in-memory tags for ${image.fileName}...` : "Restoring previous in-memory tags...";
                     case "open-image":
                         return image ? `Opening ${image.fileName} in the page viewer...` : "Opening image in the page viewer...";
                     case "copy-image-url":
                         return image ? `Copying temporary viewer URL for ${image.fileName}...` : "Copying temporary viewer URL...";
                     case "remove-image":
-                        return image ? `Moving ${image.fileName} to __removed...` : "Removing selected image...";
+                        return image ? `Removing ${image.fileName} from memory...` : "Removing selected image from memory...";
                     case "replace-artist":
                         return "Replacing artist:* tags across loaded prompts...";
                     case "add-tag-to-filtered":
@@ -751,7 +621,7 @@ export function createImageTaggerApp(appRoot) {
                     case "rename-files":
                         return "Renaming files in the current order...";
                     case "image-process":
-                        return "Creating resized images in __output...";
+                        return "Creating resized images from memory...";
                     case "filter-tag":
                         return tag ? `Filtering by tag "${tag}"...` : "Filtering by selected tag...";
                     case "add-to-filter":
@@ -979,10 +849,13 @@ export function createImageTaggerApp(appRoot) {
                     grid: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><rect x="4" y="4" width="6" height="6"></rect><rect x="14" y="4" width="6" height="6"></rect><rect x="4" y="14" width="6" height="6"></rect><rect x="14" y="14" width="6" height="6"></rect></svg>',
                     chart: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M4 20V10"></path><path d="M10 20V4"></path><path d="M16 20v-7"></path><path d="M22 20v-11"></path></svg>',
                     wrench: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="m14 7 3-3 3 3-3 3"></path><path d="M4 20 14 10"></path><path d="m11 13 3 3"></path></svg>',
+                    code: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="m8 8-4 4 4 4"></path><path d="m16 8 4 4-4 4"></path><path d="m14 4-4 16"></path></svg>',
                     file: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"></path><path d="M14 3v5h5"></path></svg>',
                     folder: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path></svg>',
                     save: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M5 4h11l3 3v13H5Z"></path><path d="M9 4v5h6"></path><path d="M9 20v-6h6v6"></path></svg>',
                     load: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 20h14"></path></svg>',
+                    upload: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M12 21V9"></path><path d="m7 14 5-5 5 5"></path><path d="M5 4h14"></path></svg>',
+                    download: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 20h14"></path></svg>',
                     regex: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M6 18 18 6"></path><path d="m8 8 3-3"></path><path d="m13 19 3-3"></path></svg>',
                     case: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><path d="M5 19 9 5l4 14"></path><path d="M6.5 14h5"></path><path d="M17 18c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3Z"></path></svg>',
                     search: '<svg viewBox="0 0 24 24" class="icon-svg" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="m20 20-4.2-4.2"></path></svg>',
@@ -1056,6 +929,67 @@ export function createImageTaggerApp(appRoot) {
                 `;
             }
 
+            function isPlainObject(value) {
+                return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+            }
+
+            function getDefaultConfigSnapshot() {
+                return {
+                    ...defaultConfig,
+                    headerSectionOrder: normalizeHeaderSectionOrder(defaultConfig.headerSectionOrder)
+                };
+            }
+
+            function mergeConfigWithDefaults(config) {
+                const source = isPlainObject(config) ? config : {};
+                return {
+                    ...getDefaultConfigSnapshot(),
+                    ...source,
+                    headerSectionOrder: normalizeHeaderSectionOrder(source.headerSectionOrder)
+                };
+            }
+
+            function updateConfigJsonTextFromState() {
+                state.configJsonText = JSON.stringify(configSnapshot(), null, 2);
+                state.configJsonDirty = false;
+                state.configJsonError = "";
+            }
+
+            function getConfigJsonEditorText() {
+                if (!state.configJsonDirty) {
+                    state.configJsonText = JSON.stringify(configSnapshot(), null, 2);
+                }
+
+                return state.configJsonText;
+            }
+
+            function highlightJson(text) {
+                const escaped = escapeHtml(text);
+                return escaped.replace(
+                    /(&quot;(?:\\.|(?!&quot;)[^\\])*&quot;)(\s*:)?|\b(true|false|null)\b|-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b/g,
+                    (match, stringValue, colon, keyword) => {
+                        if (stringValue) {
+                            return colon
+                                ? `<span class="json-key">${stringValue}</span>${colon}`
+                                : `<span class="json-string">${stringValue}</span>`;
+                        }
+
+                        if (keyword) {
+                            return `<span class="json-keyword">${match}</span>`;
+                        }
+
+                        return `<span class="json-number">${match}</span>`;
+                    }
+                );
+            }
+
+            function refreshJsonHighlight() {
+                const highlight = document.getElementById("config-json-highlight");
+                if (highlight) {
+                    highlight.innerHTML = highlightJson(state.configJsonText);
+                }
+            }
+
             function setMainSection(section) {
                 state.isCollapsedImages = section !== "images";
                 state.isCollapsedTagStat = section !== "stats";
@@ -1094,13 +1028,13 @@ export function createImageTaggerApp(appRoot) {
                     configFileName: state.configFileHandleName || getPathBaseName(state.configFilePath),
                     configFileHandleName: state.configFileHandleName,
                     isConfigCollapsed1: state.isConfigCollapsed1,
+                    isJsonConfigCollapsed: state.isJsonConfigCollapsed,
                     isFilterCollapsed2: state.isFilterCollapsed2,
                     isCommonTagsCollapsed3: state.isCommonTagsCollapsed3,
                     isKnownTagsCollapsed4: state.isKnownTagsCollapsed4,
                     isHighlightedTagsCollapsed5: state.isHighlightedTagsCollapsed5,
                     isHighlightedTextsCollapsed6: state.isHighlightedTextsCollapsed6,
                     isOrderOfTagsCollapsed7: state.isOrderOfTagsCollapsed7,
-                    isStatusCollapsed8: state.isStatusCollapsed8,
                     isCollapsedAll: state.isCollapsedAll,
                     isCollapsedImages: state.isCollapsedImages,
                     isCollapsedTagStat: state.isCollapsedTagStat,
@@ -1109,7 +1043,8 @@ export function createImageTaggerApp(appRoot) {
                     isFilterRegex: state.isFilterRegex,
                     filterIgnoreCase: state.filterIgnoreCase,
                     tagsStatisticsTableColumnsCount: state.tagsStatisticsTableColumnsCount,
-                    backupFolderForTagsCount: state.backupFolderForTagsCount
+                    configBackupCount: state.configBackupCount,
+                    toolbarMaxHeightVh: state.toolbarMaxHeightVh
                 };
             }
 
@@ -1250,6 +1185,7 @@ export function createImageTaggerApp(appRoot) {
             }
 
             async function applyConfig(config) {
+                config = mergeConfigWithDefaults(config);
                 const legacyImagesValue = String(config.imagesFolderName ?? config.imagesPath ?? "").trim();
                 const legacyConfigValue = String(config.configFileName ?? "").trim();
 
@@ -1272,23 +1208,25 @@ export function createImageTaggerApp(appRoot) {
                 state.scriptRemoveTagsText = config.scriptRemoveTags ?? "";
 
                 state.isConfigCollapsed1 = config.isConfigCollapsed1 ?? false;
+                state.isJsonConfigCollapsed = config.isJsonConfigCollapsed ?? true;
                 state.isFilterCollapsed2 = config.isFilterCollapsed2 ?? true;
                 state.isCommonTagsCollapsed3 = config.isCommonTagsCollapsed3 ?? true;
                 state.isKnownTagsCollapsed4 = config.isKnownTagsCollapsed4 ?? true;
                 state.isHighlightedTagsCollapsed5 = config.isHighlightedTagsCollapsed5 ?? true;
                 state.isHighlightedTextsCollapsed6 = config.isHighlightedTextsCollapsed6 ?? true;
                 state.isOrderOfTagsCollapsed7 = config.isOrderOfTagsCollapsed7 ?? true;
-                state.isStatusCollapsed8 = config.isStatusCollapsed8 ?? false;
                 state.isCollapsedAll = config.isCollapsedAll ?? true;
                 state.isFilterRegex = config.isFilterRegex ?? false;
                 state.filterIgnoreCase = config.filterIgnoreCase ?? false;
                 state.tagsStatisticsTableColumnsCount = config.tagsStatisticsTableColumnsCount ?? 3;
-                state.backupFolderForTagsCount = config.backupFolderForTagsCount ?? 5;
+                state.configBackupCount = config.configBackupCount ?? 10;
+                state.toolbarMaxHeightVh = clampNumber(config.toolbarMaxHeightVh ?? 80, 35, 100);
                 state.headerSectionOrder = normalizeHeaderSectionOrder(config.headerSectionOrder);
 
                 reconcileMainSectionsFromConfig(config);
                 syncCollapsedAllState();
                 await invalidateDerivedState();
+                updateConfigJsonTextFromState();
             }
 
             async function invalidateDerivedState() {
@@ -1418,7 +1356,6 @@ export function createImageTaggerApp(appRoot) {
 
             async function rememberCurrentHandlePaths() {
                 await rememberHandleForPath("config", state.configFileHandle, state.configFilePath);
-                await rememberHandleForPath("images", state.imagesDirHandle, state.imagesPath);
             }
 
             async function activatePersistedConfigHandle(desiredPath, desiredHandleName = "") {
@@ -1452,39 +1389,6 @@ export function createImageTaggerApp(appRoot) {
                 return true;
             }
 
-            async function activatePersistedImagesHandle(desiredPath, desiredHandleName = "") {
-                const nextPath = String(desiredPath ?? "").trim();
-                const nextHandleName = normalizeStoredHandleName(desiredHandleName);
-                const resolvedHandle = await resolveHandleForStoredPath("images", nextPath, nextHandleName, state.imagesDirHandle);
-
-                state.imagesDirHandle = resolvedHandle;
-                if (!resolvedHandle) {
-                    await deleteHandle(handleKeys.imagesDirectory);
-                    state.imagesPath = nextPath;
-                    state.imagesHandleName = nextHandleName;
-                    resetLogSessionForCurrentFolder();
-                    if (state.imagesPath) {
-                        localStorage.setItem(storageKeys.lastImagesName, state.imagesPath);
-                    } else {
-                        localStorage.removeItem(storageKeys.lastImagesName);
-                    }
-                    return false;
-                }
-
-                state.imagesPickerHandle = resolvedHandle;
-                await syncImagesPathFromHandle(resolvedHandle, true);
-                resetLogSessionForCurrentFolder();
-                if (state.imagesPath) {
-                    localStorage.setItem(storageKeys.lastImagesName, state.imagesPath);
-                } else {
-                    localStorage.removeItem(storageKeys.lastImagesName);
-                }
-                await saveHandle(handleKeys.imagesDirectory, resolvedHandle);
-                await saveHandle(handleKeys.imagesPickerStart, resolvedHandle);
-                await rememberHandleForPath("images", resolvedHandle, state.imagesPath || nextPath);
-                return true;
-            }
-
             async function ensurePermission(handle, mode = "read") {
                 if (!handle || typeof handle.queryPermission !== "function") {
                     return false;
@@ -1512,33 +1416,10 @@ export function createImageTaggerApp(appRoot) {
                 }
             }
 
-            async function getDirectoryHandleIfExists(dirHandle, name) {
-                try {
-                    return await dirHandle.getDirectoryHandle(name);
-                } catch (error) {
-                    return null;
-                }
-            }
-
-            async function fileExists(dirHandle, name) {
-                return Boolean(await getFileHandleIfExists(dirHandle, name));
-            }
-
-            async function directoryExists(dirHandle, name) {
-                return Boolean(await getDirectoryHandleIfExists(dirHandle, name));
-            }
-
             async function writeToFileHandle(fileHandle, content) {
                 const writable = await fileHandle.createWritable();
                 await writable.write(content);
                 await writable.close();
-            }
-
-            async function copyFileToDirectory(sourceHandle, targetDirectoryHandle, targetName) {
-                const file = await sourceHandle.getFile();
-                const targetHandle = await targetDirectoryHandle.getFileHandle(targetName, { create: true });
-                await writeToFileHandle(targetHandle, await file.arrayBuffer());
-                return targetHandle;
             }
 
             async function getTempConfigFileHandle(create = false) {
@@ -1607,113 +1488,88 @@ export function createImageTaggerApp(appRoot) {
                 return normalized.replace(/[^a-z0-9._-]/gi, "_");
             }
 
-            async function downloadCurrentConfig() {
-                await rememberCurrentHandlePaths();
-                const jsonText = JSON.stringify(configSnapshot(), null, 2);
-                const blob = new Blob([jsonText], { type: "application/json" });
+            function downloadBlob(blob, fileName) {
                 const url = URL.createObjectURL(blob);
-
                 try {
                     const link = document.createElement("a");
                     link.href = url;
-                    link.download = getCurrentConfigDownloadName();
+                    link.download = String(fileName || "download").replace(/[^a-z0-9._-]/gi, "_");
                     document.body.appendChild(link);
                     link.click();
                     link.remove();
-                    log(`Downloaded current config as ${link.download}.`);
                 } finally {
                     URL.revokeObjectURL(url);
                 }
             }
 
-            async function getTagFileInfoForName(imageFileName, create = false) {
-                const primaryName = imageFileName.replace(/\.[^.]+$/, ".txt");
-                const secondaryName = `${imageFileName}.txt`;
-
-                let tagHandle = await getFileHandleIfExists(state.imagesDirHandle, primaryName);
-                if (tagHandle) {
-                    return { tagHandle, tagFileName: primaryName };
-                }
-
-                tagHandle = await getFileHandleIfExists(state.imagesDirHandle, secondaryName);
-                if (tagHandle) {
-                    return { tagHandle, tagFileName: secondaryName };
-                }
-
-                if (create) {
-                    tagHandle = await state.imagesDirHandle.getFileHandle(primaryName, { create: true });
-                    return { tagHandle, tagFileName: primaryName };
-                }
-
-                return { tagHandle: null, tagFileName: primaryName };
+            async function downloadCurrentConfig() {
+                await rememberCurrentHandlePaths();
+                const jsonText = JSON.stringify(configSnapshot(), null, 2);
+                const blob = new Blob([jsonText], { type: "application/json" });
+                const fileName = getCurrentConfigDownloadName();
+                downloadBlob(blob, fileName);
+                log(`Downloaded current config as ${fileName}.`);
             }
 
-            async function getOriginalTagsDirectoryHandle(create = false) {
-                if (!state.imagesDirHandle) {
-                    return null;
-                }
+            async function applyConfigJsonEditor() {
+                try {
+                    const parsed = JSON.parse(state.configJsonText || "{}");
+                    if (!isPlainObject(parsed)) {
+                        state.configJsonError = "Configuration JSON must be an object.";
+                        render();
+                        return;
+                    }
 
-                const tempDir = create
-                    ? await state.imagesDirHandle.getDirectoryHandle(originalTagsBackupRootName, { create: true })
-                    : await getDirectoryHandleIfExists(state.imagesDirHandle, originalTagsBackupRootName);
-                if (!tempDir) {
-                    return null;
+                    await applyConfig(parsed);
+                    await saveConfiguration({});
+                    updateConfigJsonTextFromState();
+                    log("Applied JSON configuration.");
+                } catch (error) {
+                    state.configJsonError = `Invalid JSON: ${error.message}`;
+                    render();
                 }
-
-                return create
-                    ? await tempDir.getDirectoryHandle(originalTagsBackupFolderName, { create: true })
-                    : await getDirectoryHandleIfExists(tempDir, originalTagsBackupFolderName);
             }
 
-            async function getOriginalTagsBackupHandle(image, originalTagsDirHandle = null) {
-                if (!image) {
-                    return null;
-                }
-
-                if (!image.tagFileName) {
-                    const tagInfo = await getTagFileInfoForName(image.fileName, false);
-                    image.tagFileName = tagInfo.tagFileName;
-                }
-
-                const originalDir = originalTagsDirHandle ?? await getOriginalTagsDirectoryHandle(false);
-                if (!originalDir) {
-                    return null;
-                }
-
-                const handle = await getFileHandleIfExists(originalDir, image.tagFileName);
-                image.hasOriginalTagsBackup = Boolean(handle);
-                return handle;
+            async function resetConfigJsonEditorToDefaults() {
+                state.configJsonText = JSON.stringify(getDefaultConfigSnapshot(), null, 2);
+                state.configJsonDirty = true;
+                state.configJsonError = "";
+                render();
             }
 
-            async function ensureOriginalTagsBackup(image, originalTagsDirHandle = null) {
-                if (!image || !state.imagesDirHandle) {
-                    return false;
+            async function uploadConfigJsonFile(file) {
+                if (!file) {
+                    return;
                 }
 
-                if (!image.tagFileName) {
-                    const tagInfo = await getTagFileInfoForName(image.fileName, false);
-                    image.tagFileName = tagInfo.tagFileName;
-                }
+                try {
+                    const configText = await file.text();
+                    const parsed = JSON.parse(configText || "{}");
+                    if (!isPlainObject(parsed)) {
+                        state.configJsonError = "Uploaded configuration JSON must be an object.";
+                        render();
+                        return;
+                    }
 
-                const originalDir = originalTagsDirHandle ?? await getOriginalTagsDirectoryHandle(true);
-                if (!originalDir) {
-                    return false;
-                }
+                    if (configText && state.configBackupCount > 0) {
+                        pushConfigBackup("btn", configText);
+                    }
 
-                if (await fileExists(originalDir, image.tagFileName)) {
-                    image.hasOriginalTagsBackup = true;
-                    return false;
+                    await applyConfig(parsed);
+                    state.configFileHandle = null;
+                    state.configPickerHandle = null;
+                    state.configFileHandleName = normalizeStoredHandleName(file.name);
+                    if (!state.configFilePath) {
+                        localStorage.removeItem(storageKeys.lastConfigName);
+                    }
+                    await deleteHandle(handleKeys.configFile);
+                    await saveConfiguration({});
+                    updateConfigJsonTextFromState();
+                    log(`Uploaded configuration from ${file.name}.`);
+                } catch (error) {
+                    state.configJsonError = `Could not upload configuration: ${error.message}`;
+                    render();
                 }
-
-                if (image.tagHandle) {
-                    await copyFileToDirectory(image.tagHandle, originalDir, image.tagFileName);
-                } else {
-                    const backupHandle = await originalDir.getFileHandle(image.tagFileName, { create: true });
-                    await writeToFileHandle(backupHandle, "");
-                }
-
-                image.hasOriginalTagsBackup = true;
-                return true;
             }
 
             async function loadConfigFromLocalStorage() {
@@ -1791,7 +1647,7 @@ export function createImageTaggerApp(appRoot) {
                     await rememberHandleForPath("config", handle, state.configFilePath);
                     log(`Selected configuration file: ${getStoredLocationDisplay(state.configFilePath, state.configFileHandleName)}.`);
                     if (!state.configFilePath && state.configFileHandleName) {
-                        log(`Browser exposed only the config file name. Enter the full path in the field if you want it stored in the config. Placeholder: <${state.configFileHandleName}>.`);
+                        log(`Browser exposed the config file name as ${state.configFileHandleName}.`);
                     }
                 } catch (error) {
                     if (error && error.name !== "AbortError") {
@@ -1843,7 +1699,7 @@ export function createImageTaggerApp(appRoot) {
                     await rememberHandleForPath("config", handle, state.configFilePath);
                     log(`Selected configuration file for save: ${getStoredLocationDisplay(state.configFilePath, state.configFileHandleName)}.`);
                     if (!state.configFilePath && state.configFileHandleName) {
-                        log(`Browser exposed only the config file name. Enter the full path in the field if you want it stored in the config. Placeholder: <${state.configFileHandleName}>.`);
+                        log(`Browser exposed the config file name as ${state.configFileHandleName}.`);
                     }
                     return true;
                 } catch (error) {
@@ -1890,19 +1746,14 @@ export function createImageTaggerApp(appRoot) {
                     } else {
                         localStorage.removeItem(storageKeys.lastConfigName);
                     }
-                    const hasImagesHandle = await activatePersistedImagesHandle(state.imagesPath, state.imagesHandleName);
                     await saveTempConfig(JSON.stringify(configSnapshot(), null, 2));
                     state.tempConfigLoaded = true;
-
-                    if (hasImagesHandle) {
-                        await loadImages(false);
-                    } else {
-                        await revokeImageUrls();
-                        state.images = [];
-                        await invalidateDerivedState();
-                        if (state.imagesPath || state.imagesHandleName) {
-                            log(`Configuration expects images folder ${getStoredLocationDisplay(state.imagesPath, state.imagesHandleName)}. Pick this folder once if browser access is not cached yet.`);
-                        }
+                    await revokeImageUrls();
+                    state.images = [];
+                    state.uploadedFolderFiles = [];
+                    await invalidateDerivedState();
+                    if (state.imagesPath || state.imagesHandleName) {
+                        log("Configuration loaded. Upload the image folder to load image data into memory.");
                     }
 
                     log(`Loaded configuration from ${getStoredLocationDisplay(state.configFilePath, state.configFileHandleName || state.configFileHandle?.name)}.`);
@@ -1968,7 +1819,6 @@ export function createImageTaggerApp(appRoot) {
                         await saveHandle(handleKeys.configFile, state.configFileHandle);
                         await saveHandle(handleKeys.configPickerStart, state.configFileHandle);
                         await rememberHandleForPath("config", state.configFileHandle, state.configFilePath);
-                        await rememberHandleForPath("images", state.imagesDirHandle, state.imagesPath);
                     } catch (error) {
                         console.error(error);
                         log(`Could not write configuration file. The latest state is still stored in ${tempConfigPath}.`);
@@ -1980,85 +1830,7 @@ export function createImageTaggerApp(appRoot) {
             }
 
             async function openFolderPicker() {
-                if (!state.supportsFsAccess) {
-                    log("Folder access needs Edge or Chrome.");
-                    render();
-                    return;
-                }
-
-                try {
-                    const handle = await runPicker(
-                        (options) => window.showDirectoryPicker(options),
-                        {
-                            id: "simple-version-images-folder",
-                            mode: "readwrite"
-                        },
-                        getPreferredImagesPickerHandle()
-                    );
-                    state.imagesDirHandle = handle;
-                    state.imagesPickerHandle = handle;
-                    await syncImagesPathFromHandle(handle, true);
-                    resetLogSessionForCurrentFolder();
-                    if (state.imagesPath) {
-                        localStorage.setItem(storageKeys.lastImagesName, state.imagesPath);
-                    } else {
-                        localStorage.removeItem(storageKeys.lastImagesName);
-                    }
-                    await saveHandle(handleKeys.imagesDirectory, handle);
-                    await saveHandle(handleKeys.imagesPickerStart, handle);
-                    await rememberHandleForPath("images", handle, state.imagesPath);
-                    await loadImages(false);
-                    await saveConfiguration({});
-                    log(`Selected images folder: ${getStoredLocationDisplay(state.imagesPath, state.imagesHandleName)}.`);
-                    if (!state.imagesPath && state.imagesHandleName) {
-                        log(`Browser exposed only the folder name. Enter the full folder path in the field if you want it stored in the config. Placeholder: <${state.imagesHandleName}>.`);
-                    }
-                } catch (error) {
-                    if (error && error.name !== "AbortError") {
-                        log("Folder selection failed.");
-                    }
-                    render();
-                }
-            }
-
-            async function backupCurrentTags(kind) {
-                if (!state.imagesDirHandle || state.backupFolderForTagsCount <= 0) {
-                    return;
-                }
-
-                const canWrite = await ensurePermission(state.imagesDirHandle, "readwrite");
-                if (!canWrite) {
-                    return;
-                }
-
-                const backupRoot = await state.imagesDirHandle.getDirectoryHandle("backup", { create: true });
-                const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-                const prefix = kind === "btn" ? "_bk_btnLoad_" : "_bk_autoLoad_";
-                const folderName = `${prefix}${stamp}`;
-                const targetDirectory = await backupRoot.getDirectoryHandle(folderName, { create: true });
-
-                for (const image of state.images) {
-                    if (!image.tagHandle) {
-                        continue;
-                    }
-
-                    await copyFileToDirectory(image.tagHandle, targetDirectory, image.tagFileName);
-                }
-
-                const childDirectories = [];
-                for await (const [name, entry] of backupRoot.entries()) {
-                    if (entry.kind === "directory" && name.startsWith(prefix)) {
-                        childDirectories.push(name);
-                    }
-                }
-
-                childDirectories.sort();
-                while (childDirectories.length > state.backupFolderForTagsCount) {
-                    const oldest = childDirectories.shift();
-                    await backupRoot.removeEntry(oldest, { recursive: true });
-                }
-
-                log(`Created tags backup: backup/${folderName}`);
+                document.getElementById("images-folder-upload")?.click();
             }
 
             async function revokeImageUrls() {
@@ -2069,61 +1841,69 @@ export function createImageTaggerApp(appRoot) {
                 }
             }
 
+            function getUploadedFilePath(file) {
+                return String(file?.webkitRelativePath || file?.relativePath || file?.name || "");
+            }
+
+            function getUploadedFileName(file) {
+                return getPathBaseName(getUploadedFilePath(file));
+            }
+
+            function getTagCandidatesForImage(imageFileName) {
+                return [
+                    imageFileName.replace(/\.[^.]+$/, ".txt").toLowerCase(),
+                    `${imageFileName}.txt`.toLowerCase()
+                ];
+            }
+
             async function loadImages(btnLoad = false) {
-                if (!state.imagesDirHandle) {
-                    log("No images folder selected.");
+                if (!state.uploadedFolderFiles.length) {
+                    log("No uploaded folder files are available.");
                     render();
                     return;
                 }
 
                 try {
-                    const canRead = await ensurePermission(state.imagesDirHandle, "readwrite");
-                    if (!canRead) {
-                        log("Images folder permission was denied.");
-                        render();
-                        return;
-                    }
-
                     await revokeImageUrls();
 
-                    const fileEntries = [];
-                    for await (const [name, entry] of state.imagesDirHandle.entries()) {
-                        if (entry.kind !== "file") {
+                    const imageFiles = [];
+                    const tagFiles = new Map();
+                    for (const file of state.uploadedFolderFiles) {
+                        const fileName = getUploadedFileName(file);
+                        const lower = fileName.toLowerCase();
+                        if (lower.endsWith(".txt")) {
+                            tagFiles.set(lower, file);
                             continue;
                         }
 
-                        const lower = name.toLowerCase();
-                        if (!lower.endsWith(".jpg") && !lower.endsWith(".png")) {
-                            continue;
+                        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png")) {
+                            imageFiles.push(file);
                         }
-
-                        fileEntries.push({ name, handle: entry });
                     }
 
-                    fileEntries.sort((a, b) => a.name.localeCompare(b.name));
+                    imageFiles.sort((a, b) => getUploadedFilePath(a).localeCompare(getUploadedFilePath(b)));
                     state.images = [];
-                    const originalTagsDir = fileEntries.length ? await getOriginalTagsDirectoryHandle(true) : null;
-                    let createdOriginalBackups = 0;
-
-                    for (let index = 0; index < fileEntries.length; index += 1) {
-                        const item = fileEntries[index];
-                        const file = await item.handle.getFile();
+                    for (let index = 0; index < imageFiles.length; index += 1) {
+                        const file = imageFiles[index];
+                        const fileName = getUploadedFileName(file);
                         const objectUrl = URL.createObjectURL(file);
-                        const tagInfo = await getTagFileInfoForName(item.name, false);
+                        const tagCandidates = getTagCandidatesForImage(fileName);
+                        const tagFile = tagCandidates.map((name) => tagFiles.get(name)).find(Boolean) ?? null;
+                        const tagFileName = tagFile ? getUploadedFileName(tagFile) : tagCandidates[0];
 
                         let tags = [];
-                        if (tagInfo.tagHandle) {
-                            const tagText = await (await tagInfo.tagHandle.getFile()).text();
+                        if (tagFile) {
+                            const tagText = await tagFile.text();
                             tags = toTags(tagText);
                         }
 
-                        state.images.push({
+                        const image = {
                             id: createImageId(index),
-                            fileName: item.name,
-                            fileHandle: item.handle,
+                            fileName,
+                            file,
                             objectUrl,
-                            tagHandle: tagInfo.tagHandle,
-                            tagFileName: tagInfo.tagFileName,
+                            tagFile,
+                            tagFileName,
                             tags,
                             removedTags: [],
                             formattedTags: [],
@@ -2132,52 +1912,38 @@ export function createImageTaggerApp(appRoot) {
                             isChanged: false,
                             isSaved: false,
                             selectedTag: "",
-                            hasOriginalTagsBackup: false
-                        });
-
-                        if (await ensureOriginalTagsBackup(state.images[state.images.length - 1], originalTagsDir)) {
-                            createdOriginalBackups += 1;
-                        }
+                            tagHistory: []
+                        };
+                        pushTagHistory(image, tags, "upload");
+                        state.images.push(image);
                     }
 
-                    if (state.images.length && state.backupFolderForTagsCount > 0) {
-                        await backupCurrentTags("auto");
-                        if (btnLoad) {
-                            await backupCurrentTags("btn");
-                        }
+                    if (!state.imagesHandleName) {
+                        state.imagesHandleName = "Uploaded folder";
                     }
-
-                    await syncImagesPathFromHandle(state.imagesDirHandle, true);
-                    if (state.imagesPath) {
-                        localStorage.setItem(storageKeys.lastImagesName, state.imagesPath);
-                    } else {
-                        localStorage.removeItem(storageKeys.lastImagesName);
-                    }
-                    await rememberHandleForPath("images", state.imagesDirHandle, state.imagesPath);
+                    state.imagesPath = "";
+                    localStorage.removeItem(storageKeys.lastImagesName);
+                    await deleteHandle(handleKeys.imagesDirectory);
                     await invalidateDerivedState();
-                    if (createdOriginalBackups > 0) {
-                        log(`Stored ${createdOriginalBackups} original tag backups in ${originalTagsBackupPath}.`);
-                    }
-                    log(`Loaded ${state.images.length} images from ${getStoredLocationDisplay(state.imagesPath, state.imagesHandleName)}.`);
+                    log(`Loaded ${state.images.length} images into memory.`);
                 } catch (error) {
                     console.error(error);
-                    log("Could not load images from the selected folder.");
+                    log("Could not load uploaded files.");
                 }
 
                 render();
             }
 
             async function fullyUnloadAll() {
-                await persistLogsNow();
                 await revokeImageUrls();
 
                 hideSuggestions();
                 state.configFileHandle = null;
-                state.imagesDirHandle = null;
                 state.configFilePath = "";
                 state.configFileHandleName = "";
                 state.imagesPath = "";
                 state.imagesHandleName = "";
+                state.uploadedFolderFiles = [];
                 state.images = [];
                 state.tagFilter = "";
                 state.commonTagsText = "";
@@ -2202,11 +1968,23 @@ export function createImageTaggerApp(appRoot) {
                 state.scriptAddTagText = "";
                 state.scriptRemoveTagsText = "";
                 state.scriptRemoveTags = [];
+                state.isConfigCollapsed1 = false;
+                state.isJsonConfigCollapsed = true;
+                state.isFilterCollapsed2 = true;
+                state.isCommonTagsCollapsed3 = true;
+                state.isKnownTagsCollapsed4 = true;
+                state.isHighlightedTagsCollapsed5 = true;
+                state.isHighlightedTextsCollapsed6 = true;
+                state.isOrderOfTagsCollapsed7 = true;
+                state.isCollapsedScripts = true;
+                state.headerSectionOrder = [...defaultHeaderSectionOrder];
+                state.toolbarMaxHeightVh = clampNumber(defaultConfig.toolbarMaxHeightVh ?? 80, 35, 100);
                 state.lastRecalc = 0;
                 state.popupVisible = false;
-                state.logSessionFileName = "";
-                state.logFilePath = "";
                 state.tempConfigLoaded = false;
+                state.configJsonText = "";
+                state.configJsonError = "";
+                state.configJsonDirty = false;
                 state.viewer.isOpen = false;
                 state.viewer.imageId = "";
                 state.viewer.scale = 1;
@@ -2218,11 +1996,7 @@ export function createImageTaggerApp(appRoot) {
                 state.viewer.pointerId = null;
 
                 setMainSection("images");
-
-                if (logPersistTimer) {
-                    window.clearTimeout(logPersistTimer);
-                    logPersistTimer = 0;
-                }
+                syncCollapsedAllState();
 
                 await deleteTempConfig();
                 localStorage.removeItem(storageKeys.lastConfigName);
@@ -2230,7 +2004,6 @@ export function createImageTaggerApp(appRoot) {
                 await deleteHandle(handleKeys.configFile);
                 await deleteHandle(handleKeys.imagesDirectory);
 
-                setStatus("Fully unloaded. Pick a configuration file or images folder to start again.");
                 render();
             }
 
@@ -2316,73 +2089,129 @@ export function createImageTaggerApp(appRoot) {
                 showAllImages();
             }
 
-            async function saveTags(image) {
-                if (!image || !state.imagesDirHandle) {
+            function tagsToText(tags) {
+                return (Array.isArray(tags) ? tags : []).join(", ");
+            }
+
+            function pushTagHistory(image, tags, source = "edit") {
+                if (!image) {
                     return;
                 }
 
-                try {
-                    const canWrite = await ensurePermission(state.imagesDirHandle, "readwrite");
-                    if (!canWrite) {
-                        log("Folder write permission was denied.");
-                        render();
-                        return;
+                const text = tagsToText(tags);
+                if (!Array.isArray(image.tagHistory)) {
+                    image.tagHistory = [];
+                }
+
+                const last = image.tagHistory[image.tagHistory.length - 1];
+                if (last?.text === text) {
+                    return;
+                }
+
+                image.tagHistory.push({
+                    text,
+                    source,
+                    time: Date.now()
+                });
+            }
+
+            function getTagHistoryOptions(image) {
+                if (!Array.isArray(image?.tagHistory)) {
+                    return [];
+                }
+
+                const result = [];
+                const seen = new Set();
+                for (let index = image.tagHistory.length - 1; index >= 0; index -= 1) {
+                    const entry = image.tagHistory[index];
+                    const text = String(entry?.text ?? "");
+                    if (seen.has(text)) {
+                        continue;
                     }
+                    seen.add(text);
+                    result.push({ ...entry, originalIndex: index });
+                }
 
-                    await ensureOriginalTagsBackup(image);
+                return result;
+            }
 
-                    if (!image.tagHandle) {
-                        const tagInfo = await getTagFileInfoForName(image.fileName, true);
-                        image.tagHandle = tagInfo.tagHandle;
-                        image.tagFileName = tagInfo.tagFileName;
-                    }
+            async function applyTagHistoryText(image, text, saveHistory = true) {
+                if (!image) {
+                    return;
+                }
 
-                    await writeToFileHandle(image.tagHandle, image.tags.join(", "));
-                    image.isChanged = false;
-                    image.isSaved = true;
-                    window.setTimeout(() => {
-                        image.isSaved = false;
-                        render();
-                    }, 900);
-
-                    recalculateAutoComplete(true);
-                    log(`Saved tags for ${image.fileName}.`);
-                } catch (error) {
-                    console.error(error);
-                    log(`Could not save tags for ${image.fileName}.`);
+                image.tags = toTags(text);
+                image.removedTags = [];
+                image.selectedTag = "";
+                image.isChanged = true;
+                highlightTags(image);
+                if (saveHistory) {
+                    await saveTags(image);
+                } else {
+                    render();
                 }
             }
 
-            async function restoreOriginalTags(image) {
-                if (!image || !state.imagesDirHandle) {
+            async function chooseTagHistoryVersion(image) {
+                const options = getTagHistoryOptions(image);
+                if (!image || options.length <= 1) {
+                    window.alert("No older in-memory tag versions are available.");
+                    render();
                     return;
                 }
 
-                try {
-                    const canWrite = await ensurePermission(state.imagesDirHandle, "readwrite");
-                    if (!canWrite) {
-                        log("Folder write permission was denied.");
-                        render();
-                        return;
-                    }
-
-                    const originalHandle = await getOriginalTagsBackupHandle(image);
-                    if (!originalHandle) {
-                        log(`No original tags backup found for ${image.fileName} in ${originalTagsBackupPath}.`);
-                        return;
-                    }
-
-                    const originalText = await (await originalHandle.getFile()).text();
-                    image.tags = toTags(originalText);
-                    image.removedTags = [];
-                    image.selectedTag = "";
-                    highlightTags(image);
-                    await saveTags(image);
-                    log(`Restored original tags for ${image.fileName} from ${originalTagsBackupPath}.`);
-                } catch (error) {
-                    console.error(error);
-                    log(`Could not restore original tags for ${image.fileName}.`);
+                const preview = options
+                    .map((entry, index) => {
+                        const label = index === 0 ? "current" : `${index}`;
+                        const text = entry.text || "(empty)";
+                        return `${label}: ${text}`;
+                    })
+                    .join("\n\n");
+                const answer = window.prompt(`Select a previous tag version for ${image.fileName}:\n\n${preview}`, "1");
+                if (answer === null) {
+                    return;
                 }
+
+                const selectedIndex = Number(answer);
+                if (!Number.isInteger(selectedIndex) || selectedIndex <= 0 || selectedIndex >= options.length) {
+                    window.alert("No previous tag version selected.");
+                    render();
+                    return;
+                }
+
+                await applyTagHistoryText(image, options[selectedIndex].text, true);
+            }
+
+            async function saveTags(image) {
+                if (!image) {
+                    return;
+                }
+
+                pushTagHistory(image, image.tags, "save");
+                image.isChanged = false;
+                image.isSaved = true;
+                window.setTimeout(() => {
+                    image.isSaved = false;
+                    render();
+                }, 900);
+
+                recalculateAutoComplete(true);
+                log(`Saved tag version for ${image.fileName} in memory.`);
+            }
+
+            async function restoreOriginalTags(image) {
+                if (!image) {
+                    return;
+                }
+
+                const options = getTagHistoryOptions(image);
+                if (options.length <= 1) {
+                    window.alert(`No previous in-memory tag version found for ${image.fileName}.`);
+                    render();
+                    return;
+                }
+
+                await applyTagHistoryText(image, options[1].text, true);
             }
 
             async function openImageInBrowser(image) {
@@ -2644,38 +2473,13 @@ export function createImageTaggerApp(appRoot) {
             }
 
             async function removeImage(image) {
-                if (!image || !state.imagesDirHandle) {
+                if (!image) {
                     return;
                 }
 
-                try {
-                    const removedDir = await state.imagesDirHandle.getDirectoryHandle("__removed", { create: true });
-                    const imageExists = await fileExists(removedDir, image.fileName);
-                    const tagExists = image.tagHandle ? await fileExists(removedDir, image.tagFileName) : false;
-
-                    if (imageExists || tagExists) {
-                        log(`Remove aborted because target file already exists for ${image.fileName}.`);
-                        render();
-                        return;
-                    }
-
-                    await copyFileToDirectory(image.fileHandle, removedDir, image.fileName);
-                    if (image.tagHandle) {
-                        await copyFileToDirectory(image.tagHandle, removedDir, image.tagFileName);
-                    }
-
-                    await state.imagesDirHandle.removeEntry(image.fileName);
-                    if (image.tagHandle) {
-                        await state.imagesDirHandle.removeEntry(image.tagFileName);
-                    }
-
-                    URL.revokeObjectURL(image.objectUrl);
-                    state.images = state.images.filter((item) => item.id !== image.id);
-                    log(`Moved ${image.fileName} to __removed.`);
-                } catch (error) {
-                    console.error(error);
-                    log(`Could not remove ${image.fileName}.`);
-                }
+                URL.revokeObjectURL(image.objectUrl);
+                state.images = state.images.filter((item) => item.id !== image.id);
+                log(`Removed ${image.fileName} from memory.`);
 
                 render();
             }
@@ -2892,68 +2696,17 @@ export function createImageTaggerApp(appRoot) {
             }
 
             async function renameFiles() {
-                if (!state.imagesDirHandle) {
-                    return;
+                for (let index = 0; index < state.images.length; index += 1) {
+                    const image = state.images[index];
+                    const imageExtension = image.fileName.includes(".")
+                        ? image.fileName.slice(image.fileName.lastIndexOf("."))
+                        : "";
+                    image.fileName = `${index + 1}${imageExtension}`;
+                    image.tagFileName = `${index + 1}.txt`;
                 }
 
-                try {
-                    const conflicts = [];
-                    const originalTagsDir = await getOriginalTagsDirectoryHandle(false);
-
-                    for (let index = 0; index < state.images.length; index += 1) {
-                        const image = state.images[index];
-                        const newImageName = `${index + 1}${image.fileName.slice(image.fileName.lastIndexOf("."))}`;
-                        const newTagName = `${index + 1}${image.tagFileName.slice(image.tagFileName.lastIndexOf("."))}`;
-                        const originalBackupHandle = await getOriginalTagsBackupHandle(image, originalTagsDir);
-
-                        if (newImageName !== image.fileName && await fileExists(state.imagesDirHandle, newImageName)) {
-                            conflicts.push(newImageName);
-                        }
-
-                        if (image.tagHandle && newTagName !== image.tagFileName && await fileExists(state.imagesDirHandle, newTagName)) {
-                            conflicts.push(newTagName);
-                        }
-
-                        if (originalBackupHandle && originalTagsDir && newTagName !== image.tagFileName && await fileExists(originalTagsDir, newTagName)) {
-                            conflicts.push(`${originalTagsBackupPath}/${newTagName}`);
-                        }
-                    }
-
-                    if (conflicts.length) {
-                        log(`Rename aborted. Existing files: ${conflicts.join(", ")}`);
-                        render();
-                        return;
-                    }
-
-                    for (let index = 0; index < state.images.length; index += 1) {
-                        const image = state.images[index];
-                        const newImageName = `${index + 1}${image.fileName.slice(image.fileName.lastIndexOf("."))}`;
-                        const newTagName = `${index + 1}${image.tagFileName.slice(image.tagFileName.lastIndexOf("."))}`;
-                        const originalBackupHandle = await getOriginalTagsBackupHandle(image, originalTagsDir);
-
-                        if (newImageName !== image.fileName) {
-                            await copyFileToDirectory(image.fileHandle, state.imagesDirHandle, newImageName);
-                            await state.imagesDirHandle.removeEntry(image.fileName);
-                        }
-
-                        if (image.tagHandle && newTagName !== image.tagFileName) {
-                            await copyFileToDirectory(image.tagHandle, state.imagesDirHandle, newTagName);
-                            await state.imagesDirHandle.removeEntry(image.tagFileName);
-                        }
-
-                        if (originalBackupHandle && originalTagsDir && newTagName !== image.tagFileName) {
-                            await copyFileToDirectory(originalBackupHandle, originalTagsDir, newTagName);
-                            await originalTagsDir.removeEntry(image.tagFileName);
-                        }
-                    }
-
-                    log("Renamed files using the current image order.");
-                    await loadImages(false);
-                } catch (error) {
-                    console.error(error);
-                    log("Rename files failed.");
-                    render();
-                }
+                log("Renamed files in memory using the current image order.");
+                render();
             }
 
             async function getBitmapFromBlob(blob) {
@@ -3010,29 +2763,23 @@ export function createImageTaggerApp(appRoot) {
             }
 
             async function imageProcess() {
-                if (!state.imagesDirHandle) {
+                if (!state.images.length) {
                     return;
                 }
-
-                if (await directoryExists(state.imagesDirHandle, "__output")) {
-                    log("Please remove __output folder before processing. Abort.");
-                    render();
-                    return;
-                }
-
-                const outputDir = await state.imagesDirHandle.getDirectoryHandle("__output", { create: true });
 
                 for (let index = 0; index < state.images.length; index += 1) {
                     const image = state.images[index];
                     log(`ImageProcess ${index + 1}/${state.images.length}`);
-                    const sourceFile = await image.fileHandle.getFile();
+                    const sourceFile = image.file;
+                    if (!sourceFile) {
+                        continue;
+                    }
                     const extension = image.fileName.slice(image.fileName.lastIndexOf("."));
                     const blob = await resizeImageFile(sourceFile, extension);
-                    const targetHandle = await outputDir.getFileHandle(image.fileName, { create: true });
-                    await writeToFileHandle(targetHandle, blob);
+                    downloadBlob(blob, image.fileName);
                 }
 
-                log("Created resized images inside __output.");
+                log("Downloaded resized images from memory.");
                 render();
             }
 
@@ -3361,11 +3108,33 @@ export function createImageTaggerApp(appRoot) {
                             </div>
 
                             <div class="button-row">
-                                ${renderActionButton({ action: "execute-tags-filter", title: "Remove tags matching the listed regex rules from all loaded prompts", icon: "filter", label: "Run Regex Cleanup", variant: "btn-primary", small: true })}
-                                ${renderActionButton({ action: "rename-files", title: "Rename image files and tag files using the current visible order", icon: "pencil", label: "Rename Files", variant: "btn-primary", small: true })}
-                                ${renderActionButton({ action: "image-process", title: "Resize images into the __output folder using the original resolution matching logic", icon: "resize", label: "Resize Images", variant: "btn-primary", small: true })}
+                                ${renderActionButton({ action: "execute-tags-filter", title: "Remove tags matching the listed regex rules from all loaded prompts in memory", icon: "filter", label: "Run Regex Cleanup", variant: "btn-primary", small: true })}
+                                ${renderActionButton({ action: "rename-files", title: "Rename loaded image and tag records in memory using the current visible order", icon: "pencil", label: "Rename Files", variant: "btn-primary", small: true })}
+                                ${renderActionButton({ action: "image-process", title: "Resize loaded images from memory and download the results", icon: "resize", label: "Resize Images", variant: "btn-primary", small: true })}
                             </div>
                         </div>
+                    </div>
+                `;
+            }
+
+            function renderJsonConfigPanel() {
+                const jsonText = getConfigJsonEditorText();
+                return `
+                    <div class="toolbar-panel ${state.isJsonConfigCollapsed ? "collapsed" : ""}">
+                        <h3 class="toolbar-panel-title">JSON configuration</h3>
+                        <p class="toolbar-panel-subtitle">Edit the current configuration as JSON. Missing keys are filled from the project default config.</p>
+                        <div class="button-row">
+                            ${renderActionButton({ action: "apply-json-config", title: "Apply the JSON configuration in this editor", icon: "check", label: "Apply", variant: "btn-success", small: true })}
+                            ${renderActionButton({ action: "reset-json-config", title: "Replace the editor contents with the project default configuration", icon: "refresh", label: "Defaults", variant: "btn-secondary", small: true })}
+                            ${renderActionButton({ action: "upload-json-config", title: "Upload a JSON configuration file", icon: "upload", label: "Upload", variant: "btn-secondary", small: true })}
+                            ${renderActionButton({ action: "download-config", title: "Download the current configuration JSON", icon: "download", label: "Download", variant: "btn-secondary", small: true })}
+                            <input id="config-json-upload" class="sr-only" type="file" accept="application/json,.json">
+                        </div>
+                        <div class="json-editor-shell">
+                            <pre id="config-json-highlight" class="json-highlight mono" aria-hidden="true">${highlightJson(jsonText)}</pre>
+                            <textarea id="config-json-editor" class="json-editor mono" spellcheck="false" autocomplete="off" autocapitalize="off">${escapeHtml(jsonText)}</textarea>
+                        </div>
+                        ${state.configJsonError ? `<div class="json-error">${escapeHtml(state.configJsonError)}</div>` : ""}
                     </div>
                 `;
             }
@@ -3376,14 +3145,14 @@ export function createImageTaggerApp(appRoot) {
                         return `
                             <div class="toolbar-panel ${state.isConfigCollapsed1 ? "collapsed" : ""}">
                                 <h3 class="toolbar-panel-title">Configuration</h3>
-                                <p class="toolbar-panel-subtitle">Browser pickers remember the last granted location. If the browser only exposes a file or folder name, it is shown as a gray placeholder like &lt;config.json&gt; until you enter a full path.</p>
+                                <p class="toolbar-panel-subtitle">Browser pickers remember granted files and folders. Use JSON import/export when you do not want to grant a writable config file.</p>
                                 <div class="config-grid">
                                     <div class="field">
-                                        <label class="field-label" for="config-file-name">
-                                            <span>Configuration file path</span>
-                                            <span class="field-note">${state.configFileHandleName ? `Browser label: ${escapeHtml(state.configFileHandleName)}` : "Browser label appears here when only a name is available."}</span>
+                                        <label class="field-label">
+                                            <span>Configuration file</span>
+                                            <span class="field-note">Browser-granted JSON handle</span>
                                         </label>
-                                        <input id="config-file-name" class="control mono" type="text" placeholder="${escapeHtml(getPathFieldPlaceholder(state.configFileHandleName, "C:\\datasets\\project\\config.json"))}" title="${escapeHtml(getPathFieldTitle(state.configFileHandleName))}" value="${escapeHtml(state.configFilePath || "")}">
+                                        <div class="location-summary mono">${escapeHtml(getBrowserLocationLabel(state.configFilePath, state.configFileHandleName, "No file selected"))}</div>
                                     </div>
                                     <div class="button-row end">
                                         ${renderActionButton({ action: "select-config-file", title: "Select a configuration JSON file", icon: "file", label: "Pick", variant: "btn-secondary", small: true })}
@@ -3396,19 +3165,32 @@ export function createImageTaggerApp(appRoot) {
 
                                 <div class="config-grid" style="margin-top:8px;">
                                     <div class="field">
-                                        <label class="field-label" for="images-folder-name">
-                                            <span>Images folder path</span>
-                                            <span class="field-note">${state.imagesHandleName ? `Browser label: ${escapeHtml(state.imagesHandleName)}` : "Browser label appears here when only a name is available."}</span>
+                                        <label class="field-label">
+                                            <span>Images folder</span>
+                                            <span class="field-note">Uploaded into memory</span>
                                         </label>
-                                        <input id="images-folder-name" class="control mono" type="text" placeholder="${escapeHtml(getPathFieldPlaceholder(state.imagesHandleName, "D:\\deep\\dataset\\images"))}" title="${escapeHtml(getPathFieldTitle(state.imagesHandleName))}" value="${escapeHtml(state.imagesPath || "")}">
+                                        <div class="location-summary mono">${escapeHtml(getBrowserLocationLabel(state.imagesPath, state.imagesHandleName, "No folder selected"))}</div>
                                     </div>
                                     <div class="button-row end">
-                                        ${renderActionButton({ action: "load-images", title: "Load images and tag files from the selected folder", icon: "load", label: "Load", variant: "btn-primary", small: true })}
-                                        ${renderActionButton({ action: "select-folder", title: "Select the images folder", icon: "folder", label: "Pick", variant: "btn-secondary", small: true })}
+                                        ${renderActionButton({ action: "load-images", title: "Reload the uploaded files from memory", icon: "load", label: "Load", variant: "btn-primary", small: true })}
+                                        ${renderActionButton({ action: "select-folder", title: "Upload an image folder into memory", icon: "folder", label: "Upload", variant: "btn-secondary", small: true })}
+                                        <input id="images-folder-upload" class="sr-only" type="file" multiple webkitdirectory directory>
+                                    </div>
+                                </div>
+
+                                <div class="config-grid compact-config-grid" style="margin-top:8px;">
+                                    <div class="field">
+                                        <label class="field-label" for="toolbar-max-height-vh">
+                                            <span>Top panel height limit</span>
+                                            <span class="field-note">Viewport percent, also editable in JSON</span>
+                                        </label>
+                                        <input id="toolbar-max-height-vh" class="control count-box" type="number" min="35" max="100" step="5" value="${escapeHtml(String(state.toolbarMaxHeightVh))}">
                                     </div>
                                 </div>
                             </div>
                         `;
+                    case "json-config":
+                        return renderJsonConfigPanel();
                     case "filter":
                         return `
                             <div class="toolbar-panel ${state.isFilterCollapsed2 ? "collapsed" : ""}">
@@ -3474,8 +3256,6 @@ export function createImageTaggerApp(appRoot) {
                         `;
                     case "scripts":
                         return renderScriptsPanel();
-                    case "status":
-                        return renderStatusPanel();
                     default:
                         return "";
                 }
@@ -3483,9 +3263,10 @@ export function createImageTaggerApp(appRoot) {
 
             function renderHeader() {
                 const orderedSections = normalizeHeaderSectionOrder(state.headerSectionOrder);
+                const toolbarMaxHeight = `${clampNumber(state.toolbarMaxHeightVh, 35, 100)}vh`;
 
                 return `
-                    <div class="panel-card toolbar" style="${state.isHeaderVisible ? "" : "display:none;"}">
+                    <div class="panel-card toolbar" style="${state.isHeaderVisible ? `--toolbar-max-height:${toolbarMaxHeight};` : "display:none;"}">
                         <div class="toolbar-top">
                             ${orderedSections.map((sectionId) => renderHeaderTabButton(sectionId)).join("")}
                             ${renderActionButton({ action: "toggle-all-panels", title: "Toggle all header subpanels", icon: "grid", label: "All", small: true, active: !state.isCollapsedAll, extraClass: "header-tab" })}
@@ -3613,6 +3394,7 @@ export function createImageTaggerApp(appRoot) {
                     const nonCommonTags = image.tags.filter((tag) => !state.commonTagsSet.has(tag.toLowerCase()));
                     const removedTags = image.removedTags.filter((tag) => !state.commonTagsSet.has(tag.toLowerCase()));
                     const selectedTagHidden = image.selectedTag ? "" : "collapsed";
+                    const hasTagHistory = getTagHistoryOptions(image).length > 1;
 
                     return `
                         <div>
@@ -3643,8 +3425,9 @@ export function createImageTaggerApp(appRoot) {
 
                                     <div class="image-actions">
                                         ${renderActionButton({ action: "open-image", title: `Open ${image.fileName} in the page viewer with zoom and drag`, icon: "eye", variant: "btn-primary", small: true, iconOnly: true, data: { imageId: image.id } })}
-                                        ${renderActionButton({ action: "save-tags", title: `Save tags for ${image.fileName}`, icon: "save", variant: "btn-success", small: true, iconOnly: true, data: { imageId: image.id } })}
-                                        ${renderActionButton({ action: "undo-tags", title: `Restore ${image.fileName} tags from ${originalTagsBackupPath}`, icon: "undo", variant: "btn-warning", small: true, iconOnly: true, data: { imageId: image.id } })}
+                                        ${renderActionButton({ action: "save-tags", title: `Save an in-memory tag version for ${image.fileName}`, icon: "save", variant: "btn-success", small: true, iconOnly: true, data: { imageId: image.id } })}
+                                        ${renderActionButton({ action: "undo-tags", title: `Restore the previous in-memory tag version for ${image.fileName}`, icon: "undo", variant: "btn-warning", small: true, iconOnly: true, data: { imageId: image.id } })}
+                                        ${renderActionButton({ action: "history-tags", title: `Choose an older in-memory tag version for ${image.fileName}`, icon: "chart", variant: "btn-secondary", small: true, iconOnly: true, disabled: !hasTagHistory, data: { imageId: image.id } })}
                                         ${renderActionButton({ action: "filter-selected-tag", title: `Filter images by the selected tag in ${image.fileName}`, icon: "search", variant: "btn-primary", small: true, iconOnly: true, data: { imageId: image.id } })}
                                         ${renderActionButton({ action: "add-selected-to-filter", title: `Append the selected tag in ${image.fileName} to the current filter`, icon: "plus", variant: "btn-secondary", small: true, iconOnly: true, data: { imageId: image.id } })}
                                         ${renderActionButton({ action: "copy-image-url", title: `Copy the current temporary viewer URL for ${image.fileName}`, icon: "open", variant: "btn-secondary", small: true, iconOnly: true, data: { imageId: image.id } })}
@@ -3652,7 +3435,7 @@ export function createImageTaggerApp(appRoot) {
                                         ${renderActionButton({ action: "add-selected-to-known", title: `Add the selected tag in ${image.fileName} to known tags`, icon: "bookmark", variant: "btn-secondary", small: true, iconOnly: true, data: { imageId: image.id } })}
                                         ${renderActionButton({ action: "add-selected-to-highlighted-tags", title: `Add the selected tag in ${image.fileName} to highlighted tags`, icon: "spark", variant: "btn-secondary", small: true, iconOnly: true, data: { imageId: image.id } })}
                                         ${renderActionButton({ action: "add-selected-to-highlighted-texts", title: `Add the selected tag in ${image.fileName} to highlighted text search`, icon: "type", variant: "btn-secondary", small: true, iconOnly: true, data: { imageId: image.id } })}
-                                        ${renderActionButton({ action: "remove-image", title: `Move ${image.fileName} and its tag file to __removed`, icon: "trash", variant: "btn-danger", small: true, iconOnly: true, data: { imageId: image.id } })}
+                                        ${renderActionButton({ action: "remove-image", title: `Remove ${image.fileName} from memory`, icon: "trash", variant: "btn-danger", small: true, iconOnly: true, data: { imageId: image.id } })}
                                     </div>
                                 </div>
 
@@ -3714,7 +3497,7 @@ export function createImageTaggerApp(appRoot) {
                             </div>
                         </div>
                         <div class="section-body">
-                            ${rows || `<div class="empty-state">Load a folder to view images and tag text files.</div>`}
+                            ${rows || `<div class="empty-state">Upload a folder to load images and tag text files into memory.</div>`}
                         </div>
                     </section>
                 `;
@@ -3770,51 +3553,9 @@ export function createImageTaggerApp(appRoot) {
                 return `
                     <div class="banner">
                         <h1 class="banner-title">Browser access is limited</h1>
-                        <p>This single-file build uses the File System Access API for folder loading, tag saving, file moves, and resize output. Open this HTML in a Chromium browser such as Edge or Chrome to keep the desktop workflow intact.</p>
+                        <p>Configuration file handles need a browser with the File System Access API. Image folders are uploaded into memory and are not edited on disk.</p>
                     </div>
                 `;
-            }
-
-            function renderStatusPanel() {
-                return `
-                    <div id="status-panel-root" class="toolbar-panel ${state.isStatusCollapsed8 ? "collapsed" : ""}">
-                        <div class="status-card">
-                            <div class="status-summary">
-                                <div>
-                                    <div class="status-pill">Status</div>
-                                </div>
-                                <div>${escapeHtml(state.statusMessage)}</div>
-                                <div class="dim">${escapeHtml(`${state.images.length} images loaded`)}</div>
-                            </div>
-                            <div class="log-list">
-                                ${state.logFilePath ? `
-                                    <div class="log-line">
-                                        <time>_logs</time>
-                                        <div>${escapeHtml(`Writing session log to ${state.logFilePath}`)}</div>
-                                    </div>
-                                ` : ""}
-                                ${state.logs.slice(-18).reverse().map((entry) => `
-                                    <div class="log-line">
-                                        <time>${escapeHtml(entry.stamp)}</time>
-                                        <div>${escapeHtml(entry.message)}</div>
-                                    </div>
-                                `).join("") || `
-                                    <div class="log-line">
-                                        <time>--:--:--</time>
-                                        <div>No activity yet.</div>
-                                    </div>
-                                `}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            function refreshStatusPanel() {
-                const panel = document.getElementById("status-panel-root");
-                if (panel) {
-                    panel.outerHTML = renderStatusPanel();
-                }
             }
 
             function render() {
@@ -3849,32 +3590,24 @@ export function createImageTaggerApp(appRoot) {
 
             async function restoreHandles() {
                 const configHandle = await readHandle(handleKeys.configFile);
-                const directoryHandle = await readHandle(handleKeys.imagesDirectory);
                 const configPickerHandle = await readHandle(handleKeys.configPickerStart);
-                const imagesPickerHandle = await readHandle(handleKeys.imagesPickerStart);
 
                 state.configPickerHandle = configPickerHandle ?? configHandle ?? null;
-                state.imagesPickerHandle = imagesPickerHandle ?? directoryHandle ?? null;
                 state.configFileHandle = configHandle ?? null;
-                state.imagesDirHandle = directoryHandle ?? null;
 
                 const desiredConfigPath = state.configFilePath || (!state.configFileHandleName ? (localStorage.getItem(storageKeys.lastConfigName) || "") : "");
-                const desiredImagesPath = state.imagesPath || (!state.imagesHandleName ? (localStorage.getItem(storageKeys.lastImagesName) || "") : "");
 
                 await activatePersistedConfigHandle(desiredConfigPath, state.configFileHandleName);
-                await activatePersistedImagesHandle(desiredImagesPath, state.imagesHandleName);
+                await deleteHandle(handleKeys.imagesDirectory);
+                await deleteHandle(handleKeys.imagesPickerStart);
             }
 
             async function warmStartFromHandles() {
                 if (state.tempConfigLoaded) {
-                    if (state.imagesDirHandle && await ensurePermission(state.imagesDirHandle, "read")) {
-                        await loadImages(false);
-                    } else {
-                        if (state.imagesPath || state.imagesHandleName) {
-                            log(`Temporary configuration expects images folder ${getStoredLocationDisplay(state.imagesPath, state.imagesHandleName)}. Pick this folder once if browser access is not cached yet.`);
-                        }
-                        render();
+                    if (state.imagesPath || state.imagesHandleName) {
+                        log("Temporary configuration loaded. Upload the image folder to load image data into memory.");
                     }
+                    render();
                     return;
                 }
 
@@ -3883,11 +3616,7 @@ export function createImageTaggerApp(appRoot) {
                     return;
                 }
 
-                if (state.imagesDirHandle && await ensurePermission(state.imagesDirHandle, "read")) {
-                    await loadImages(false);
-                } else {
-                    render();
-                }
+                render();
             }
 
             async function handleAction(action, button) {
@@ -3906,6 +3635,11 @@ export function createImageTaggerApp(appRoot) {
                 switch (action) {
                     case "toggle-config":
                         state.isConfigCollapsed1 = !state.isConfigCollapsed1;
+                        syncCollapsedAllState();
+                        await saveConfiguration({});
+                        break;
+                    case "toggle-json-config":
+                        state.isJsonConfigCollapsed = !state.isJsonConfigCollapsed;
                         syncCollapsedAllState();
                         await saveConfiguration({});
                         break;
@@ -3944,14 +3678,10 @@ export function createImageTaggerApp(appRoot) {
                         syncCollapsedAllState();
                         await saveConfiguration({});
                         break;
-                    case "toggle-status-panel":
-                        state.isStatusCollapsed8 = !state.isStatusCollapsed8;
-                        syncCollapsedAllState();
-                        await saveConfiguration({});
-                        break;
                     case "toggle-all-panels":
                         if (state.isCollapsedAll) {
                             state.isConfigCollapsed1 = false;
+                            state.isJsonConfigCollapsed = false;
                             state.isFilterCollapsed2 = false;
                             state.isCommonTagsCollapsed3 = false;
                             state.isKnownTagsCollapsed4 = false;
@@ -3959,9 +3689,9 @@ export function createImageTaggerApp(appRoot) {
                             state.isHighlightedTextsCollapsed6 = false;
                             state.isOrderOfTagsCollapsed7 = false;
                             state.isCollapsedScripts = false;
-                            state.isStatusCollapsed8 = false;
                         } else {
                             state.isConfigCollapsed1 = true;
+                            state.isJsonConfigCollapsed = true;
                             state.isFilterCollapsed2 = true;
                             state.isCommonTagsCollapsed3 = true;
                             state.isKnownTagsCollapsed4 = true;
@@ -3969,7 +3699,6 @@ export function createImageTaggerApp(appRoot) {
                             state.isHighlightedTextsCollapsed6 = true;
                             state.isOrderOfTagsCollapsed7 = true;
                             state.isCollapsedScripts = true;
-                            state.isStatusCollapsed8 = true;
                         }
                         syncCollapsedAllState();
                         await saveConfiguration({});
@@ -3985,6 +3714,15 @@ export function createImageTaggerApp(appRoot) {
                         break;
                     case "download-config":
                         await downloadCurrentConfig();
+                        break;
+                    case "apply-json-config":
+                        await applyConfigJsonEditor();
+                        break;
+                    case "reset-json-config":
+                        await resetConfigJsonEditorToDefaults();
+                        break;
+                    case "upload-json-config":
+                        document.getElementById("config-json-upload")?.click();
                         break;
                     case "unload-all":
                         await fullyUnloadAll();
@@ -4086,6 +3824,12 @@ export function createImageTaggerApp(appRoot) {
                     case "undo-tags":
                         if (image) {
                             await restoreOriginalTags(image);
+                            render();
+                        }
+                        break;
+                    case "history-tags":
+                        if (image) {
+                            await chooseTagHistoryVersion(image);
                             render();
                         }
                         break;
@@ -4303,8 +4047,11 @@ export function createImageTaggerApp(appRoot) {
                     return;
                 }
 
-                if (target.matches("#images-folder-name")) {
-                    state.imagesPath = target.value;
+                if (target.matches("#config-json-editor")) {
+                    state.configJsonText = target.value;
+                    state.configJsonDirty = true;
+                    state.configJsonError = "";
+                    refreshJsonHighlight();
                     return;
                 }
 
@@ -4380,6 +4127,15 @@ export function createImageTaggerApp(appRoot) {
                     return;
                 }
 
+                if (target.matches("#toolbar-max-height-vh")) {
+                    state.toolbarMaxHeightVh = clampNumber(target.value, 35, 100);
+                    const toolbar = appRoot.querySelector(".toolbar");
+                    if (toolbar) {
+                        toolbar.style.setProperty("--toolbar-max-height", `${state.toolbarMaxHeightVh}vh`);
+                    }
+                    return;
+                }
+
                 if (target.matches("#image-number")) {
                     state.imageNumber = Number(target.value || 0);
                     return;
@@ -4409,6 +4165,19 @@ export function createImageTaggerApp(appRoot) {
                 zoomImageViewer(multiplier, event.clientX, event.clientY);
             }, { passive: false });
 
+            addManagedEventListener(appRoot, "scroll", (event) => {
+                const target = event.target;
+                if (!target.matches("#config-json-editor")) {
+                    return;
+                }
+
+                const highlight = document.getElementById("config-json-highlight");
+                if (highlight) {
+                    highlight.scrollTop = target.scrollTop;
+                    highlight.scrollLeft = target.scrollLeft;
+                }
+            }, true);
+
             addManagedEventListener(appRoot, "change", async (event) => {
                 const target = event.target;
 
@@ -4419,9 +4188,27 @@ export function createImageTaggerApp(appRoot) {
                     return;
                 }
 
-                if (target.matches("#images-folder-name")) {
-                    state.imagesPath = target.value.trim();
-                    await rememberHandleForPath("images", state.imagesDirHandle, state.imagesPath);
+                if (target.matches("#config-json-upload")) {
+                    await uploadConfigJsonFile(target.files?.[0]);
+                    target.value = "";
+                    return;
+                }
+
+                if (target.matches("#images-folder-upload")) {
+                    state.uploadedFolderFiles = Array.from(target.files ?? []);
+                    const firstPath = getUploadedFilePath(state.uploadedFolderFiles[0]);
+                    state.imagesHandleName = firstPath.includes("/")
+                        ? firstPath.split("/").filter(Boolean)[0]
+                        : "Uploaded folder";
+                    state.imagesPath = "";
+                    await loadImages(true);
+                    target.value = "";
+                    return;
+                }
+
+                if (target.matches("#toolbar-max-height-vh")) {
+                    state.toolbarMaxHeightVh = clampNumber(target.value, 35, 100);
+                    target.value = String(state.toolbarMaxHeightVh);
                     await saveConfiguration({});
                     return;
                 }
@@ -4640,11 +4427,6 @@ export function createImageTaggerApp(appRoot) {
                 disposed = true;
                 for (const removeListener of managedEventListeners.splice(0)) {
                     removeListener();
-                }
-
-                if (logPersistTimer) {
-                    window.clearTimeout(logPersistTimer);
-                    logPersistTimer = 0;
                 }
 
                 stopViewerDrag();

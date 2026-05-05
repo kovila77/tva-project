@@ -8,9 +8,6 @@ export default defineNuxtConfig({
       noDiscovery: true
     }
   },
-  nitro: {
-    preset: "vercel"
-  },
   ssr: false,
   app: {
     head: {

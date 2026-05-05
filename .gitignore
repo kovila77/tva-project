@@ -1,6 +1,8 @@
 node_modules
 .nuxt
 .output
+.vercel
+dist
 .env
 .DS_Store
 npm-debug.log*
