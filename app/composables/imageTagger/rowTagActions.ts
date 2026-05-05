@@ -36,18 +36,24 @@ export function createRowTagActions({
   setStatus
 }: RowTagActionOptions) {
   function commitEditor(image: ImageRecord, label: string): void {
-    if (!image?.draftDirty) {
+    if (!image) {
       return;
     }
 
     const nextTags = orderTags(parseTags(image.editText), orderTagsText.value);
+    const nextEditText = formatTags(nextTags);
+    const currentEditText = formatTags(image.tags);
+    if (!image.draftDirty && image.editText === currentEditText) {
+      return;
+    }
+
     const committed = commitOperation(label, [
       {
         image,
         after: {
           ...snapshotImage(image),
           tags: nextTags,
-          editText: formatTags(nextTags)
+          editText: nextEditText
         }
       }
     ]);
@@ -55,7 +61,7 @@ export function createRowTagActions({
     if (committed) {
       setStatus(`Applied tags for ${image.fileName}.`);
     } else {
-      image.editText = formatTags(image.tags);
+      image.editText = nextEditText;
       image.draftDirty = false;
       refreshImages();
     }
@@ -64,6 +70,11 @@ export function createRowTagActions({
   function markDraftDirty(image: ImageRecord): void {
     image.draftDirty = true;
     refreshImages();
+  }
+
+  function onEditorInput(image: ImageRecord, event: Event): void {
+    markDraftDirty(image);
+    updateSelectedTagFromEditor(image, event);
   }
 
   function hasTag(image: ImageRecord, tag: string): boolean {
@@ -92,7 +103,7 @@ export function createRowTagActions({
     }]);
   }
 
-  function removeTagFromImage(image: ImageRecord, tag: string): void {
+  function removeTagFromImage(image: ImageRecord, tag: string, selectRemoved = true): void {
     const nextTags = removeTag(image.tags, tag);
     const nextRemovedTags = addTag(image.removedTags, tag);
     commitOperation(`Remove ${tag}`, [{
@@ -101,7 +112,7 @@ export function createRowTagActions({
         ...snapshotImage(image),
         tags: nextTags,
         removedTags: nextRemovedTags,
-        selectedTag: tag,
+        selectedTag: selectRemoved ? tag : image.selectedTag === tag ? "" : image.selectedTag,
         editText: formatTags(nextTags)
       }
     }]);
@@ -116,7 +127,7 @@ export function createRowTagActions({
         ...snapshotImage(image),
         tags: nextTags,
         removedTags: nextRemovedTags,
-        selectedTag: tag,
+        selectedTag: image.selectedTag,
         editText: formatTags(nextTags)
       }
     }]);
@@ -132,6 +143,9 @@ export function createRowTagActions({
     if (!image || !(editor instanceof HTMLTextAreaElement)) {
       return;
     }
+    if (document.activeElement !== editor) {
+      return;
+    }
 
     const selectedText = editor.value
       .slice(editor.selectionStart, editor.selectionEnd)
@@ -139,7 +153,7 @@ export function createRowTagActions({
       .replace(/\s*,?\s*$/, "")
       .trim();
 
-    image.selectedTag = selectedText && !selectedText.includes(",")
+    image.selectedTag = selectedText && !/[,\n]/.test(selectedText)
       ? selectedText
       : getTagAtPosition(editor.value, editor.selectionStart);
   }
@@ -169,6 +183,7 @@ export function createRowTagActions({
   return {
     commitEditor,
     markDraftDirty,
+    onEditorInput,
     hasTag,
     nonCommonTags,
     toggleTag,
@@ -191,8 +206,18 @@ function getTagAtPosition(text: string, position: number): string {
   const commaEnd = right.indexOf(",");
   const lineEnd = right.indexOf("\n");
   const candidates = [commaEnd, lineEnd].filter((index) => index >= 0);
-  const end = candidates.length ? Math.min(...candidates) : right.length;
-  return `${start >= 0 ? left.slice(start + 1) : left}${right.slice(0, end)}`.trim();
+  const absoluteStart = start >= 0 ? start + 1 : 0;
+  const absoluteEnd = position + (candidates.length ? Math.min(...candidates) : right.length);
+  const rawSegment = value.slice(absoluteStart, absoluteEnd);
+  const trimmed = rawSegment.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  const leadingWhitespace = rawSegment.search(/\S/);
+  const tagStart = absoluteStart + (leadingWhitespace < 0 ? 0 : leadingWhitespace);
+  const tagEnd = absoluteStart + rawSegment.trimEnd().length;
+  return position >= tagStart && position <= tagEnd ? trimmed : "";
 }
 
 function tagsEqual(left: string[] | null | undefined, right: string[] | null | undefined): boolean {

@@ -12,7 +12,7 @@
       Adds one exact tag to each currently visible image that does not already have it. Filtered-out rows are untouched and the whole batch is one undo step.
     </div>
     <button class="btn primary full" type="button" title="Append the typed tag to each visible image. This is one undoable operation." :disabled="!batch.addTag.trim() || !visibleImages.length" @click="addTagToVisible">
-      <span class="icon">＋</span> Add To Visible
+      <AppIcon name="add" class="icon" /> Add To Visible
     </button>
 
     <TagField
@@ -27,10 +27,10 @@
     </div>
     <div class="split-actions">
       <button class="btn danger" type="button" title="Remove tags matching the regex list from visible images. Undo restores the prior tag lists." :disabled="!config.removePatternsText.trim()" @click="removeRegexFromVisible">
-        <span class="icon">⌧</span> Clean Visible
+        <AppIcon name="clean" class="icon" /> Clean Visible
       </button>
       <button class="btn" type="button" title="Convert tags like artist:name to by name across all loaded images. Undo restores previous tags." :disabled="!images.length" @click="replaceArtistTags">
-        <span class="icon">⇄</span> artist:* -> by *
+        <AppIcon name="replace" class="icon" /> artist:* -> by *
       </button>
     </div>
 
@@ -38,15 +38,16 @@
       Rename Visible changes export names only, using the current visible order. Apply Tag Order moves configured tags to the front of visible rows without deleting unlisted tags.
     </div>
     <button class="btn full" type="button" title="Rename visible image/tag output names to 00001, 00002, etc. This changes export names only, not source files." :disabled="!visibleImages.length" @click="renameVisibleFiles">
-      <span class="icon">#</span> Rename Visible In Order
+      <AppIcon name="hashtag" class="icon" /> Rename Visible In Order
     </button>
     <button class="btn full" type="button" title="Apply the configured tag order to currently visible images. This is useful before export and can be undone." :disabled="!config.orderTagsText.trim() || !visibleImages.length" @click="applyOrderToVisible">
-      <span class="icon">☰</span> Apply Tag Order To Visible
+      <AppIcon name="order" class="icon" /> Apply Tag Order To Visible
     </button>
   </details>
 </template>
 
 <script setup lang="ts">
+import AppIcon from "~/components/AppIcon.vue";
 import TagField from "~/components/TagField.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 

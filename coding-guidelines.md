@@ -46,6 +46,8 @@
 ## UI
 
 - Prefer native controls and compact labels over custom widgets.
+- Use Font Awesome via `AppIcon.vue` for icons. Do not add raw glyph/symbol icons directly in templates.
+- Image-row action buttons and simple repeated actions such as undo, redo, clear, zoom, and close should be icon-only with `title` and `aria-label`.
 - Reuse `TagField.vue` for tag-list textareas and `TagSetFields.vue` for the standard tag-set group.
 - Keep row actions explicit: apply, undo, redo, original, remove.
 - Avoid visible instructional copy in the app; use labels, placeholders, and button titles for context.

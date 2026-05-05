@@ -12,6 +12,10 @@
 
 .btn,
 .mini-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   border: 1px solid var(--border-strong);
   background: var(--button-bg);
   color: var(--text);
@@ -145,11 +149,11 @@
 }
 
 .icon {
-  display: inline-flex;
+  display: inline-block;
   width: 1.1em;
+  height: 1em;
   min-width: 1.1em;
-  justify-content: center;
-  font-weight: 800;
+  vertical-align: -0.125em;
 }
 
 .icon-btn {

@@ -27,14 +27,14 @@
       </label>
 
       <div class="button-cluster">
-        <button class="btn primary" type="button" title="Show images matching the current filter." @click="applyFilter"><span class="icon">⌕</span> Apply</button>
-        <button class="btn" type="button" title="Invert the current filter, showing images that do not match." @click="invertFilter"><span class="icon">◑</span> Invert</button>
-        <button class="btn" type="button" title="Clear the filter and show all loaded images." @click="clearFilter"><span class="icon">×</span> Clear</button>
+        <button class="btn primary" type="button" title="Show images matching the current filter." @click="applyFilter"><AppIcon name="filter" class="icon" /> Apply</button>
+        <button class="btn icon-btn" type="button" title="Invert the current filter, showing images that do not match." aria-label="Invert filter" @click="invertFilter"><AppIcon name="filterInvert" class="icon" /></button>
+        <button class="btn icon-btn" type="button" title="Clear the filter and show all loaded images." aria-label="Clear filter" @click="clearFilter"><AppIcon name="clear" class="icon" /></button>
       </div>
 
       <div class="button-cluster history-actions">
-        <button class="btn warn" type="button" :title="undoTitle" :disabled="!history.past.length" @click="undoDataset"><span class="icon">↶</span> Undo</button>
-        <button class="btn warn" type="button" :title="redoTitle" :disabled="!history.future.length" @click="redoDataset"><span class="icon">↷</span> Redo</button>
+        <button class="btn warn icon-btn" type="button" :title="undoTitle" aria-label="Undo" :disabled="!history.past.length" @click="undoDataset"><AppIcon name="undo" class="icon" /></button>
+        <button class="btn warn icon-btn" type="button" :title="redoTitle" aria-label="Redo" :disabled="!history.future.length" @click="redoDataset"><AppIcon name="redo" class="icon" /></button>
       </div>
     </div>
 
@@ -110,6 +110,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from "~/components/AppIcon.vue";
 import TagSetFields from "~/components/TagSetFields.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
