@@ -29,7 +29,26 @@ export function createViewerActions({ viewer }: ViewerActionOptions) {
   }
 
   function onViewerWheel(event: WheelEvent): void {
-    zoomViewer(event.deltaY < 0 ? 1.12 : 1 / 1.12);
+    const stage = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+    if (!stage) {
+      zoomViewer(event.deltaY < 0 ? 1.12 : 1 / 1.12);
+      return;
+    }
+
+    const rect = stage.getBoundingClientRect();
+    const pointerX = event.clientX - rect.left - rect.width / 2;
+    const pointerY = event.clientY - rect.top - rect.height / 2;
+    const previousScale = viewer.scale;
+    const nextScale = Math.min(8, Math.max(0.2, previousScale * (event.deltaY < 0 ? 1.12 : 1 / 1.12)));
+
+    if (nextScale === previousScale) {
+      return;
+    }
+
+    const scaleRatio = nextScale / previousScale;
+    viewer.x = pointerX - (pointerX - viewer.x) * scaleRatio;
+    viewer.y = pointerY - (pointerY - viewer.y) * scaleRatio;
+    viewer.scale = nextScale;
   }
 
   function startViewerDrag(event: PointerEvent): void {
