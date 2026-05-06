@@ -8,6 +8,7 @@ interface FilterActionOptions {
   visibleImages: ComputedRef<ImageRecord[]>;
   activeMainTab: Ref<MainTab>;
   visibleBatchSize: number;
+  onFilterExecuted?: () => void;
 }
 
 export function createFilterActions({
@@ -16,21 +17,25 @@ export function createFilterActions({
   visibleLimit,
   visibleImages,
   activeMainTab,
-  visibleBatchSize
+  visibleBatchSize,
+  onFilterExecuted
 }: FilterActionOptions) {
   function applyFilter(): void {
     filterInverted.value = false;
     visibleLimit.value = visibleBatchSize;
+    onFilterExecuted?.();
   }
 
   function invertFilter(): void {
     filterInverted.value = !filterInverted.value;
     visibleLimit.value = visibleBatchSize;
+    onFilterExecuted?.();
   }
 
   function clearFilter(): void {
     config.filterText = "";
     filterInverted.value = false;
+    onFilterExecuted?.();
   }
 
   function filterByTag(tag: string): void {

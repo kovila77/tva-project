@@ -67,12 +67,15 @@
           v-for="tag in commonTags"
           :key="`${image.id}-common-${tag}`"
           class="tag-chip common"
-          :class="{ active: hasTag(image, tag) }"
+          :class="[tagClass(tag), { active: hasTag(image, tag) }]"
           type="button"
           :title="hasTag(image, tag) ? `Remove common tag '${tag}' from this image. Undoable.` : `Add common tag '${tag}' to this image. Undoable.`"
           @click="toggleTag(image, tag)"
         >
-          <AppIcon :name="hasTag(image, tag) ? 'remove' : 'add'" class="icon" /> {{ tag }}
+          <AppIcon :name="hasTag(image, tag) ? 'remove' : 'add'" class="icon" />
+          <span>
+            <span v-for="part in tagTextParts(tag)" :key="part.key" :class="{ textHighlighted: part.highlighted }">{{ part.text }}</span>
+          </span>
         </button>
       </div>
 
@@ -86,7 +89,10 @@
           :title="`Remove tag '${tag}' and store it in Deleted tags. Undoable.`"
           @click="removeTagFromImage(image, tag, false)"
         >
-          <AppIcon name="remove" class="icon" /> {{ tag }}
+          <AppIcon name="remove" class="icon" />
+          <span>
+            <span v-for="part in tagTextParts(tag)" :key="part.key" :class="{ textHighlighted: part.highlighted }">{{ part.text }}</span>
+          </span>
         </button>
       </div>
 
@@ -100,7 +106,10 @@
           :title="`Return deleted tag '${tag}' to this image. Undoable.`"
           @click="restoreRemovedTag(image, tag)"
         >
-          <AppIcon name="add" class="icon" /> {{ tag }}
+          <AppIcon name="add" class="icon" />
+          <span>
+            <span v-for="part in tagTextParts(tag)" :key="part.key" :class="{ textHighlighted: part.highlighted }">{{ part.text }}</span>
+          </span>
         </button>
         <span v-if="!image.removedTags.length" class="empty-inline">No deleted tags.</span>
       </div>
@@ -149,6 +158,7 @@ const {
   toggleTag,
   nonCommonTags,
   tagClass,
+  tagTextParts,
   restoreRemovedTag
 } = useImageTaggerContext();
 </script>

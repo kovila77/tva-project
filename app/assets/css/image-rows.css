@@ -214,6 +214,17 @@
 
 .tag-chip.common {
   background: var(--surface-soft);
+  font-style: italic;
+}
+
+.common {
+  font-style: italic;
+}
+
+.tag-chip.common.active {
+  border-color: var(--border);
+  background: var(--surface-soft);
+  color: var(--text);
 }
 
 .tag-chip.active {
@@ -232,12 +243,17 @@
 
 .tag-chip.highlighted,
 .highlighted {
-  border-color: #facc15;
-  background: #fef9c3;
+  border-color: var(--green);
+  box-shadow: inset 0 0 0 2px var(--green), 0 0 0 1px var(--green);
 }
 
 .tag-chip.textHighlighted,
 .textHighlighted {
   color: var(--amber);
   font-weight: 750;
+}
+
+.tag-chip.filteredBlink,
+.filteredBlink {
+  animation: filtered-tag-blink 0.48s ease-in-out 6;
 }

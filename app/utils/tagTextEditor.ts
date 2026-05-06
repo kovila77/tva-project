@@ -22,20 +22,21 @@ export function buildTagTextDecorations(
   activeRange: TokenRange | null,
   styleRules: TagTextStyleRule[] | undefined
 ): DecorationSet {
-  const ranges: Range<Decoration>[] = [];
+  const tagRanges: Range<Decoration>[] = [];
+  const fragmentRanges: Range<Decoration>[] = [];
   const rules = prepareStyleRules(styleRules);
 
   for (const token of collectTokenRanges(documentText)) {
     for (const rule of rules) {
-      addRuleDecorations(ranges, rule, token);
+      addRuleDecorations(rule.match === "fragment" ? fragmentRanges : tagRanges, rule, token);
     }
 
     if (activeRange && token.from === activeRange.from && token.to === activeRange.to) {
-      ranges.push(Decoration.mark({ class: "tag-text-selected" }).range(token.from, token.to));
+      tagRanges.push(Decoration.mark({ class: "tag-text-selected" }).range(token.from, token.to));
     }
   }
 
-  return Decoration.set(ranges, true);
+  return Decoration.set([...tagRanges, ...fragmentRanges], true);
 }
 
 export function collectTokenRanges(text: string): TokenRange[] {

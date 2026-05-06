@@ -11,7 +11,7 @@
       :title="field.title"
       :autocomplete="field.autocomplete"
       :autocomplete-items="autocompleteTags"
-      :style-rules="tagTextStyleRules"
+      :style-rules="field.decorate ? tagTextStyleRules : []"
       show-history-buttons
     />
   </div>
@@ -30,6 +30,7 @@ interface TagSetField {
   placeholder: string;
   title: string;
   autocomplete: boolean;
+  decorate: boolean;
 }
 
 const {
@@ -46,7 +47,8 @@ const fields: TagSetField[] = [
     mode: "tags",
     placeholder: "masterpiece, best quality",
     title: "Tags shown as quick toggle chips on every image row.",
-    autocomplete: true
+    autocomplete: true,
+    decorate: true
   },
   {
     key: "knownTagsText",
@@ -55,7 +57,8 @@ const fields: TagSetField[] = [
     mode: "tags",
     placeholder: "Tags treated as expected",
     title: "Known tags are not underlined as unknown.",
-    autocomplete: true
+    autocomplete: true,
+    decorate: false
   },
   {
     key: "highlightTagsText",
@@ -64,7 +67,8 @@ const fields: TagSetField[] = [
     mode: "tags",
     placeholder: "Tags to emphasize",
     title: "Exact tags to visually highlight in chips and statistics.",
-    autocomplete: true
+    autocomplete: true,
+    decorate: true
   },
   {
     key: "highlightText",
@@ -73,7 +77,8 @@ const fields: TagSetField[] = [
     mode: "text",
     placeholder: "Text fragments to emphasize",
     title: "Text fragments to highlight inside tags or natural-language prompt fragments.",
-    autocomplete: true
+    autocomplete: true,
+    decorate: true
   },
   {
     key: "orderTagsText",
@@ -82,7 +87,8 @@ const fields: TagSetField[] = [
     mode: "tags",
     placeholder: "Tags that should be first",
     title: "Preferred tag order. Use Apply Tag Order To Visible to apply it as an undoable edit.",
-    autocomplete: true
+    autocomplete: true,
+    decorate: true
   }
 ];
 </script>

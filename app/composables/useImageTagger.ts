@@ -33,6 +33,7 @@ function createImageTaggerContext() {
   const images = shallowRef<ImageRecord[]>([]);
   const autocompleteTags = shallowRef<string[]>([]);
   const tagStats = shallowRef<TagStat[]>([]);
+  const filteredBlinkTags = shallowRef<string[]>([]);
   const visibleLimit = ref(visibleBatchSize);
   const isBusy = ref(false);
   const statusText = ref("Ready");
@@ -73,12 +74,6 @@ function createImageTaggerContext() {
       tags: commonTags.value
     },
     {
-      key: "known-tag",
-      className: "tag-text-known",
-      match: "tag",
-      tags: knownTags.value
-    },
-    {
       key: "highlight-tag",
       className: "tag-text-highlighted",
       match: "tag",
@@ -89,6 +84,12 @@ function createImageTaggerContext() {
       className: "tag-text-fragment-highlighted",
       match: "fragment",
       fragments: highlightedText.value
+    },
+    {
+      key: "filtered-blink-tag",
+      className: "tag-text-filtered-blink",
+      match: "tag",
+      tags: filteredBlinkTags.value
     }
   ]);
   const imageTagTextStyleRules = computed<TagTextStyleRule[]>(() => [
@@ -161,6 +162,19 @@ function createImageTaggerContext() {
     statusText.value = message;
   }
 
+  let filteredBlinkTimer: ReturnType<typeof window.setTimeout> | null = null;
+
+  function blinkFilteredTags(): void {
+    filteredBlinkTags.value = config.filterMode === "tags" ? parseTags(config.filterText) : [];
+    if (filteredBlinkTimer) {
+      window.clearTimeout(filteredBlinkTimer);
+    }
+    filteredBlinkTimer = window.setTimeout(() => {
+      filteredBlinkTimer = null;
+      filteredBlinkTags.value = [];
+    }, 3000);
+  }
+
   const historyActions = createHistoryActions({
     images,
     history,
@@ -175,7 +189,8 @@ function createImageTaggerContext() {
     visibleLimit,
     visibleImages,
     activeMainTab,
-    visibleBatchSize
+    visibleBatchSize,
+    onFilterExecuted: blinkFilteredTags
   });
   const rowTagActions = createRowTagActions({
     config,
@@ -183,6 +198,7 @@ function createImageTaggerContext() {
     knownTags,
     highlightedTags,
     highlightedText,
+    filteredBlinkTags,
     orderTagsText,
     commitOperation: historyActions.commitOperation,
     snapshotImage: historyActions.snapshotImage,
@@ -367,6 +383,9 @@ function createImageTaggerContext() {
     if (persistenceTimer) {
       window.clearTimeout(persistenceTimer);
     }
+    if (filteredBlinkTimer) {
+      window.clearTimeout(filteredBlinkTimer);
+    }
     window.removeEventListener("keydown", onGlobalKeydown);
     historyActions.revokeImageUrls();
     document.body.style.overflow = "";
@@ -377,6 +396,7 @@ function createImageTaggerContext() {
     configInput,
     images,
     autocompleteTags,
+    filteredBlinkTags,
     tagStats,
     visibleLimit,
     isBusy,

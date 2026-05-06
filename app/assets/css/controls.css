@@ -221,11 +221,7 @@
 }
 
 .tag-text-common {
-  color: #86efac;
-}
-
-.tag-text-known {
-  color: #93c5fd;
+  font-style: italic;
 }
 
 .tag-text-unknown {
@@ -237,17 +233,34 @@
 
 .tag-text-highlighted {
   border-radius: 3px;
-  background: #fef9c3;
-  color: #713f12;
+  box-shadow: 0 0 0 2px var(--green);
 }
 
 .tag-text-fragment-highlighted {
-  color: var(--amber);
-  font-weight: 750;
+  color: var(--amber) !important;
+  font-weight: 850 !important;
 }
 
 .tag-text-regex {
   color: #c4b5fd;
+}
+
+.tag-text-filtered-blink {
+  border-radius: 3px;
+  animation: filtered-tag-blink 0.48s ease-in-out 6;
+}
+
+@keyframes filtered-tag-blink {
+  0%,
+  100% {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  50% {
+    background: rgba(56, 189, 248, 0.28);
+    box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+  }
 }
 
 .tag-field-selected {

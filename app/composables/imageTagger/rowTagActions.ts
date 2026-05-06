@@ -1,4 +1,4 @@
-import type { ComputedRef } from "vue";
+import type { ComputedRef, Ref } from "vue";
 import type { AppConfig, ConfigTextKey, ImageRecord, ImageSnapshot, OperationChange } from "~/types/imageTagger";
 import {
   addTag,
@@ -16,6 +16,7 @@ interface RowTagActionOptions {
   knownTags: ComputedRef<string[]>;
   highlightedTags: ComputedRef<string[]>;
   highlightedText: ComputedRef<string[]>;
+  filteredBlinkTags: Ref<string[]>;
   orderTagsText: ComputedRef<string>;
   commitOperation: (label: string, changes: OperationChange[]) => boolean;
   snapshotImage: (image: ImageRecord) => ImageSnapshot;
@@ -29,6 +30,7 @@ export function createRowTagActions({
   knownTags,
   highlightedTags,
   highlightedText,
+  filteredBlinkTags,
   orderTagsText,
   commitOperation,
   snapshotImage,
@@ -149,14 +151,66 @@ export function createRowTagActions({
   function tagClass(tag: string): Record<string, boolean> {
     const key = String(tag).toLowerCase();
     const known = new Set([...knownTags.value, ...commonTags.value].map((item) => item.toLowerCase()));
+    const common = commonTags.value.some((item) => item.toLowerCase() === key);
     const highlighted = highlightedTags.value.some((item) => item.toLowerCase() === key);
-    const textHighlighted = highlightedText.value.some((item) => item && key.includes(item.toLowerCase()));
+    const filteredBlink = filteredBlinkTags.value.some((item) => item.toLowerCase() === key);
 
     return {
       unknown: known.size > 0 && !known.has(key),
+      common,
       highlighted,
-      textHighlighted
+      filteredBlink
     };
+  }
+
+  function tagTextParts(tag: string): Array<{ key: string; text: string; highlighted: boolean }> {
+    const text = String(tag ?? "");
+    const fragments = highlightedText.value
+      .map((item) => String(item ?? "").trim())
+      .filter(Boolean)
+      .sort((left, right) => right.length - left.length);
+
+    if (!text || !fragments.length) {
+      return [{ key: "plain-0", text, highlighted: false }];
+    }
+
+    const highlighted = Array.from({ length: text.length }, () => false);
+    const lowerText = text.toLowerCase();
+
+    for (const fragment of fragments) {
+      const lowerFragment = fragment.toLowerCase();
+      let start = 0;
+      while (start < lowerText.length) {
+        const index = lowerText.indexOf(lowerFragment, start);
+        if (index < 0) {
+          break;
+        }
+
+        for (let offset = 0; offset < fragment.length; offset += 1) {
+          highlighted[index + offset] = true;
+        }
+        start = index + Math.max(fragment.length, 1);
+      }
+    }
+
+    const parts: Array<{ key: string; text: string; highlighted: boolean }> = [];
+    let partStart = 0;
+    while (partStart < text.length) {
+      const isHighlighted = highlighted[partStart];
+      let partEnd = partStart + 1;
+      while (partEnd < text.length && highlighted[partEnd] === isHighlighted) {
+        partEnd += 1;
+      }
+
+      parts.push({
+        key: `${isHighlighted ? "highlight" : "plain"}-${partStart}`,
+        text: text.slice(partStart, partEnd),
+        highlighted: isHighlighted
+      });
+      partStart = partEnd;
+    }
+
+    return parts;
   }
 
   function refreshAllEditTextFormatting(images: ImageRecord[]): void {
@@ -180,6 +234,7 @@ export function createRowTagActions({
     appendConfigTag,
     setSelectedTag,
     tagClass,
+    tagTextParts,
     refreshAllEditTextFormatting,
     tagsEqual,
     formatTags

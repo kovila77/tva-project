@@ -2,7 +2,9 @@
   <div class="stats-list" :class="{ 'stats-tab-list': tab }">
     <div v-for="item in topTagStats" :key="item.tag" class="stat-row">
       <button class="link-button tag-name" type="button" :title="`Filter dataset by '${item.tag}'.`" @click="filterByTag(item.tag)">
-        <span :class="tagClass(item.tag)">{{ item.tag }}</span>
+        <span :class="tagClass(item.tag)">
+          <span v-for="part in tagTextParts(item.tag)" :key="part.key" :class="{ textHighlighted: part.highlighted }">{{ part.text }}</span>
+        </span>
       </button>
       <span class="count" :title="`${item.count} images contain this tag.`">{{ item.count }}</span>
       <button class="mini-btn" type="button" title="Add this tag to common tags." @click="appendConfigTag('commonTagsText', item.tag)"><AppIcon name="common" class="icon" /> Common</button>
@@ -26,6 +28,7 @@ withDefaults(defineProps<{
 const {
   topTagStats,
   tagClass,
+  tagTextParts,
   filterByTag,
   appendConfigTag,
   renameTagEverywhere,
