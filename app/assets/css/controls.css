@@ -97,7 +97,6 @@
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
-  text-transform: uppercase;
 }
 
 .control {
@@ -138,7 +137,6 @@
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
-  text-transform: uppercase;
   overflow-wrap: anywhere;
 }
 
