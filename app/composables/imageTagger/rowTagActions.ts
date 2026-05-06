@@ -150,7 +150,7 @@ export function createRowTagActions({
 
   function tagClass(tag: string): Record<string, boolean> {
     const key = String(tag).toLowerCase();
-    const known = new Set([...knownTags.value, ...commonTags.value].map((item) => item.toLowerCase()));
+    const known = new Set(knownTags.value.map((item) => item.toLowerCase()));
     const common = commonTags.value.some((item) => item.toLowerCase() === key);
     const highlighted = highlightedTags.value.some((item) => item.toLowerCase() === key);
     const filteredBlink = filteredBlinkTags.value.some((item) => item.toLowerCase() === key);

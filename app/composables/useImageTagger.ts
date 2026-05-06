@@ -97,7 +97,7 @@ function createImageTaggerContext() {
       key: "unknown-tag",
       className: "tag-text-unknown",
       match: "unmatched-tag",
-      tags: [...commonTags.value, ...knownTags.value]
+      tags: knownTags.value
     },
     ...tagTextStyleRules.value
   ]);

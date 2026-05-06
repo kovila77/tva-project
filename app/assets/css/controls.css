@@ -92,10 +92,10 @@
   width: 128px;
 }
 
-.field span,
-.check-field span {
+.field > span,
+.check-field > span {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -185,6 +185,7 @@
   max-height: min(46vh, calc((var(--tag-field-rows, 4) * 1.45em) + 18px));
   overflow: auto;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
   line-height: 1.45;
 }
 
