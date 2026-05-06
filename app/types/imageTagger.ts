@@ -64,6 +64,44 @@ export interface ImageRecord {
   lastSavedAt: number;
 }
 
+export interface PersistedImageState {
+  id: string;
+  index: number;
+  relativePath: string;
+  fileName: string;
+  originalFileName: string;
+  tagFileName: string;
+  outputTagPath: string;
+  width: number;
+  height: number;
+  fileSize: number;
+  tags: string[];
+  originalTags: string[];
+  removedTags: string[];
+  selectedTag: string;
+  editText: string;
+  draftDirty: boolean;
+  dirty: boolean;
+  lastSavedAt: number;
+}
+
+export interface PersistedFileRecord {
+  id: string;
+  file: File;
+}
+
+export interface PersistedDatasetState {
+  version: 1;
+  savedAt: number;
+  datasetName: string;
+  images: PersistedImageState[];
+}
+
+export interface PersistedDataset {
+  state: PersistedDatasetState;
+  filesById: Map<string, File>;
+}
+
 export interface ImageSnapshot {
   id: string;
   fileName: string;

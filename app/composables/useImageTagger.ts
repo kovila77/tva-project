@@ -177,6 +177,8 @@ function createImageTaggerContext() {
     setStatus
   });
   const viewerActions = createViewerActions({ viewer });
+  let persistenceReady = false;
+  let persistenceTimer: ReturnType<typeof window.setTimeout> | null = null;
 
   const undoTitle = computed(() => lastUndoOperation.value
     ? `Undo: ${historyActions.operationPreview(lastUndoOperation.value)}`
@@ -202,6 +204,26 @@ function createImageTaggerContext() {
     return rows.length
       ? `Show recent operations for ${image.fileName}: ${rows.map((row) => row.text).join(" | ")}`
       : `No committed history for ${image.fileName} yet.`;
+  }
+
+  function scheduleDatasetPersistence(): void {
+    if (!persistenceReady || !images.value.length) {
+      return;
+    }
+
+    if (persistenceTimer) {
+      window.clearTimeout(persistenceTimer);
+    }
+
+    persistenceTimer = window.setTimeout(() => {
+      persistenceTimer = null;
+      void datasetActions.persistCurrentDataset();
+    }, 250);
+  }
+
+  async function restoreSavedDataset(): Promise<void> {
+    await datasetActions.restorePersistedDataset();
+    persistenceReady = true;
   }
 
   function onGlobalKeydown(event: KeyboardEvent): void {
@@ -261,6 +283,8 @@ function createImageTaggerContext() {
     }
   );
 
+  watch(images, scheduleDatasetPersistence, { deep: true });
+
   watch(
     () => config.theme,
     (theme) => applyTheme(theme),
@@ -288,9 +312,13 @@ function createImageTaggerContext() {
 
     applyTheme(config.theme);
     window.addEventListener("keydown", onGlobalKeydown);
+    void restoreSavedDataset();
   });
 
   onBeforeUnmount(() => {
+    if (persistenceTimer) {
+      window.clearTimeout(persistenceTimer);
+    }
     window.removeEventListener("keydown", onGlobalKeydown);
     historyActions.revokeImageUrls();
     document.body.style.overflow = "";

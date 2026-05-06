@@ -30,7 +30,9 @@
 - Keep pure tag/dataset logic in `app/utils/tagDataset.ts`; add helpers there when logic can be tested without DOM APIs.
 - Keep browser file/image helpers in `app/utils/imageFiles.ts`; components should call typed composable actions instead of touching DOM file APIs directly.
 - Keep config normalization in `app/utils/config.ts` and ZIP assembly in `app/utils/zipWriter.ts`.
-- Store only lightweight config in `localStorage`. Do not persist images, blobs, object URLs, or prompt text history across sessions.
+- Store only lightweight config in `localStorage`.
+- Persist the active uploaded-folder workspace in IndexedDB so a page reload restores current progress. Store image `File` blobs only in the IndexedDB file store, recreate object URLs after restore, and keep frequently changing tag/draft state separate from the blob cache.
+- Do not persist object URLs or prompt text history across sessions.
 - Use `shallowRef` for large image collections and call `refreshImages()` after mutating image records.
 - Avoid large files. Prefer extracting a component, utility, or action factory when a file grows beyond a single focused responsibility.
 

@@ -1,6 +1,12 @@
 import type { Ref, ShallowRef } from "vue";
 import type { AppConfig, HistoryState, ImageRecord } from "~/types/imageTagger";
 import { normalizeConfig } from "~/utils/config";
+import {
+  createPersistedDatasetState,
+  createPersistedFileRecords,
+  loadPersistedDataset,
+  savePersistedDataset
+} from "~/utils/datasetPersistence";
 import { formatBytes, getDatasetName, getRelativePath, readImageMetadata } from "~/utils/imageFiles";
 import {
   formatTags,
@@ -156,6 +162,7 @@ export function createDatasetActions({
       datasetName.value = getDatasetName(files);
       visibleLimit.value = visibleBatchSize;
       recalculateDerivedTags();
+      await persistCurrentDataset(true);
       setStatus(`Loaded ${nextImages.length} images from ${datasetName.value}.`);
     } catch (error) {
       console.error(error);
@@ -169,6 +176,62 @@ export function createDatasetActions({
   function imageMetadataLine(image: ImageRecord): string {
     const resolution = image.width && image.height ? `${image.width}x${image.height}` : "unknown resolution";
     return `${image.tags.length} tags / ${resolution} / ${formatBytes(image.fileSize)}${image.tagFileName ? ` / ${image.tagFileName}` : ""}`;
+  }
+
+  async function restorePersistedDataset(): Promise<boolean> {
+    loadError.value = "";
+
+    try {
+      const persisted = await loadPersistedDataset();
+      if (!persisted) {
+        return false;
+      }
+
+      const restoredImages: ImageRecord[] = [];
+      for (const imageState of persisted.state.images) {
+        const file = persisted.filesById.get(imageState.id);
+        if (!file) {
+          throw new Error(`Cached file is missing for ${imageState.fileName}.`);
+        }
+
+        restoredImages.push({
+          ...imageState,
+          file,
+          objectUrl: URL.createObjectURL(file),
+          historyOpen: false
+        });
+      }
+
+      revokeImageUrls();
+      history.past.splice(0);
+      history.future.splice(0);
+      images.value = restoredImages;
+      datasetName.value = persisted.state.datasetName || "Restored browser dataset";
+      visibleLimit.value = visibleBatchSize;
+      recalculateDerivedTags();
+      setStatus(`Restored ${restoredImages.length} images from browser storage.`);
+      return true;
+    } catch (error) {
+      console.error(error);
+      loadError.value = `Could not restore saved folder: ${getErrorMessage(error)}`;
+      setStatus("Saved folder restore failed.");
+      return false;
+    }
+  }
+
+  async function persistCurrentDataset(includeFiles = false): Promise<void> {
+    if (!images.value.length) {
+      return;
+    }
+
+    try {
+      const state = createPersistedDatasetState(datasetName.value, images.value);
+      const fileRecords = includeFiles ? createPersistedFileRecords(images.value) : undefined;
+      await savePersistedDataset(state, fileRecords);
+    } catch (error) {
+      console.error(error);
+      loadError.value = `Could not persist folder for reload: ${getErrorMessage(error)}`;
+    }
   }
 
   function findTagFile(imageFile: File, tagFiles: Map<string, File>): File | null {
@@ -196,6 +259,8 @@ export function createDatasetActions({
     onFolderSelected,
     onConfigSelected,
     loadFolder,
+    restorePersistedDataset,
+    persistCurrentDataset,
     imageMetadataLine
   };
 }
