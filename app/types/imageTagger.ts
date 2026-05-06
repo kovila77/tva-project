@@ -6,6 +6,8 @@ export type TagSetsPlacement = "side" | "top" | "hidden";
 export type StatsPlacement = "tab" | "side" | "hidden";
 export type ImageSizeMode = "tiny" | "small" | "medium" | "large";
 export type MainTab = "images" | "stats";
+export type TagTextFieldMode = "tags" | "single-tag" | "filter" | "regex" | "text";
+export type TagTextStyleMatch = "tag" | "fragment" | "regex" | "unmatched-tag" | "all-tags";
 
 export type ConfigTextKey =
   | "commonTagsText"
@@ -139,6 +141,16 @@ export interface HistoryState {
 
 export interface BatchState {
   addTag: string;
+}
+
+export interface TagTextStyleRule {
+  key: string;
+  className: string;
+  match: TagTextStyleMatch;
+  tags?: string[];
+  fragments?: string[];
+  patterns?: string[];
+  caseSensitive?: boolean;
 }
 
 export interface ViewerState {

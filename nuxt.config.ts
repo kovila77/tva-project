@@ -12,7 +12,12 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   vite: {
     optimizeDeps: {
-      include: [],
+      include: [
+        "@codemirror/autocomplete",
+        "@codemirror/commands",
+        "@codemirror/state",
+        "@codemirror/view"
+      ],
       noDiscovery: true
     }
   },

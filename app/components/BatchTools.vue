@@ -4,10 +4,16 @@
     <div class="tool-description">
       Batch tools never edit source files directly. They change the in-memory dataset, then you export ZIP files when ready. Undo/redo can reverse each batch operation.
     </div>
-    <label class="field">
-      <span>Add tag to visible</span>
-      <input v-model="batch.addTag" class="control" type="text" list="known-tags-list" placeholder="tag" title="One tag to append to every currently visible image that does not already contain it.">
-    </label>
+    <TagField
+      v-model="batch.addTag"
+      label="Add tag to visible"
+      :rows="1"
+      mode="single-tag"
+      placeholder="tag"
+      title="One tag to append to every currently visible image that does not already contain it."
+      :autocomplete-items="autocompleteTags"
+      :style-rules="imageTagTextStyleRules"
+    />
     <div class="tool-description">
       Adds one exact tag to each currently visible image that does not already have it. Filtered-out rows are untouched and the whole batch is one undo step.
     </div>
@@ -19,8 +25,12 @@
       v-model="config.removePatternsText"
       label="Remove regex"
       :rows="4"
+      mode="regex"
       placeholder="artist:.*, lowres"
       title="Comma- or newline-separated regular expressions. Any tag matching one of these patterns is removed from visible images and saved in each image's deleted-tags list."
+      :autocomplete="false"
+      :style-rules="regexTextStyleRules"
+      show-history-buttons
     />
     <div class="tool-description">
       Clean Visible removes matching tags only from currently visible rows. Removed tags remain restorable on each image.
@@ -54,6 +64,9 @@ import { useImageTaggerContext } from "~/composables/useImageTagger";
 const {
   config,
   batch,
+  autocompleteTags,
+  imageTagTextStyleRules,
+  regexTextStyleRules,
   images,
   visibleImages,
   addTagToVisible,

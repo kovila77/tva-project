@@ -8,10 +8,6 @@
       <DatasetPanel />
     </main>
 
-    <datalist id="known-tags-list">
-      <option v-for="tag in autocompleteTags" :key="tag" :value="tag" />
-    </datalist>
-
     <ImageViewer />
   </div>
 </template>
@@ -26,7 +22,6 @@ import { provideImageTagger } from "~/composables/useImageTagger";
 
 const {
   config,
-  layoutClasses,
-  autocompleteTags
+  layoutClasses
 } = provideImageTagger();
 </script>

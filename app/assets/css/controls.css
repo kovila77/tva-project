@@ -111,8 +111,7 @@
   outline: none;
 }
 
-.control:focus,
-.tag-editor:focus {
+.control:focus {
   border-color: var(--blue);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
@@ -120,6 +119,158 @@
 .textarea {
   min-height: 84px;
   resize: vertical;
+}
+
+.tag-field {
+  min-width: 0;
+}
+
+.tag-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tag-field-label {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.tag-field-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.tag-field-history-btn {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 5px 6px;
+}
+
+.tag-field-editor {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-raised);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.tag-field-editor:focus-within,
+.tag-field-editor.is-focused {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.tag-field-editor .cm-editor {
+  height: 100%;
+  background: transparent;
+  color: var(--text);
+  outline: none;
+}
+
+.tag-field-editor .cm-focused {
+  outline: none;
+}
+
+.tag-field-editor .cm-scroller {
+  min-height: 34px;
+  max-height: min(46vh, calc((var(--tag-field-rows, 4) * 1.45em) + 18px));
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  line-height: 1.45;
+}
+
+.tag-field-editor .cm-content {
+  min-height: calc((var(--tag-field-rows, 4) * 1.45em) + 16px);
+  padding: 8px;
+  caret-color: var(--text);
+}
+
+.tag-field-editor .cm-line {
+  padding: 0;
+}
+
+.tag-field-editor.single-line .cm-scroller {
+  max-height: 34px;
+  overflow: hidden;
+}
+
+.tag-field-editor.single-line .cm-content {
+  min-height: 32px;
+  padding: 7px 9px;
+  white-space: pre;
+}
+
+.tag-field-editor .cm-placeholder {
+  color: var(--muted);
+  opacity: 0.78;
+}
+
+.tag-text-selected {
+  border-radius: 3px;
+  background: rgba(56, 189, 248, 0.22);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.3);
+}
+
+.tag-text-common {
+  color: #86efac;
+}
+
+.tag-text-known {
+  color: #93c5fd;
+}
+
+.tag-text-unknown {
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: var(--red);
+  text-underline-offset: 3px;
+}
+
+.tag-text-highlighted {
+  border-radius: 3px;
+  background: #fef9c3;
+  color: #713f12;
+}
+
+.tag-text-fragment-highlighted {
+  color: var(--amber);
+  font-weight: 750;
+}
+
+.tag-text-regex {
+  color: #c4b5fd;
+}
+
+.tag-field-selected {
+  margin-top: 0;
+}
+
+.cm-tooltip {
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.cm-tooltip-autocomplete ul {
+  max-height: 240px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+.cm-tooltip-autocomplete ul li[aria-selected] {
+  background: var(--blue);
+  color: #fff;
 }
 
 .check-field {

@@ -15,6 +15,7 @@ import type {
   HistoryState,
   ImageRecord,
   MainTab,
+  TagTextStyleRule,
   TagStat,
   ViewerState
 } from "~/types/imageTagger";
@@ -64,6 +65,53 @@ function createImageTaggerContext() {
   const highlightedTags = computed(() => parseTags(config.highlightTagsText));
   const highlightedText = computed(() => parseTags(config.highlightText));
   const orderTagsText = computed(() => config.orderTagsText);
+  const tagTextStyleRules = computed<TagTextStyleRule[]>(() => [
+    {
+      key: "common-tag",
+      className: "tag-text-common",
+      match: "tag",
+      tags: commonTags.value
+    },
+    {
+      key: "known-tag",
+      className: "tag-text-known",
+      match: "tag",
+      tags: knownTags.value
+    },
+    {
+      key: "highlight-tag",
+      className: "tag-text-highlighted",
+      match: "tag",
+      tags: highlightedTags.value
+    },
+    {
+      key: "highlight-fragment",
+      className: "tag-text-fragment-highlighted",
+      match: "fragment",
+      fragments: highlightedText.value
+    }
+  ]);
+  const imageTagTextStyleRules = computed<TagTextStyleRule[]>(() => [
+    {
+      key: "unknown-tag",
+      className: "tag-text-unknown",
+      match: "unmatched-tag",
+      tags: [...commonTags.value, ...knownTags.value]
+    },
+    ...tagTextStyleRules.value
+  ]);
+  const filterTextStyleRules = computed<TagTextStyleRule[]>(() => config.filterMode === "regex"
+    ? [{
+        key: "filter-regex",
+        className: "tag-text-regex",
+        match: "all-tags"
+      }]
+    : imageTagTextStyleRules.value);
+  const regexTextStyleRules = computed<TagTextStyleRule[]>(() => [{
+    key: "regex-token",
+    className: "tag-text-regex",
+    match: "all-tags"
+  }]);
   const dirtyImages = computed(() => images.value.filter((image) => image.dirty || image.draftDirty));
   const topTagStats = computed(() => tagStats.value.slice(0, 160));
   const lastUndoOperation = computed<DatasetOperation | null>(() => history.past[history.past.length - 1] ?? null);
@@ -346,6 +394,10 @@ function createImageTaggerContext() {
     highlightedTags,
     highlightedText,
     orderTagsText,
+    tagTextStyleRules,
+    imageTagTextStyleRules,
+    filterTextStyleRules,
+    regexTextStyleRules,
     dirtyImages,
     topTagStats,
     lastUndoOperation,

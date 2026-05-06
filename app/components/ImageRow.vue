@@ -13,27 +13,23 @@
         <span v-if="image.dirty" class="pill warn">changed</span>
       </div>
 
-      <textarea
+      <TagField
         v-model="image.editText"
-        class="tag-editor"
-        spellcheck="false"
-        list="known-tags-list"
+        :selected-tag="image.selectedTag"
+        class="image-tag-field"
+        mode="tags"
+        :rows="5"
+        :autocomplete-items="autocompleteTags"
+        :style-rules="imageTagTextStyleRules"
+        selectable
+        show-selected
+        show-history-buttons
         title="Edit comma- or newline-separated tags. Ctrl+Enter applies the draft. Blur also applies the draft."
-        @input="onEditorInput(image, $event)"
-        @focus="updateSelectedTagFromEditor(image, $event)"
-        @click="updateSelectedTagFromEditor(image, $event)"
-        @select="updateSelectedTagFromEditor(image, $event)"
+        @input="onEditorInput(image)"
+        @selected-change="setSelectedTag(image, $event)"
         @blur="commitEditor(image, 'edit')"
-        @pointerup="updateSelectedTagFromEditor(image, $event)"
-        @keyup="updateSelectedTagFromEditor(image, $event)"
-        @keydown.ctrl.enter.prevent="commitEditor(image, 'edit')"
-        @keydown.meta.enter.prevent="commitEditor(image, 'edit')"
+        @commit="commitEditor(image, 'edit')"
       />
-
-      <div class="selected-tag-bar" :title="image.selectedTag ? `Selected tag: ${image.selectedTag}` : 'Place the caret inside a tag in the editor to select it.'">
-        <span class="selected-label">Selected</span>
-        <strong>{{ image.selectedTag || "No selected tag" }}</strong>
-      </div>
 
       <div class="row-actions context-actions">
         <button class="btn icon-btn" type="button" :title="`Preview ${image.fileName} with zoom and pan.`" :aria-label="`Preview ${image.fileName}`" @click="openViewer(image)"><AppIcon name="preview" class="icon" /></button>
@@ -114,6 +110,7 @@
 
 <script setup lang="ts">
 import AppIcon from "~/components/AppIcon.vue";
+import TagField from "~/components/TagField.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { ImageRecord } from "~/types/imageTagger";
 
@@ -124,12 +121,14 @@ defineProps<{
 const {
   config,
   commonTags,
+  autocompleteTags,
+  imageTagTextStyleRules,
   imageMetadataLine,
   openViewer,
   copyImageUrl,
   commitEditor,
   onEditorInput,
-  updateSelectedTagFromEditor,
+  setSelectedTag,
   imageUndoTitle,
   imageRedoTitle,
   imageHistoryTitle,

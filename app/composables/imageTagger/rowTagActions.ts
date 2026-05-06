@@ -72,9 +72,8 @@ export function createRowTagActions({
     refreshImages();
   }
 
-  function onEditorInput(image: ImageRecord, event: Event): void {
+  function onEditorInput(image: ImageRecord): void {
     markDraftDirty(image);
-    updateSelectedTagFromEditor(image, event);
   }
 
   function hasTag(image: ImageRecord, tag: string): boolean {
@@ -138,24 +137,13 @@ export function createRowTagActions({
     config[key] = formatTags(tags);
   }
 
-  function updateSelectedTagFromEditor(image: ImageRecord, event: Event): void {
-    const editor = event?.target;
-    if (!image || !(editor instanceof HTMLTextAreaElement)) {
-      return;
-    }
-    if (document.activeElement !== editor) {
+  function setSelectedTag(image: ImageRecord, tag: string): void {
+    if (!image || image.selectedTag === tag) {
       return;
     }
 
-    const selectedText = editor.value
-      .slice(editor.selectionStart, editor.selectionEnd)
-      .replace(/^,\s*/, "")
-      .replace(/\s*,?\s*$/, "")
-      .trim();
-
-    image.selectedTag = selectedText && !/[,\n]/.test(selectedText)
-      ? selectedText
-      : getTagAtPosition(editor.value, editor.selectionStart);
+    image.selectedTag = tag;
+    refreshImages();
   }
 
   function tagClass(tag: string): Record<string, boolean> {
@@ -190,34 +178,12 @@ export function createRowTagActions({
     removeTagFromImage,
     restoreRemovedTag,
     appendConfigTag,
-    updateSelectedTagFromEditor,
+    setSelectedTag,
     tagClass,
     refreshAllEditTextFormatting,
     tagsEqual,
     formatTags
   };
-}
-
-function getTagAtPosition(text: string, position: number): string {
-  const value = String(text ?? "");
-  const left = value.slice(0, position);
-  const right = value.slice(position);
-  const start = Math.max(left.lastIndexOf(","), left.lastIndexOf("\n"));
-  const commaEnd = right.indexOf(",");
-  const lineEnd = right.indexOf("\n");
-  const candidates = [commaEnd, lineEnd].filter((index) => index >= 0);
-  const absoluteStart = start >= 0 ? start + 1 : 0;
-  const absoluteEnd = position + (candidates.length ? Math.min(...candidates) : right.length);
-  const rawSegment = value.slice(absoluteStart, absoluteEnd);
-  const trimmed = rawSegment.trim();
-  if (!trimmed) {
-    return "";
-  }
-
-  const leadingWhitespace = rawSegment.search(/\S/);
-  const tagStart = absoluteStart + (leadingWhitespace < 0 ? 0 : leadingWhitespace);
-  const tagEnd = absoluteStart + rawSegment.trimEnd().length;
-  return position >= tagStart && position <= tagEnd ? trimmed : "";
 }
 
 function tagsEqual(left: string[] | null | undefined, right: string[] | null | undefined): boolean {

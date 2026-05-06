@@ -1,17 +1,19 @@
 <template>
   <section class="quickbar" title="Sticky quick controls. Use display controls to move tag sets, stats, and tags beside images.">
     <div class="filter-bar">
-      <label class="field grow">
-        <span>Filter</span>
-        <input
-          v-model="config.filterText"
-          class="control"
-          type="search"
-          placeholder="tag, filename, or regex"
-          title="Tags mode requires all comma-separated terms. Regex mode matches filename or any tag."
-          @keydown.enter.prevent="applyFilter"
-        >
-      </label>
+      <TagField
+        v-model="config.filterText"
+        class="grow"
+        label="Filter"
+        :rows="1"
+        :mode="config.filterMode === 'regex' ? 'regex' : 'filter'"
+        placeholder="tag, filename, or regex"
+        title="Tags mode requires all comma-separated terms. Regex mode matches filename or any tag."
+        :autocomplete="config.filterMode === 'tags'"
+        :autocomplete-items="autocompleteTags"
+        :style-rules="filterTextStyleRules"
+        @commit="applyFilter"
+      />
 
       <label class="field compact">
         <span>Mode</span>
@@ -111,16 +113,19 @@
 
 <script setup lang="ts">
 import AppIcon from "~/components/AppIcon.vue";
+import TagField from "~/components/TagField.vue";
 import TagSetFields from "~/components/TagSetFields.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const {
   config,
   images,
+  autocompleteTags,
   visibleImages,
   dirtyImages,
   tagStats,
   history,
+  filterTextStyleRules,
   undoTitle,
   redoTitle,
   applyFilter,

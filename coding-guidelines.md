@@ -16,7 +16,8 @@
   - `QuickControls.vue` for filters, layout controls, and top summary metrics.
   - `SidePanel.vue`, `BatchTools.vue`, and `HistoryPanel.vue` for side-panel tools.
   - `DatasetPanel.vue`, `ImageRow.vue`, `TagStatsList.vue`, and `ImageViewer.vue` for the main dataset experience.
-  - `TagField.vue` and `TagSetFields.vue` for reusable tag-list textareas.
+  - `TagField.vue` for the shared CodeMirror-based tag/text editor used by image tags, tag sets, filters, and batch tag inputs.
+  - `TagSetFields.vue` for the standard tag-set group built from `TagField.vue`.
 - Keep shared app contracts in `app/types/imageTagger.ts`; update those types before widening component or composable APIs.
 - Keep the injected app context in `app/composables/useImageTagger.ts`. Components should consume that context with `useImageTaggerContext()` instead of duplicating state.
 - Keep stateful action groups under `app/composables/imageTagger`:
@@ -28,6 +29,7 @@
   - `exportActions.ts` for config, tag ZIP, resized ZIP, and image URL export actions.
   - `viewerActions.ts` for zoom/pan modal state transitions.
 - Keep pure tag/dataset logic in `app/utils/tagDataset.ts`; add helpers there when logic can be tested without DOM APIs.
+- Keep CodeMirror tag-editor token parsing, selection, completion, and decoration helpers in `app/utils/tagTextEditor.ts`.
 - Keep browser file/image helpers in `app/utils/imageFiles.ts`; components should call typed composable actions instead of touching DOM file APIs directly.
 - Keep config normalization in `app/utils/config.ts` and ZIP assembly in `app/utils/zipWriter.ts`.
 - Store only lightweight config in `localStorage`.
@@ -39,8 +41,9 @@
 ## Editing Model
 
 - `image.tags` is the committed state.
-- `image.editText` is the textarea draft.
+- `image.editText` is the tag editor draft.
 - `commitOperation()` is the only path for committed tag/file mutations that should support undo/redo.
+- `TagField.vue` owns editor-only draft history, selection detection, autocomplete, and token styling. This local history must not replace committed dataset undo/redo through `commitOperation()`.
 - Batch tools should build a list of image snapshots first, then commit one operation.
 - Keep `ImageRecord`, `ImageSnapshot`, and `DatasetOperation` changes aligned. If a persisted or undoable field changes, update the snapshot type and history application logic together.
 - Recalculate derived tag stats/autocomplete after committed dataset changes, and reset the visible render limit when filter inputs change.
@@ -50,7 +53,9 @@
 - Prefer native controls and compact labels over custom widgets.
 - Use Font Awesome via `AppIcon.vue` for icons. Do not add raw glyph/symbol icons directly in templates.
 - Image-row action buttons and simple repeated actions such as undo, redo, clear, zoom, and close should be icon-only with `title` and `aria-label`.
-- Reuse `TagField.vue` for tag-list textareas and `TagSetFields.vue` for the standard tag-set group.
+- Reuse `TagField.vue` for every tag-like text editor, including image tags, common/known/highlight/order tag sets, filters, batch add-tag fields, and regex tag lists.
+- Configure `TagField.vue` with typed `TagTextStyleRule` rules for known/common/highlight/unknown/regex styling instead of hard-coding new editor-specific token styling.
+- Prefer dataset-backed `autocompleteTags` for `TagField.vue` autocomplete. Disable autocomplete only when the field is not tag-completion friendly, such as regex-only inputs.
 - Keep row actions explicit: apply, undo, redo, original, remove.
 - Avoid visible instructional copy in the app; use labels, placeholders, and button titles for context.
 - Keep mobile and desktop layouts usable without overlapping controls.

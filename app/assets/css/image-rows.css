@@ -101,15 +101,8 @@
   font-size: 12px;
 }
 
-.tag-editor {
-  width: 100%;
+.image-tag-field .tag-field-editor .cm-content {
   min-height: 126px;
-  resize: vertical;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px;
-  line-height: 1.45;
-  outline: none;
 }
 
 .selected-tag-bar {
@@ -171,7 +164,7 @@
   overflow-wrap: anywhere;
 }
 
-.image-list.compact .tag-editor {
+.image-list.compact .image-tag-field .tag-field-editor .cm-content {
   min-height: 88px;
 }
 
