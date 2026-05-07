@@ -18,6 +18,7 @@
 import { computed } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
+import type { AppIconName } from "~/utils/icons";
 
 const { config, hasSidePanelSections } = useImageTaggerContext();
 
@@ -26,7 +27,7 @@ const isRight = computed(() => config.sidePanelPosition === "right");
 const label = computed(() => isHidden.value ? "Show side" : "Hide side");
 const title = computed(() => `${label.value} panel`);
 const showArrowBefore = computed(() => !isHidden.value);
-const arrowIcon = computed(() => {
+const arrowIcon = computed<AppIconName>(() => {
   if (isHidden.value) {
     return isRight.value ? "arrowLeft" : "arrowRight";
   }

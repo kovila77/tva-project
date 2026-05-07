@@ -16,13 +16,14 @@
 import { computed } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
+import type { AppIconName } from "~/utils/icons";
 
 const { config, hasHeaderPanelSections } = useImageTaggerContext();
 
 const isHidden = computed(() => config.headerPanelMode === "hidden");
 const label = computed(() => isHidden.value ? "Show header" : "Hide header");
 const title = computed(() => `${label.value} panel`);
-const arrowIcon = computed(() => isHidden.value ? "arrowDown" : "arrowUp");
+const arrowIcon = computed<AppIconName>(() => isHidden.value ? "arrowDown" : "arrowUp");
 
 function toggleHeaderPanel(): void {
   config.headerPanelMode = isHidden.value ? "open" : "hidden";

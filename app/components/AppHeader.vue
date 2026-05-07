@@ -6,12 +6,14 @@
     :style="headerStyle"
     title="Dataset files are loaded into browser memory. Source files are not modified."
   >
-    <details v-if="config.fileManagementPlacement === 'header'" class="app-header__section" open>
-      <summary>Config and image folders</summary>
-      <FileManagementControls />
-    </details>
+    <div class="app-header__content">
+      <details v-if="config.fileManagementPlacement === 'header'" class="app-header__section" open>
+        <summary>Config and image folders</summary>
+        <FileManagementControls />
+      </details>
 
-    <QuickControls />
+      <QuickControls />
+    </div>
     <button
       class="app-header__resize"
       type="button"
@@ -107,16 +109,23 @@ onBeforeUnmount(() => {
   top: 0;
   z-index: 1000;
   max-height: calc(100vh - 16px);
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 10px 12px;
+  overflow: hidden;
+  padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow);
   resize: none;
+
+  &__content {
+    height: 100%;
+    max-height: inherit;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 10px 12px 16px;
+  }
 
   &__section {
     border-top: 1px solid var(--border);
@@ -135,11 +144,13 @@ onBeforeUnmount(() => {
   }
 
   &__resize {
-    position: sticky;
-    bottom: -10px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
     z-index: 2;
     width: 100%;
-    min-height: 12px;
+    min-height: 10px;
     margin: 0;
     border: 0;
     background: transparent;
@@ -162,8 +173,10 @@ onBeforeUnmount(() => {
 
 @media (max-width: 860px) {
   .app-header {
-    align-items: stretch;
-    flex-direction: column;
+    &__content {
+      align-items: stretch;
+      flex-direction: column;
+    }
   }
 }
 </style>

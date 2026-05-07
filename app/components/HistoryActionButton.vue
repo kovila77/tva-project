@@ -16,6 +16,7 @@
 import { computed } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
+import type { AppIconName } from "~/utils/icons";
 
 type HistoryAction = "undo" | "redo";
 type HistoryButtonVariant = "filled" | "plain";
@@ -37,7 +38,7 @@ const {
 
 const isUndo = computed(() => props.action === "undo");
 const label = computed(() => isUndo.value ? "Undo" : "Redo");
-const iconName = computed(() => isUndo.value ? "undo" : "redo");
+const iconName = computed<AppIconName>(() => isUndo.value ? "undo" : "redo");
 const title = computed(() => isUndo.value ? undoTitle.value : redoTitle.value);
 const disabled = computed(() => isUndo.value ? !history.past.length : !history.future.length);
 const buttonClasses = computed(() => ({
