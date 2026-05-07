@@ -34,6 +34,7 @@ function createImageTaggerContext() {
   const autocompleteTags = shallowRef<string[]>([]);
   const tagStats = shallowRef<TagStat[]>([]);
   const filteredBlinkTags = shallowRef<string[]>([]);
+  const filteredBlinkPatterns = shallowRef<string[]>([]);
   const visibleLimit = ref(visibleBatchSize);
   const isBusy = ref(false);
   const statusText = ref("Ready");
@@ -90,6 +91,13 @@ function createImageTaggerContext() {
       className: "tag-text-filtered-blink",
       match: "tag",
       tags: filteredBlinkTags.value
+    },
+    {
+      key: "filtered-blink-regex",
+      className: "tag-text-filtered-blink",
+      match: "regex",
+      patterns: filteredBlinkPatterns.value,
+      caseSensitive: !config.ignoreCase
     }
   ]);
   const imageTagTextStyleRules = computed<TagTextStyleRule[]>(() => [
@@ -170,6 +178,7 @@ function createImageTaggerContext() {
       matcher = createFilterMatcher({
         text: config.filterText,
         mode: config.filterMode,
+        target: config.filterTarget,
         ignoreCase: config.ignoreCase
       });
     } catch (error) {
@@ -202,13 +211,19 @@ function createImageTaggerContext() {
   let filteredBlinkTimer: ReturnType<typeof window.setTimeout> | null = null;
 
   function blinkFilteredTags(): void {
-    filteredBlinkTags.value = config.filterMode === "tags" ? parseTags(config.filterText) : [];
+    filteredBlinkTags.value = config.filterMode === "tags" && config.filterTarget === "caption"
+      ? parseTags(config.filterText)
+      : [];
+    filteredBlinkPatterns.value = config.filterMode === "regex"
+      ? parseTags(config.filterText, false)
+      : [];
     if (filteredBlinkTimer) {
       window.clearTimeout(filteredBlinkTimer);
     }
     filteredBlinkTimer = window.setTimeout(() => {
       filteredBlinkTimer = null;
       filteredBlinkTags.value = [];
+      filteredBlinkPatterns.value = [];
     }, 3000);
   }
 
@@ -236,6 +251,7 @@ function createImageTaggerContext() {
     highlightedTags,
     highlightedText,
     filteredBlinkTags,
+    filteredBlinkPatterns,
     orderTagsText,
     commitOperation: historyActions.commitOperation,
     snapshotImage: historyActions.snapshotImage,
@@ -364,7 +380,7 @@ function createImageTaggerContext() {
   );
 
   watch(
-    () => [config.filterText, config.filterMode, config.ignoreCase, filterInverted.value],
+    () => [config.filterText, config.filterMode, config.filterTarget, config.ignoreCase, filterInverted.value],
     () => {
       visibleLimit.value = visibleBatchSize;
     }

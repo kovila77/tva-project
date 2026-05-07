@@ -134,7 +134,7 @@ export function collectKnownTags(images: ImageRecord[], config: AppConfig): stri
   ]).sort((left, right) => left.localeCompare(right));
 }
 
-export function createFilterMatcher({ text, mode, ignoreCase }: FilterMatcherInput): (image: ImageRecord) => boolean {
+export function createFilterMatcher({ text, mode, target, ignoreCase }: FilterMatcherInput): (image: ImageRecord) => boolean {
   const query = String(text ?? "").trim();
   if (!query) {
     return () => true;
@@ -142,17 +142,15 @@ export function createFilterMatcher({ text, mode, ignoreCase }: FilterMatcherInp
 
   if (mode === "regex") {
     const patterns = parseTags(query, false).map((pattern) => new RegExp(pattern, ignoreCase ? "i" : ""));
-    return (image) => patterns.some((pattern) => (
-      pattern.test(image.fileName)
-      || image.tags.some((tag) => pattern.test(tag))
-    ));
+    return target === "filename"
+      ? (image) => patterns.some((pattern) => pattern.test(image.fileName))
+      : (image) => patterns.some((pattern) => image.tags.some((tag) => pattern.test(tag)));
   }
 
   const requiredTags = parseTags(query).map((tag) => tag.toLowerCase());
-  return (image) => requiredTags.every((tag) => (
-    image.fileName.toLowerCase().includes(tag)
-    || image.tags.some((item) => item.toLowerCase() === tag)
-  ));
+  return target === "filename"
+    ? (image) => requiredTags.every((tag) => image.fileName.toLowerCase().includes(tag))
+    : (image) => requiredTags.every((tag) => image.tags.some((item) => item.toLowerCase() === tag));
 }
 
 export function makeDatasetSnapshot(config: AppConfig): AppConfig {
@@ -165,6 +163,7 @@ export function makeDatasetSnapshot(config: AppConfig): AppConfig {
     removePatternsText: config.removePatternsText,
     filterText: config.filterText,
     filterMode: config.filterMode,
+    filterTarget: config.filterTarget,
     ignoreCase: config.ignoreCase,
     theme: config.theme,
     headerPanelMode: config.headerPanelMode,

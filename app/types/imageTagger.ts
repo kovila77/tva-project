@@ -1,4 +1,5 @@
 export type FilterMode = "tags" | "regex";
+export type FilterTarget = "filename" | "caption";
 export type ThemeMode = "dark" | "light";
 export type SidePanelMode = "open" | "hidden";
 export type HeaderPanelMode = "open" | "hidden";
@@ -32,6 +33,7 @@ export interface AppConfig {
   removePatternsText: string;
   filterText: string;
   filterMode: FilterMode;
+  filterTarget: FilterTarget;
   ignoreCase: boolean;
   theme: ThemeMode;
   headerPanelMode: HeaderPanelMode;
@@ -193,6 +195,7 @@ export interface TagStat {
 export interface FilterMatcherInput {
   text: string;
   mode: FilterMode;
+  target: FilterTarget;
   ignoreCase: boolean;
 }
 

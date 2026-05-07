@@ -2,6 +2,7 @@ import type {
   AppConfig,
   BatchToolsPlacement,
   FilterMode,
+  FilterTarget,
   HeaderPanelMode,
   HeaderSectionPlacement,
   ImageRowHeightMode,
@@ -15,6 +16,7 @@ import type {
 } from "~/types/imageTagger";
 
 const tagSetPlacements: TagSetsPlacement[] = ["side", "top", "hidden"];
+const filterTargets: FilterTarget[] = ["filename", "caption"];
 const statsPlacements: StatsPlacement[] = ["tab", "side", "hidden"];
 const batchToolsPlacements: BatchToolsPlacement[] = ["tab", "side"];
 const headerSectionPlacements: HeaderSectionPlacement[] = ["header", "side"];
@@ -38,6 +40,7 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     removePatternsText: stringValue(source.removePatternsText ?? source.scriptRemoveTags),
     filterText: stringValue(source.filterText ?? source.tagFilter),
     filterMode: normalizeFilterMode(source.filterMode, source.isFilterRegex),
+    filterTarget: includesValue(filterTargets, source.filterTarget) ? source.filterTarget : "caption",
     ignoreCase: Boolean(source.ignoreCase ?? source.filterIgnoreCase ?? false),
     theme: source.theme === "light" ? "light" : "dark",
     headerPanelMode: source.headerPanelMode === "hidden" ? "hidden" : "open",

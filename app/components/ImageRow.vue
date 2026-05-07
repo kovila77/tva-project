@@ -27,7 +27,11 @@
     <div class="image-row__editor">
       <div class="image-row__title">
         <div>
-          <h3>{{ image.fileName }}</h3>
+          <h3>
+            <template v-for="part in fileNameParts" :key="part.key">
+              <span :class="{ 'tag-text-filtered-blink': part.highlighted }">{{ part.text }}</span>
+            </template>
+          </h3>
           <span>{{ imageMetadataLine(image) }}</span>
         </div>
         <span v-if="image.dirty" class="pill warn">changed</span>
@@ -132,6 +136,7 @@ const props = defineProps<{
 
 const {
   config,
+  filteredBlinkPatterns,
   commonTags,
   autocompleteTags,
   imageTagTextStyleRules,
@@ -183,6 +188,13 @@ const hasVisibleChips = computed(() => (
   || Boolean(visibleNonCommonTags.value.length)
   || Boolean(visibleRemovedTags.value.length)
 ));
+const fileNameParts = computed(() => {
+  if (config.filterMode !== "regex" || config.filterTarget !== "filename" || !filteredBlinkPatterns.value.length) {
+    return [{ key: "plain-0", text: props.image.fileName, highlighted: false }];
+  }
+
+  return splitRegexMatches(props.image.fileName, filteredBlinkPatterns.value, config.ignoreCase);
+});
 
 let resizeStartX = 0;
 let resizeStartWidth = 0;
@@ -210,6 +222,48 @@ function stopImageWidthResize(): void {
 onBeforeUnmount(() => {
   stopImageWidthResize();
 });
+
+function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean): Array<{ key: string; text: string; highlighted: boolean }> {
+  const highlighted = Array.from({ length: text.length }, () => false);
+
+  for (const source of patterns) {
+    try {
+      const pattern = new RegExp(source, ignoreCase ? "gi" : "g");
+      let match: RegExpExecArray | null = pattern.exec(text);
+      while (match) {
+        const found = match[0];
+        if (found) {
+          for (let index = match.index; index < match.index + found.length; index += 1) {
+            highlighted[index] = true;
+          }
+        }
+        pattern.lastIndex = found ? pattern.lastIndex : pattern.lastIndex + 1;
+        match = pattern.exec(text);
+      }
+    } catch {
+      // Invalid regexes are handled by filter validation; highlighting can ignore them.
+    }
+  }
+
+  const parts: Array<{ key: string; text: string; highlighted: boolean }> = [];
+  let start = 0;
+  while (start < text.length) {
+    const isHighlighted = highlighted[start];
+    let end = start + 1;
+    while (end < text.length && highlighted[end] === isHighlighted) {
+      end += 1;
+    }
+
+    parts.push({
+      key: `${isHighlighted ? "match" : "plain"}-${start}`,
+      text: text.slice(start, end),
+      highlighted: isHighlighted
+    });
+    start = end;
+  }
+
+  return parts.length ? parts : [{ key: "plain-0", text, highlighted: false }];
+}
 </script>
 
 <style scoped lang="scss">

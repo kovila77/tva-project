@@ -40,6 +40,7 @@ export function createFilterActions({
 
   function filterByTag(tag: string): void {
     config.filterMode = "tags";
+    config.filterTarget = "caption";
     config.filterText = tag;
     activeMainTab.value = "images";
     applyFilter();
