@@ -171,7 +171,6 @@ export function makeDatasetSnapshot(config: AppConfig): AppConfig {
     tagSetsPlacement: config.tagSetsPlacement,
     statsPlacement: config.statsPlacement,
     batchToolsPlacement: config.batchToolsPlacement,
-    historyPlacement: config.historyPlacement,
     sidePanelWidth: config.sidePanelWidth,
     showTagsColumn: config.showTagsColumn,
     imageRowHeightMode: config.imageRowHeightMode,

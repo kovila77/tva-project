@@ -13,7 +13,6 @@
     </details>
 
     <BatchTools v-if="config.batchToolsPlacement === 'side'" />
-    <HistoryPanel v-if="config.historyPlacement === 'side'" />
 
     <details v-if="config.statsPlacement === 'side'" open>
       <summary title="Tag count statistics. Long natural-language tags wrap instead of being clipped.">Tag Statistics</summary>
@@ -25,7 +24,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount } from "vue";
 import BatchTools from "~/components/BatchTools.vue";
-import HistoryPanel from "~/components/HistoryPanel.vue";
 import TagSetFields from "~/components/TagSetFields.vue";
 import TagStatsList from "~/components/TagStatsList.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";

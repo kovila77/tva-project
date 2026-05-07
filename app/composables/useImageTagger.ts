@@ -122,7 +122,6 @@ function createImageTaggerContext() {
     && (
       config.tagSetsPlacement === "side"
       || config.batchToolsPlacement === "side"
-      || config.historyPlacement === "side"
       || config.statsPlacement === "side"
     )
   ));

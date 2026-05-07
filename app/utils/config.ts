@@ -2,7 +2,6 @@ import type {
   AppConfig,
   BatchToolsPlacement,
   FilterMode,
-  HistoryPlacement,
   ImageRowHeightMode,
   ImageWidthMode,
   SidePanelMode,
@@ -14,7 +13,6 @@ import type {
 const tagSetPlacements: TagSetsPlacement[] = ["side", "top", "hidden"];
 const statsPlacements: StatsPlacement[] = ["tab", "side", "hidden"];
 const batchToolsPlacements: BatchToolsPlacement[] = ["tab", "side"];
-const historyPlacements: HistoryPlacement[] = ["top", "side"];
 const imageRowHeightModes: ImageRowHeightMode[] = ["full", "fixed"];
 const imageWidthModes: ImageWidthMode[] = ["current", "fixed"];
 const defaultFixedRowHeight = 360;
@@ -39,7 +37,6 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     tagSetsPlacement: includesValue(tagSetPlacements, source.tagSetsPlacement) ? source.tagSetsPlacement : "side",
     statsPlacement: includesValue(statsPlacements, source.statsPlacement) ? source.statsPlacement : "tab",
     batchToolsPlacement: includesValue(batchToolsPlacements, source.batchToolsPlacement) ? source.batchToolsPlacement : "side",
-    historyPlacement: includesValue(historyPlacements, source.historyPlacement) ? source.historyPlacement : "side",
     sidePanelWidth: normalizeSidePanelWidth(source.sidePanelWidth),
     showTagsColumn: source.showTagsColumn !== false,
     imageRowHeightMode: includesValue(imageRowHeightModes, source.imageRowHeightMode) ? source.imageRowHeightMode : "full",

@@ -1,5 +1,5 @@
 <template>
-  <header class="app-header" title="Dataset files are loaded into browser memory. Source files are not modified.">
+  <header ref="headerElement" class="app-header" title="Dataset files are loaded into browser memory. Source files are not modified.">
     <div class="app-header__topline">
       <div class="app-header__brand">
         <h1>TVA Image Tagger</h1>
@@ -41,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
 import QuickControls from "~/components/QuickControls.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
@@ -60,13 +61,34 @@ const {
   onFolderSelected,
   onConfigSelected
 } = useImageTaggerContext();
+
+const headerElement = ref<HTMLElement | null>(null);
+let resizeObserver: ResizeObserver | null = null;
+
+function updateHeaderOffset(): void {
+  const height = headerElement.value?.offsetHeight ?? 0;
+  document.documentElement.style.setProperty("--app-header-height", `${height}px`);
+}
+
+onMounted(() => {
+  void nextTick(updateHeaderOffset);
+  if (headerElement.value) {
+    resizeObserver = new ResizeObserver(updateHeaderOffset);
+    resizeObserver.observe(headerElement.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+  document.documentElement.style.removeProperty("--app-header-height");
+});
 </script>
 
 <style scoped lang="scss">
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 1000;
   max-height: calc(100vh - 16px);
   overflow: auto;
   display: flex;

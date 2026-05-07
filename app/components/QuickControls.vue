@@ -40,13 +40,6 @@
             <option value="tab">Tab</option>
           </select>
         </label>
-        <label class="field compact">
-          <span>History</span>
-          <select v-model="config.historyPlacement" class="control" title="Choose whether undo/redo history preview is shown in the top controls or side panel.">
-            <option value="side">Side</option>
-            <option value="top">Top</option>
-          </select>
-        </label>
         <label class="check-field" title="Show the clickable tag chips beside each image. Hide this to make the image/editor columns wider.">
           <input v-model="config.showTagsColumn" type="checkbox">
           <span>Row tags</span>
@@ -120,15 +113,11 @@
       </div>
     </details>
 
-    <div v-if="config.historyPlacement === 'top'" class="quick-controls__history">
-      <HistoryPanel />
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import AppIcon from "~/components/AppIcon.vue";
-import HistoryPanel from "~/components/HistoryPanel.vue";
 import ImageDimensionControl from "~/components/ImageDimensionControl.vue";
 import TagField from "~/components/TagField.vue";
 import TagSetFields from "~/components/TagSetFields.vue";
@@ -185,10 +174,6 @@ const {
     padding-top: 8px;
   }
 
-  &__history {
-    border-top: 1px solid var(--border);
-    padding-top: 8px;
-  }
 }
 
 @media (max-width: 860px) {

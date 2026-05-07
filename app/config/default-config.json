@@ -13,7 +13,6 @@
   "tagSetsPlacement": "side",
   "statsPlacement": "tab",
   "batchToolsPlacement": "side",
-  "historyPlacement": "side",
   "sidePanelWidth": 340,
   "showTagsColumn": true,
   "imageRowHeightMode": "full",
