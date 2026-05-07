@@ -8,7 +8,10 @@
   >
     <div class="app-header__content">
       <details v-if="config.fileManagementPlacement === 'header'" class="app-header__section" open>
-        <summary>Config and image folders</summary>
+        <summary>
+          <span>Config and image folders</span>
+          <SectionPlacementButtons v-model="config.fileManagementPlacement" />
+        </summary>
         <FileManagementControls />
       </details>
 
@@ -28,6 +31,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import FileManagementControls from "~/components/FileManagementControls.vue";
 import QuickControls from "~/components/QuickControls.vue";
+import SectionPlacementButtons from "~/components/SectionPlacementButtons.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const {
@@ -132,6 +136,10 @@ onBeforeUnmount(() => {
     padding-top: 8px;
 
     summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
       margin-bottom: 8px;
       cursor: pointer;
       font-weight: 750;

@@ -12,23 +12,32 @@
       @pointerdown="startResize"
     />
     <details v-if="config.fileManagementPlacement === 'side'" open>
-      <summary title="Import/export files and editor configuration.">Config and image folders</summary>
+      <summary title="Import/export files and editor configuration.">
+        <span>Config and image folders</span>
+        <SectionPlacementButtons v-model="config.fileManagementPlacement" />
+      </summary>
       <FileManagementControls />
     </details>
 
     <details v-if="config.layoutConfigPlacement === 'side'" open>
-      <summary title="Layout and display configuration.">Layout config</summary>
+      <summary title="Layout and display configuration.">
+        <span>Layout config</span>
+        <SectionPlacementButtons v-model="config.layoutConfigPlacement" />
+      </summary>
       <LayoutConfigControls />
     </details>
 
     <details v-if="config.filterPlacement === 'side'" open>
-      <summary title="Filter the loaded image dataset.">Filter</summary>
+      <summary title="Filter the loaded image dataset.">
+        <span>Filter</span>
+        <SectionPlacementButtons v-model="config.filterPlacement" />
+      </summary>
       <FilterControls />
     </details>
 
-    <details v-if="config.tagSetsPlacement === 'side'" open>
+    <details v-if="hasSideTagSets" open>
       <summary title="Editable tag sets used by row chips, unknown-tag detection, highlighting, and ordering.">Tag Sets</summary>
-      <TagSetFields />
+      <TagSetFields placement="side" />
     </details>
 
     <BatchTools v-if="config.batchToolsPlacement === 'side'" />
@@ -46,11 +55,12 @@ import BatchTools from "~/components/BatchTools.vue";
 import FileManagementControls from "~/components/FileManagementControls.vue";
 import FilterControls from "~/components/FilterControls.vue";
 import LayoutConfigControls from "~/components/LayoutConfigControls.vue";
+import SectionPlacementButtons from "~/components/SectionPlacementButtons.vue";
 import TagSetFields from "~/components/TagSetFields.vue";
 import TagStatsList from "~/components/TagStatsList.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
-const { config, hasSidePanelContent } = useImageTaggerContext();
+const { config, hasSidePanelContent, hasSideTagSets } = useImageTaggerContext();
 
 const minimumSidePanelWidth = 260;
 const maximumSidePanelWidth = 720;
@@ -146,6 +156,10 @@ onBeforeUnmount(stopResize);
   }
 
   :deep(summary) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     margin-bottom: 8px;
     cursor: pointer;
     font-weight: 750;

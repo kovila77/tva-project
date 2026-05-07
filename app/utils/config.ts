@@ -43,6 +43,11 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     headerPanelMode: source.headerPanelMode === "hidden" ? "hidden" : "open",
     sidePanelMode: source.sidePanelMode === "hidden" ? "hidden" : "open",
     tagSetsPlacement: includesValue(tagSetPlacements, source.tagSetsPlacement) ? source.tagSetsPlacement : "side",
+    commonTagsPlacement: normalizeTagSetPlacement(source.commonTagsPlacement, source.tagSetsPlacement),
+    knownTagsPlacement: normalizeTagSetPlacement(source.knownTagsPlacement, source.tagSetsPlacement),
+    highlightTagsPlacement: normalizeTagSetPlacement(source.highlightTagsPlacement, source.tagSetsPlacement),
+    highlightTextPlacement: normalizeTagSetPlacement(source.highlightTextPlacement, source.tagSetsPlacement),
+    orderTagsPlacement: normalizeTagSetPlacement(source.orderTagsPlacement, source.tagSetsPlacement),
     statsPlacement: includesValue(statsPlacements, source.statsPlacement) ? source.statsPlacement : "tab",
     batchToolsPlacement: includesValue(batchToolsPlacements, source.batchToolsPlacement) ? source.batchToolsPlacement : "side",
     fileManagementPlacement: includesValue(headerSectionPlacements, source.fileManagementPlacement) ? source.fileManagementPlacement : "header",
@@ -117,6 +122,14 @@ function normalizeImageWidthMode(value: unknown): ImageWidthMode {
   }
 
   return includesValue(imageWidthModes, value) ? value : "compact";
+}
+
+function normalizeTagSetPlacement(value: unknown, fallback: unknown): TagSetsPlacement {
+  if (includesValue(tagSetPlacements, value)) {
+    return value;
+  }
+
+  return includesValue(tagSetPlacements, fallback) ? fallback : "side";
 }
 
 export function isThemeMode(value: unknown): value is ThemeMode {

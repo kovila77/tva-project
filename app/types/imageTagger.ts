@@ -37,6 +37,11 @@ export interface AppConfig {
   headerPanelMode: HeaderPanelMode;
   sidePanelMode: SidePanelMode;
   tagSetsPlacement: TagSetsPlacement;
+  commonTagsPlacement: TagSetsPlacement;
+  knownTagsPlacement: TagSetsPlacement;
+  highlightTagsPlacement: TagSetsPlacement;
+  highlightTextPlacement: TagSetsPlacement;
+  orderTagsPlacement: TagSetsPlacement;
   statsPlacement: StatsPlacement;
   batchToolsPlacement: BatchToolsPlacement;
   fileManagementPlacement: HeaderSectionPlacement;

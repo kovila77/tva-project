@@ -44,7 +44,8 @@
     </label>
     <label class="field compact">
       <span>Tag sets</span>
-      <select v-model="config.tagSetsPlacement" class="control" title="Choose where editable tag sets are shown. Header keeps them near filters; side saves vertical space; hidden keeps image area wide.">
+      <select v-model="bulkTagSetsPlacement" class="control" title="Choose where all editable tag sets are shown. Individual tag-set sections can override this from their headings.">
+        <option v-if="bulkTagSetsPlacement === 'mixed'" value="mixed" disabled>Mixed</option>
         <option value="side">Side</option>
         <option value="top">Header</option>
         <option value="hidden">Hidden</option>
@@ -104,10 +105,37 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import ImageDimensionControl from "~/components/ImageDimensionControl.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
+import type { TagSetsPlacement } from "~/types/imageTagger";
 
 const { config } = useImageTaggerContext();
+
+const tagSetPlacementKeys = [
+  "commonTagsPlacement",
+  "knownTagsPlacement",
+  "highlightTagsPlacement",
+  "highlightTextPlacement",
+  "orderTagsPlacement"
+] as const;
+
+const bulkTagSetsPlacement = computed<TagSetsPlacement | "mixed">({
+  get: () => {
+    const firstPlacement = config[tagSetPlacementKeys[0]];
+    return tagSetPlacementKeys.every((key) => config[key] === firstPlacement) ? firstPlacement : "mixed";
+  },
+  set: (placement) => {
+    if (placement === "mixed") {
+      return;
+    }
+
+    config.tagSetsPlacement = placement;
+    for (const key of tagSetPlacementKeys) {
+      config[key] = placement;
+    }
+  }
+});
 </script>
 
 <style scoped lang="scss">

@@ -1,8 +1,16 @@
 <template>
   <div class="tag-set-fields">
-    <template v-for="field in fields" :key="field.key">
+    <template v-for="field in visibleFields" :key="field.key">
       <details v-if="collapsible" class="tag-set-fields__section">
-        <summary>{{ field.label }}</summary>
+        <summary>
+          <span class="tag-set-fields__heading">
+            <AppIcon v-if="field.icon" :name="field.icon" class="icon" />
+            <span>{{ field.label }}</span>
+          </span>
+          <span class="tag-set-fields__placement">
+            <SectionPlacementButtons v-model="config[field.placementKey]" header-value="top" />
+          </span>
+        </summary>
         <TagField
           v-model="config[field.key]"
           :rows="field.rows"
@@ -15,31 +23,53 @@
           show-history-buttons
         />
       </details>
-      <TagField
-        v-else
-        v-model="config[field.key]"
-        :label="field.label"
-        :rows="field.rows"
-        :mode="field.mode"
-        :placeholder="field.placeholder"
-        :title="field.title"
-        :autocomplete="field.autocomplete"
-        :autocomplete-items="autocompleteTags"
-        :style-rules="field.decorate ? tagTextStyleRules : []"
-        show-history-buttons
-      />
+      <section v-else class="tag-set-fields__section">
+        <div class="tag-set-fields__header">
+          <span class="tag-set-fields__heading">
+            <AppIcon v-if="field.icon" :name="field.icon" class="icon" />
+            <span>{{ field.label }}</span>
+          </span>
+          <span class="tag-set-fields__placement">
+            <SectionPlacementButtons v-model="config[field.placementKey]" header-value="top" />
+          </span>
+        </div>
+        <TagField
+          v-model="config[field.key]"
+          :rows="field.rows"
+          :mode="field.mode"
+          :placeholder="field.placeholder"
+          :title="field.title"
+          :autocomplete="field.autocomplete"
+          :autocomplete-items="autocompleteTags"
+          :style-rules="field.decorate ? tagTextStyleRules : []"
+          show-history-buttons
+        />
+      </section>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+import AppIcon from "~/components/AppIcon.vue";
+import SectionPlacementButtons from "~/components/SectionPlacementButtons.vue";
 import TagField from "~/components/TagField.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
-import type { ConfigTextKey, TagTextFieldMode } from "~/types/imageTagger";
+import type { AppIconName } from "~/utils/icons";
+import type { ConfigTextKey, TagSetsPlacement, TagTextFieldMode } from "~/types/imageTagger";
+
+type TagSetPlacementKey =
+  | "commonTagsPlacement"
+  | "knownTagsPlacement"
+  | "highlightTagsPlacement"
+  | "highlightTextPlacement"
+  | "orderTagsPlacement";
 
 interface TagSetField {
   key: ConfigTextKey;
+  placementKey: TagSetPlacementKey;
   label: string;
+  icon: AppIconName | "";
   rows: number;
   mode: TagTextFieldMode;
   placeholder: string;
@@ -54,16 +84,12 @@ const {
   tagTextStyleRules
 } = useImageTaggerContext();
 
-withDefaults(defineProps<{
-  collapsible?: boolean;
-}>(), {
-  collapsible: false
-});
-
 const fields: TagSetField[] = [
   {
     key: "commonTagsText",
+    placementKey: "commonTagsPlacement",
     label: "Common tags",
+    icon: "common",
     rows: 5,
     mode: "tags",
     placeholder: "masterpiece, best quality",
@@ -73,7 +99,9 @@ const fields: TagSetField[] = [
   },
   {
     key: "knownTagsText",
+    placementKey: "knownTagsPlacement",
     label: "Known tags",
+    icon: "known",
     rows: 5,
     mode: "tags",
     placeholder: "Tags treated as expected",
@@ -83,7 +111,9 @@ const fields: TagSetField[] = [
   },
   {
     key: "highlightTagsText",
+    placementKey: "highlightTagsPlacement",
     label: "Highlight tags",
+    icon: "highlight",
     rows: 4,
     mode: "tags",
     placeholder: "Tags to emphasize",
@@ -93,7 +123,9 @@ const fields: TagSetField[] = [
   },
   {
     key: "highlightText",
+    placementKey: "highlightTextPlacement",
     label: "Highlight text",
+    icon: "text",
     rows: 3,
     mode: "text",
     placeholder: "Text fragments to emphasize",
@@ -103,7 +135,9 @@ const fields: TagSetField[] = [
   },
   {
     key: "orderTagsText",
+    placementKey: "orderTagsPlacement",
     label: "Order tags",
+    icon: "",
     rows: 4,
     mode: "tags",
     placeholder: "Tags that should be first",
@@ -112,15 +146,33 @@ const fields: TagSetField[] = [
     decorate: true
   }
 ];
+
+const props = withDefaults(defineProps<{
+  collapsible?: boolean;
+  placement?: TagSetsPlacement;
+}>(), {
+  collapsible: false,
+  placement: "side"
+});
+
+const visibleFields = computed(() => fields.filter((field) => config[field.placementKey] === props.placement));
 </script>
 
 <style scoped lang="scss">
 .tag-set-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
   &__section {
     min-width: 0;
-    margin-bottom: 4px;
 
-    summary {
+    summary,
+    .tag-set-fields__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
       margin-bottom: 8px;
       cursor: pointer;
       font-weight: 750;
@@ -130,6 +182,17 @@ const fields: TagSetField[] = [
         display: none;
       }
     }
+  }
+
+  &__heading {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__placement {
+    flex: 0 0 auto;
   }
 }
 </style>
