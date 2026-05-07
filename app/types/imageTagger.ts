@@ -1,10 +1,9 @@
 export type FilterMode = "tags" | "regex";
-export type DensityMode = "comfortable" | "compact";
 export type ThemeMode = "dark" | "light";
 export type SidePanelMode = "open" | "hidden";
 export type TagSetsPlacement = "side" | "top" | "hidden";
 export type StatsPlacement = "tab" | "side" | "hidden";
-export type ImageSizeMode = "tiny" | "small" | "medium" | "large";
+export type ImageRowHeightMode = "full" | "fixed";
 export type MainTab = "images" | "stats";
 export type TagTextFieldMode = "tags" | "single-tag" | "filter" | "regex" | "text";
 export type TagTextStyleMatch = "tag" | "fragment" | "regex" | "unmatched-tag" | "all-tags";
@@ -28,13 +27,13 @@ export interface AppConfig {
   filterText: string;
   filterMode: FilterMode;
   ignoreCase: boolean;
-  density: DensityMode;
   theme: ThemeMode;
   sidePanelMode: SidePanelMode;
   tagSetsPlacement: TagSetsPlacement;
   statsPlacement: StatsPlacement;
   showTagsColumn: boolean;
-  imageSize: ImageSizeMode;
+  imageRowHeightMode: ImageRowHeightMode;
+  imageRowFixedHeight: number;
 }
 
 export interface ImageMetadata {

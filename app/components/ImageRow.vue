@@ -3,7 +3,7 @@
     class="image-row"
     :class="{
       'image-row--dirty': image.dirty,
-      'image-row--compact': config.density === 'compact',
+      'image-row--fixed': config.imageRowHeightMode === 'fixed',
       'image-row--no-tags': !config.showTagsColumn
     }"
   >
@@ -158,7 +158,7 @@ const {
 <style scoped lang="scss">
 .image-row {
   display: grid;
-  grid-template-columns: minmax(120px, var(--thumb-size, 220px)) minmax(280px, 1fr) minmax(260px, 0.9fr);
+  grid-template-columns: minmax(160px, 240px) minmax(280px, 1fr) minmax(260px, 0.9fr);
   gap: 10px;
   padding: 10px;
   border: 1px solid var(--border);
@@ -170,19 +170,20 @@ const {
     box-shadow: inset 3px 0 0 #f59e0b;
   }
 
-  &--compact {
-    grid-template-columns: minmax(120px, var(--thumb-size, 160px)) minmax(260px, 1fr) minmax(220px, 0.8fr);
-    padding: 8px;
+  &--fixed {
+    height: var(--image-row-fixed-height, 360px);
+    min-height: 100px;
   }
 
   &--no-tags {
-    grid-template-columns: var(--thumb-size, 220px) minmax(280px, 1fr);
+    grid-template-columns: minmax(160px, 240px) minmax(280px, 1fr);
   }
 
   &__thumb {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
-    height: var(--thumb-height, 220px);
     overflow: hidden;
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -192,13 +193,17 @@ const {
     img {
       display: block;
       width: 100%;
-      height: 100%;
+      height: auto;
       object-fit: contain;
     }
   }
 
-  &--compact &__thumb {
-    height: min(var(--thumb-height, 144px), 190px);
+  &--fixed &__thumb {
+    height: 100%;
+
+    img {
+      height: 100%;
+    }
   }
 
   &__editor,
@@ -207,6 +212,11 @@ const {
     display: flex;
     flex-direction: column;
     gap: 8px;
+  }
+
+  &--fixed &__editor {
+    min-height: 0;
+    overflow: auto;
   }
 
   &__title {
@@ -232,11 +242,17 @@ const {
     :deep(.tag-field__editor .cm-content) {
       min-height: 126px;
     }
+
+    :deep(.tag-field__editor .cm-scroller) {
+      max-height: none;
+      overflow: visible;
+    }
   }
 
-  &--compact &__tag-field {
-    :deep(.tag-field__editor .cm-content) {
-      min-height: 88px;
+  &--fixed &__tag-field {
+    :deep(.tag-field__editor .cm-scroller) {
+      max-height: min(46vh, calc((var(--tag-field-rows, 4) * 1.45em) + 18px));
+      overflow: auto;
     }
   }
 
@@ -269,15 +285,15 @@ const {
   }
 
   &__tag-column {
+    overflow: visible;
+  }
+
+  &--fixed &__tag-column {
     align-self: stretch;
     min-height: 0;
     max-height: none;
     overflow: auto;
     contain: size layout;
-  }
-
-  &--compact &__tag-column {
-    max-height: none;
   }
 
   &__chip-group {
@@ -300,8 +316,7 @@ const {
 }
 
 @media (max-width: 1260px) {
-  .image-row,
-  .image-row--compact {
+  .image-row {
     grid-template-columns: 150px minmax(0, 1fr);
   }
 
@@ -311,14 +326,16 @@ const {
 }
 
 @media (max-width: 860px) {
-  .image-row,
-  .image-row--compact {
+  .image-row {
     grid-template-columns: 1fr;
   }
 
-  .image-row__thumb,
-  .image-row--compact .image-row__thumb {
-    height: 240px;
+  .image-row--fixed {
+    overflow: auto;
+  }
+
+  .image-row--fixed .image-row__thumb {
+    min-height: 100px;
   }
 }
 </style>

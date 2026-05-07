@@ -166,12 +166,12 @@ export function makeDatasetSnapshot(config: AppConfig): AppConfig {
     filterText: config.filterText,
     filterMode: config.filterMode,
     ignoreCase: config.ignoreCase,
-    density: config.density,
     theme: config.theme,
     sidePanelMode: config.sidePanelMode,
     tagSetsPlacement: config.tagSetsPlacement,
     statsPlacement: config.statsPlacement,
     showTagsColumn: config.showTagsColumn,
-    imageSize: config.imageSize
+    imageRowHeightMode: config.imageRowHeightMode,
+    imageRowFixedHeight: config.imageRowFixedHeight
   };
 }

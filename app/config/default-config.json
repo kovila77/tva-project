@@ -8,11 +8,11 @@
   "filterText": "",
   "filterMode": "tags",
   "ignoreCase": false,
-  "density": "comfortable",
   "theme": "dark",
   "sidePanelMode": "open",
   "tagSetsPlacement": "side",
   "statsPlacement": "tab",
   "showTagsColumn": true,
-  "imageSize": "medium"
+  "imageRowHeightMode": "full",
+  "imageRowFixedHeight": 360
 }

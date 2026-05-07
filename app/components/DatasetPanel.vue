@@ -10,13 +10,6 @@
           <button class="btn" type="button" title="Show the image editing dataset." :class="{ active: activeMainTab === 'images' }" @click="activeMainTab = 'images'"><AppIcon name="images" class="icon" /> Images</button>
           <button v-if="config.statsPlacement === 'tab'" class="btn" type="button" title="Show tag statistics as a separate tab." :class="{ active: activeMainTab === 'stats' }" @click="activeMainTab = 'stats'"><AppIcon name="stats" class="icon" /> Stats</button>
         </div>
-        <label class="field compact">
-          <span>Density</span>
-          <select v-model="config.density" class="control" title="Compact rows fit more images. Comfortable rows leave more room for editing.">
-            <option value="comfortable">Comfortable</option>
-            <option value="compact">Compact</option>
-          </select>
-        </label>
         <button class="btn" type="button" title="Render another batch of visible images. Large datasets render in batches to keep the browser fast." :disabled="visibleLimit >= visibleImages.length" @click="showMore">
           <AppIcon name="showMore" class="icon" /> Show More
         </button>
@@ -41,11 +34,7 @@
     <div
       v-if="activeMainTab === 'images'"
       class="dataset-panel__image-list"
-      :class="[
-        `dataset-panel__image-list--${config.density}`,
-        `dataset-panel__image-list--image-${config.imageSize}`,
-        { 'dataset-panel__image-list--no-tags': !config.showTagsColumn }
-      ]"
+      :style="{ '--image-row-fixed-height': `${config.imageRowFixedHeight}px` }"
     >
       <ImageRow
         v-for="image in renderedImages"
@@ -158,25 +147,6 @@ const {
     gap: 8px;
     padding: 0 12px 12px;
 
-    &--image-tiny {
-      --thumb-size: 96px;
-      --thumb-height: 112px;
-    }
-
-    &--image-small {
-      --thumb-size: 140px;
-      --thumb-height: 160px;
-    }
-
-    &--image-medium {
-      --thumb-size: 220px;
-      --thumb-height: 240px;
-    }
-
-    &--image-large {
-      --thumb-size: 340px;
-      --thumb-height: 380px;
-    }
   }
 }
 

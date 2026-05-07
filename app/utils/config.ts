@@ -1,8 +1,7 @@
 import type {
   AppConfig,
-  DensityMode,
   FilterMode,
-  ImageSizeMode,
+  ImageRowHeightMode,
   SidePanelMode,
   StatsPlacement,
   TagSetsPlacement,
@@ -11,7 +10,10 @@ import type {
 
 const tagSetPlacements: TagSetsPlacement[] = ["side", "top", "hidden"];
 const statsPlacements: StatsPlacement[] = ["tab", "side", "hidden"];
-const imageSizes: ImageSizeMode[] = ["tiny", "small", "medium", "large"];
+const imageRowHeightModes: ImageRowHeightMode[] = ["full", "fixed"];
+const defaultFixedRowHeight = 360;
+const minFixedRowHeight = 100;
+const maxFixedRowHeight = 2500;
 
 type ConfigSource = Partial<Record<keyof AppConfig | string, unknown>>;
 
@@ -26,13 +28,13 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     filterText: stringValue(source.filterText ?? source.tagFilter),
     filterMode: normalizeFilterMode(source.filterMode, source.isFilterRegex),
     ignoreCase: Boolean(source.ignoreCase ?? source.filterIgnoreCase ?? false),
-    density: source.density === "compact" ? "compact" : "comfortable",
     theme: source.theme === "light" ? "light" : "dark",
     sidePanelMode: source.sidePanelMode === "hidden" ? "hidden" : "open",
     tagSetsPlacement: includesValue(tagSetPlacements, source.tagSetsPlacement) ? source.tagSetsPlacement : "side",
     statsPlacement: includesValue(statsPlacements, source.statsPlacement) ? source.statsPlacement : "tab",
     showTagsColumn: source.showTagsColumn !== false,
-    imageSize: includesValue(imageSizes, source.imageSize) ? source.imageSize : "medium"
+    imageRowHeightMode: includesValue(imageRowHeightModes, source.imageRowHeightMode) ? source.imageRowHeightMode : "full",
+    imageRowFixedHeight: normalizeFixedRowHeight(source.imageRowFixedHeight)
   };
 }
 
@@ -52,8 +54,13 @@ function includesValue<T extends string>(values: T[], value: unknown): value is 
   return typeof value === "string" && values.includes(value as T);
 }
 
-export function isDensityMode(value: unknown): value is DensityMode {
-  return value === "comfortable" || value === "compact";
+function normalizeFixedRowHeight(value: unknown): number {
+  const numberValue = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(numberValue)) {
+    return defaultFixedRowHeight;
+  }
+
+  return Math.min(maxFixedRowHeight, Math.max(minFixedRowHeight, Math.round(numberValue)));
 }
 
 export function isThemeMode(value: unknown): value is ThemeMode {

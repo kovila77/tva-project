@@ -76,13 +76,23 @@
         <span>Row tags</span>
       </label>
       <label class="field compact">
-        <span>Image size</span>
-        <select v-model="config.imageSize" class="control" title="Controls thumbnail size for quick scanning or closer image comparison.">
-          <option value="tiny">Tiny</option>
-          <option value="small">Small</option>
-          <option value="medium">Medium</option>
-          <option value="large">Large</option>
+        <span>Row height</span>
+        <select v-model="config.imageRowHeightMode" class="control" title="Full rows use image/content height. Fixed rows use the configured row height.">
+          <option value="full">Full</option>
+          <option value="fixed">Fixed</option>
         </select>
+      </label>
+      <label v-if="config.imageRowHeightMode === 'fixed'" class="field quick-controls__height-field">
+        <span>Fixed height {{ fixedRowHeight }}px</span>
+        <input
+          v-model.number="fixedRowHeight"
+          class="quick-controls__height-range"
+          type="range"
+          min="100"
+          max="2500"
+          step="10"
+          title="Fixed image row height from 100px to 2500px."
+        >
       </label>
     </div>
 
@@ -112,6 +122,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
 import TagField from "~/components/TagField.vue";
 import TagSetFields from "~/components/TagSetFields.vue";
@@ -134,6 +145,15 @@ const {
   undoDataset,
   redoDataset
 } = useImageTaggerContext();
+
+const minFixedRowHeight = 100;
+const maxFixedRowHeight = 2500;
+const fixedRowHeight = computed({
+  get: () => Math.min(maxFixedRowHeight, Math.max(minFixedRowHeight, config.imageRowFixedHeight)),
+  set: (value: number) => {
+    config.imageRowFixedHeight = Math.min(maxFixedRowHeight, Math.max(minFixedRowHeight, Math.round(Number(value) || minFixedRowHeight)));
+  }
+});
 </script>
 
 <style scoped lang="scss">
@@ -161,6 +181,15 @@ const {
     gap: 8px;
     align-items: end;
     margin-top: 10px;
+  }
+
+  &__height-field {
+    width: min(260px, 100%);
+  }
+
+  &__height-range {
+    width: 100%;
+    accent-color: var(--blue);
   }
 
   &__tag-sets {
