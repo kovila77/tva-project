@@ -65,9 +65,15 @@
         <option value="tab">Tab</option>
       </select>
     </label>
-    <label class="check-field" title="Show the clickable tag chips beside each image. Hide this to make the image/editor columns wider.">
-      <input v-model="config.showTagsColumn" type="checkbox">
-      <span>Row tags</span>
+    <label class="field compact">
+      <span>Row chips</span>
+      <select v-model="config.rowChipMode" class="control" title="Choose which clickable tag chips are shown beside each image.">
+        <option value="hidden">Don't show</option>
+        <option value="common-deleted">Common and deleted</option>
+        <option value="deleted">Deleted</option>
+        <option value="common">Common</option>
+        <option value="everything">Everything</option>
+      </select>
     </label>
     <ImageDimensionControl
       v-model:mode="config.imageRowHeightMode"

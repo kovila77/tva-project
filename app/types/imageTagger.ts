@@ -7,6 +7,7 @@ export type StatsPlacement = "tab" | "side" | "hidden";
 export type BatchToolsPlacement = "tab" | "side";
 export type HeaderSectionPlacement = "header" | "side";
 export type SidePanelPosition = "left" | "right";
+export type RowChipMode = "hidden" | "common-deleted" | "deleted" | "common" | "everything";
 export type ImageRowHeightMode = "full" | "fixed";
 export type ImageWidthMode = "current" | "fixed";
 export type MainTab = "images" | "stats" | "batch";
@@ -45,6 +46,7 @@ export interface AppConfig {
   sidePanelPosition: SidePanelPosition;
   headerHeight: number;
   showTagsColumn: boolean;
+  rowChipMode: RowChipMode;
   imageRowHeightMode: ImageRowHeightMode;
   imageRowFixedHeight: number;
   imageWidthMode: ImageWidthMode;

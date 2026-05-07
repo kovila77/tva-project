@@ -6,6 +6,7 @@ import type {
   HeaderSectionPlacement,
   ImageRowHeightMode,
   ImageWidthMode,
+  RowChipMode,
   SidePanelMode,
   SidePanelPosition,
   StatsPlacement,
@@ -18,6 +19,7 @@ const statsPlacements: StatsPlacement[] = ["tab", "side", "hidden"];
 const batchToolsPlacements: BatchToolsPlacement[] = ["tab", "side"];
 const headerSectionPlacements: HeaderSectionPlacement[] = ["header", "side"];
 const sidePanelPositions: SidePanelPosition[] = ["left", "right"];
+const rowChipModes: RowChipMode[] = ["hidden", "common-deleted", "deleted", "common", "everything"];
 const imageRowHeightModes: ImageRowHeightMode[] = ["full", "fixed"];
 const imageWidthModes: ImageWidthMode[] = ["current", "fixed"];
 const defaultFixedRowHeight = 360;
@@ -50,6 +52,7 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     sidePanelPosition: includesValue(sidePanelPositions, source.sidePanelPosition) ? source.sidePanelPosition : "left",
     headerHeight: normalizeHeaderHeight(source.headerHeight),
     showTagsColumn: source.showTagsColumn !== false,
+    rowChipMode: normalizeRowChipMode(source.rowChipMode, source.showTagsColumn),
     imageRowHeightMode: includesValue(imageRowHeightModes, source.imageRowHeightMode) ? source.imageRowHeightMode : "full",
     imageRowFixedHeight: normalizeFixedDimension(source.imageRowFixedHeight, defaultFixedRowHeight),
     imageWidthMode: includesValue(imageWidthModes, source.imageWidthMode) ? source.imageWidthMode : "current",
@@ -98,6 +101,14 @@ function normalizeHeaderHeight(value: unknown): number {
   }
 
   return Math.min(1200, Math.max(0, Math.round(numberValue)));
+}
+
+function normalizeRowChipMode(value: unknown, legacyShowTagsColumn: unknown): RowChipMode {
+  if (includesValue(rowChipModes, value)) {
+    return value;
+  }
+
+  return legacyShowTagsColumn === false ? "hidden" : "common-deleted";
 }
 
 export function isThemeMode(value: unknown): value is ThemeMode {

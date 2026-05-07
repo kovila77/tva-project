@@ -142,7 +142,7 @@ function createImageTaggerContext() {
   const layoutClasses = computed(() => ({
     "side-panel-right": config.sidePanelPosition === "right",
     "side-panel-hidden": !hasSidePanelContent.value,
-    "row-tags-hidden": !config.showTagsColumn
+    "row-tags-hidden": config.rowChipMode === "hidden"
   }));
   const viewerImageStyle = computed(() => ({
     transform: `translate(${viewer.x}px, ${viewer.y}px) scale(${viewer.scale})`

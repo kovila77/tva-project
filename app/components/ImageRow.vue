@@ -5,7 +5,7 @@
       'image-row--dirty': image.dirty,
       'image-row--fixed': config.imageRowHeightMode === 'fixed',
       'image-row--image-fixed': config.imageWidthMode === 'fixed',
-      'image-row--no-tags': !config.showTagsColumn
+      'image-row--no-tags': !showChipColumn
     }"
   >
     <button class="image-row__thumb" type="button" :title="`Open image viewer for ${image.fileName}. Source file is not modified.`" @click="openViewer(image)">
@@ -69,10 +69,10 @@
       </div>
     </div>
 
-    <div v-if="config.showTagsColumn" class="image-row__tag-column" title="Clickable row tags. Use display controls to hide this column when image/editor width matters more.">
-      <div class="image-row__chip-group">
+    <div v-if="showChipColumn" class="image-row__tag-column" title="Clickable row tags. Use display controls to choose which chips are shown.">
+      <div v-if="visibleCommonTags.length" class="image-row__chip-group">
         <TagChip
-          v-for="tag in commonTags"
+          v-for="tag in visibleCommonTags"
           :key="`${image.id}-common-${tag}`"
           :tag="tag"
           variant="common"
@@ -83,9 +83,9 @@
         />
       </div>
 
-      <div class="image-row__chip-group">
+      <div v-if="visibleNonCommonTags.length" class="image-row__chip-group">
         <TagChip
-          v-for="tag in nonCommonTags(image)"
+          v-for="tag in visibleNonCommonTags"
           :key="`${image.id}-tag-${tag}`"
           :tag="tag"
           icon="remove"
@@ -94,10 +94,10 @@
         />
       </div>
 
-      <div v-if="image.removedTags.length" class="image-row__chip-group image-row__deleted-tags">
+      <div v-if="visibleRemovedTags.length" class="image-row__chip-group image-row__deleted-tags">
         <span class="image-row__chip-heading">Deleted</span>
         <TagChip
-          v-for="tag in image.removedTags"
+          v-for="tag in visibleRemovedTags"
           :key="`${image.id}-removed-${tag}`"
           :tag="tag"
           icon="add"
@@ -107,18 +107,21 @@
           @click="restoreRemovedTag(image, tag)"
         />
       </div>
+
+      <div v-if="!hasVisibleChips" class="image-row__chip-placeholder">&lt;no tags&gt;</div>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
 import TagChip from "~/components/TagChip.vue";
 import TagField from "~/components/TagField.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { ImageRecord } from "~/types/imageTagger";
 
-defineProps<{
+const props = defineProps<{
   image: ImageRecord;
 }>();
 
@@ -154,6 +157,30 @@ const {
   nonCommonTags,
   restoreRemovedTag
 } = useImageTaggerContext();
+
+const showChipColumn = computed(() => config.rowChipMode !== "hidden");
+const visibleCommonTags = computed(() => (
+  config.rowChipMode === "common"
+  || config.rowChipMode === "common-deleted"
+  || config.rowChipMode === "everything"
+    ? commonTags.value
+    : []
+));
+const visibleNonCommonTags = computed(() => (
+  config.rowChipMode === "everything" ? nonCommonTags(props.image) : []
+));
+const visibleRemovedTags = computed(() => (
+  config.rowChipMode === "deleted"
+  || config.rowChipMode === "common-deleted"
+  || config.rowChipMode === "everything"
+    ? props.image.removedTags
+    : []
+));
+const hasVisibleChips = computed(() => (
+  Boolean(visibleCommonTags.value.length)
+  || Boolean(visibleNonCommonTags.value.length)
+  || Boolean(visibleRemovedTags.value.length)
+));
 </script>
 
 <style scoped lang="scss">
@@ -324,6 +351,16 @@ const {
     color: var(--muted);
     font-size: 11px;
     font-weight: 800;
+  }
+
+  &__chip-placeholder {
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    background: var(--surface-soft);
+    padding: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 750;
   }
 }
 

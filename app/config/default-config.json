@@ -21,6 +21,7 @@
   "sidePanelPosition": "left",
   "headerHeight": 0,
   "showTagsColumn": true,
+  "rowChipMode": "common-deleted",
   "imageRowHeightMode": "full",
   "imageRowFixedHeight": 360,
   "imageWidthMode": "current",

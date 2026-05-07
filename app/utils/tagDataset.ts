@@ -179,6 +179,7 @@ export function makeDatasetSnapshot(config: AppConfig): AppConfig {
     sidePanelPosition: config.sidePanelPosition,
     headerHeight: config.headerHeight,
     showTagsColumn: config.showTagsColumn,
+    rowChipMode: config.rowChipMode,
     imageRowHeightMode: config.imageRowHeightMode,
     imageRowFixedHeight: config.imageRowFixedHeight,
     imageWidthMode: config.imageWidthMode,
