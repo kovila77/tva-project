@@ -40,14 +40,14 @@ const {
 .tag-stats {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 1px;
 
   &__row {
     display: grid;
     grid-template-columns: minmax(160px, 1fr) 42px auto auto auto;
-    gap: 4px;
+    gap: 1px;
     align-items: center;
-    padding: 4px;
+    padding: 1px;
     border: 1px solid var(--border);
     border-radius: 6px;
     background: var(--surface-raised);
