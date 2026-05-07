@@ -275,6 +275,57 @@ button:disabled {
   }
 }
 
+.cm-editor {
+  color: var(--text);
+
+  .cm-cursor,
+  .cm-dropCursor {
+    border-left-color: var(--text) !important;
+  }
+
+  .cm-selectionBackground,
+  &.cm-focused .cm-selectionBackground,
+  ::selection {
+    background: rgba(56, 189, 248, 0.26) !important;
+  }
+}
+
+.cm-tooltip,
+.cm-tooltip.cm-tooltip-autocomplete {
+  border: 1px solid var(--border-strong) !important;
+  background: var(--surface-raised) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.cm-tooltip-autocomplete {
+  > ul {
+    max-height: 240px;
+    background: var(--surface-raised) !important;
+    color: var(--text) !important;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  }
+
+  > ul > li {
+    background: transparent !important;
+    color: var(--text) !important;
+
+    &[aria-selected] {
+      background: var(--blue) !important;
+      color: #fff !important;
+    }
+  }
+
+  .cm-completionIcon {
+    opacity: 0.75;
+  }
+
+  .cm-completionMatchedText {
+    color: var(--amber);
+    text-decoration: none;
+  }
+}
+
 @keyframes filtered-tag-blink {
   0%,
   100% {
