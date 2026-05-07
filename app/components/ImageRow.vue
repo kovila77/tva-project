@@ -40,24 +40,17 @@
       />
 
       <div class="image-row__actions">
-        <button class="btn icon-btn" type="button" :title="`Preview ${image.fileName} with zoom and pan.`" :aria-label="`Preview ${image.fileName}`" @click="openViewer(image)"><AppIcon name="preview" class="icon" /></button>
-        <button class="btn icon-btn" type="button" :title="`Copy temporary browser object URL for ${image.fileName}.`" :aria-label="`Copy temporary URL for ${image.fileName}`" @click="copyImageUrl(image)"><AppIcon name="copy" class="icon" /></button>
-        <button class="btn success icon-btn" type="button" :title="`Apply the current text draft for ${image.fileName}. Creates one undoable history entry.`" :aria-label="`Apply tag draft for ${image.fileName}`" :disabled="!image.draftDirty" @click="commitEditor(image, 'edit')"><AppIcon name="apply" class="icon" /></button>
-        <button class="btn warn icon-btn" type="button" :title="imageUndoTitle(image)" :aria-label="`Undo operation for ${image.fileName}`" :disabled="!canUndoImage(image)" @click="undoImage(image)"><AppIcon name="undo" class="icon" /></button>
-        <button class="btn warn icon-btn" type="button" :title="imageRedoTitle(image)" :aria-label="`Redo operation for ${image.fileName}`" :disabled="!canRedoImage(image)" @click="redoImage(image)"><AppIcon name="redo" class="icon" /></button>
-        <button class="btn icon-btn" type="button" :title="imageHistoryTitle(image)" :aria-label="`Toggle history for ${image.fileName}`" @click="toggleImageHistory(image)"><AppIcon name="history" class="icon" /></button>
-        <button class="btn icon-btn" type="button" :title="`Restore ${image.fileName} to the tags loaded from disk. This is undoable.`" :aria-label="`Restore original tags for ${image.fileName}`" :disabled="tagsEqual(image.tags, image.originalTags)" @click="revertImage(image)"><AppIcon name="revert" class="icon" /></button>
-        <button class="btn danger icon-btn" type="button" :title="`Hide ${image.fileName} from this in-memory session. Source files are not deleted and global Undo restores this row.`" :aria-label="`Remove ${image.fileName} from memory`" @click="removeImage(image)"><AppIcon name="removeItem" class="icon" /></button>
-      </div>
-
-      <div class="image-row__actions">
-        <button class="btn icon-btn" type="button" title="Filter the dataset by the selected tag." aria-label="Filter by selected tag" :disabled="!image.selectedTag" @click="filterByTag(image.selectedTag)"><AppIcon name="filter" class="icon" /></button>
-        <button class="btn icon-btn" type="button" title="Append the selected tag to the current filter." aria-label="Add selected tag to filter" :disabled="!image.selectedTag" @click="addSelectedToFilter(image)"><AppIcon name="filterAdd" class="icon" /></button>
-        <button class="btn icon-btn" type="button" title="Add selected tag to common tags, making it available as a row chip." aria-label="Add selected tag to common tags" :disabled="!image.selectedTag" @click="appendConfigTag('commonTagsText', image.selectedTag)"><AppIcon name="common" class="icon" /></button>
-        <button class="btn icon-btn" type="button" title="Add selected tag to known tags so it is no longer marked unknown." aria-label="Add selected tag to known tags" :disabled="!image.selectedTag" @click="appendConfigTag('knownTagsText', image.selectedTag)"><AppIcon name="known" class="icon" /></button>
-        <button class="btn icon-btn" type="button" title="Add selected tag to highlighted tags." aria-label="Add selected tag to highlighted tags" :disabled="!image.selectedTag" @click="appendConfigTag('highlightTagsText', image.selectedTag)"><AppIcon name="highlight" class="icon" /></button>
-        <button class="btn icon-btn" type="button" title="Add selected text/tag to highlighted text fragments." aria-label="Add selected tag to highlighted text" :disabled="!image.selectedTag" @click="appendConfigTag('highlightText', image.selectedTag)"><AppIcon name="text" class="icon" /></button>
-        <button class="btn danger icon-btn" type="button" title="Remove the selected tag from this image and keep it restorable in Deleted tags." aria-label="Remove selected tag" :disabled="!image.selectedTag" @click="removeTagFromImage(image, image.selectedTag)"><AppIcon name="remove" class="icon" /></button>
+        <button class="image-row__plain-action" type="button" title="Filter the dataset by the selected tag." aria-label="Filter by selected tag" :disabled="!image.selectedTag" @click="filterByTag(image.selectedTag)"><AppIcon name="filter" class="icon" /></button>
+        <button class="image-row__plain-action" type="button" title="Append the selected tag to the current filter." aria-label="Add selected tag to filter" :disabled="!image.selectedTag" @click="addSelectedToFilter(image)"><AppIcon name="filterAdd" class="icon" /></button>
+        <button class="image-row__plain-action" type="button" title="Add selected tag to common tags, making it available as a row chip." aria-label="Add selected tag to common tags" :disabled="!image.selectedTag" @click="appendConfigTag('commonTagsText', image.selectedTag)"><AppIcon name="common" class="icon" /></button>
+        <button class="image-row__plain-action" type="button" title="Add selected tag to known tags so it is no longer marked unknown." aria-label="Add selected tag to known tags" :disabled="!image.selectedTag" @click="appendConfigTag('knownTagsText', image.selectedTag)"><AppIcon name="known" class="icon" /></button>
+        <button class="image-row__plain-action" type="button" title="Add selected tag to highlighted tags." aria-label="Add selected tag to highlighted tags" :disabled="!image.selectedTag" @click="appendConfigTag('highlightTagsText', image.selectedTag)"><AppIcon name="highlight" class="icon" /></button>
+        <button class="image-row__plain-action" type="button" title="Add selected text/tag to highlighted text fragments." aria-label="Add selected tag to highlighted text" :disabled="!image.selectedTag" @click="appendConfigTag('highlightText', image.selectedTag)"><AppIcon name="text" class="icon" /></button>
+        <button class="image-row__plain-action image-row__plain-action--danger" type="button" title="Remove the selected tag from this image and keep it restorable in Deleted tags." aria-label="Remove selected tag" :disabled="!image.selectedTag" @click="removeTagFromImage(image, image.selectedTag)"><AppIcon name="remove" class="icon" /></button>
+        <button class="image-row__plain-action" type="button" :title="imageUndoTitle(image)" :aria-label="`Undo operation for ${image.fileName}`" :disabled="!canUndoImage(image)" @click="undoImage(image)"><AppIcon name="undo" class="icon" /></button>
+        <button class="image-row__plain-action" type="button" :title="imageRedoTitle(image)" :aria-label="`Redo operation for ${image.fileName}`" :disabled="!canRedoImage(image)" @click="redoImage(image)"><AppIcon name="redo" class="icon" /></button>
+        <button class="image-row__plain-action" type="button" :title="`Restore ${image.fileName} to the tags loaded from disk. This is undoable.`" :aria-label="`Restore original tags for ${image.fileName}`" :disabled="tagsEqual(image.tags, image.originalTags)" @click="revertImage(image)"><AppIcon name="revert" class="icon" /></button>
+        <button class="image-row__plain-action image-row__plain-action--danger" type="button" :title="`Hide ${image.fileName} from this in-memory session. Source files are not deleted and global Undo restores this row.`" :aria-label="`Remove ${image.fileName} from memory`" @click="removeImage(image)"><AppIcon name="removeItem" class="icon" /></button>
       </div>
 
       <div v-if="image.historyOpen" class="image-row__history" :title="`Recent undo/redo entries touching ${image.fileName}.`">
@@ -132,18 +125,15 @@ const {
   imageTagTextStyleRules,
   imageMetadataLine,
   openViewer,
-  copyImageUrl,
   commitEditor,
   onEditorInput,
   setSelectedTag,
   imageUndoTitle,
   imageRedoTitle,
-  imageHistoryTitle,
   canUndoImage,
   canRedoImage,
   undoImage,
   redoImage,
-  toggleImageHistory,
   revertImage,
   removeImage,
   filterByTag,
@@ -301,6 +291,30 @@ const hasVisibleChips = computed(() => (
     flex-wrap: wrap;
     align-items: center;
     gap: 5px;
+  }
+
+  &__plain-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    padding: 0;
+    line-height: 1;
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+      color: var(--text);
+    }
+
+    &--danger {
+      color: var(--red);
+    }
   }
 
   &__history {
