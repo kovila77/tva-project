@@ -70,54 +70,41 @@
 
     <div v-if="config.showTagsColumn" class="image-row__tag-column" title="Clickable row tags. Use display controls to hide this column when image/editor width matters more.">
       <div class="image-row__chip-group">
-        <button
+        <TagChip
           v-for="tag in commonTags"
           :key="`${image.id}-common-${tag}`"
-          class="image-row__tag-chip image-row__tag-chip--common"
-          :class="[tagClass(tag), { active: hasTag(image, tag) }]"
-          type="button"
+          :tag="tag"
+          variant="common"
+          :icon="hasTag(image, tag) ? 'remove' : 'add'"
+          :active="hasTag(image, tag)"
           :title="hasTag(image, tag) ? `Remove common tag '${tag}' from this image. Undoable.` : `Add common tag '${tag}' to this image. Undoable.`"
           @click="toggleTag(image, tag)"
-        >
-          <AppIcon :name="hasTag(image, tag) ? 'remove' : 'add'" class="icon" />
-          <span>
-            <span v-for="part in tagTextParts(tag)" :key="part.key" :class="{ 'tag-token--fragment-highlighted': part.highlighted }">{{ part.text }}</span>
-          </span>
-        </button>
+        />
       </div>
 
       <div class="image-row__chip-group">
-        <button
+        <TagChip
           v-for="tag in nonCommonTags(image)"
           :key="`${image.id}-tag-${tag}`"
-          class="image-row__tag-chip"
-          :class="tagClass(tag)"
-          type="button"
+          :tag="tag"
+          icon="remove"
           :title="`Remove tag '${tag}' and store it in Deleted tags. Undoable.`"
           @click="removeTagFromImage(image, tag, false)"
-        >
-          <AppIcon name="remove" class="icon" />
-          <span>
-            <span v-for="part in tagTextParts(tag)" :key="part.key" :class="{ 'tag-token--fragment-highlighted': part.highlighted }">{{ part.text }}</span>
-          </span>
-        </button>
+        />
       </div>
 
       <div class="image-row__chip-group image-row__deleted-tags">
         <span class="image-row__chip-heading">Deleted</span>
-        <button
+        <TagChip
           v-for="tag in image.removedTags"
           :key="`${image.id}-removed-${tag}`"
-          class="image-row__tag-chip image-row__tag-chip--removed"
-          type="button"
+          :tag="tag"
+          icon="add"
+          variant="removed"
+          :decorate-states="false"
           :title="`Return deleted tag '${tag}' to this image. Undoable.`"
           @click="restoreRemovedTag(image, tag)"
-        >
-          <AppIcon name="add" class="icon" />
-          <span>
-            <span v-for="part in tagTextParts(tag)" :key="part.key" :class="{ 'tag-token--fragment-highlighted': part.highlighted }">{{ part.text }}</span>
-          </span>
-        </button>
+        />
         <span v-if="!image.removedTags.length" class="empty-inline">No deleted tags.</span>
       </div>
     </div>
@@ -126,6 +113,7 @@
 
 <script setup lang="ts">
 import AppIcon from "~/components/AppIcon.vue";
+import TagChip from "~/components/TagChip.vue";
 import TagField from "~/components/TagField.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { ImageRecord } from "~/types/imageTagger";
@@ -164,8 +152,6 @@ const {
   hasTag,
   toggleTag,
   nonCommonTags,
-  tagClass,
-  tagTextParts,
   restoreRemovedTag
 } = useImageTaggerContext();
 </script>
@@ -297,43 +283,6 @@ const {
     flex-wrap: wrap;
     gap: 4px;
     align-items: flex-start;
-  }
-
-  &__tag-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    max-width: 100%;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--button-bg);
-    color: var(--text);
-    padding: 4px 7px;
-    font-size: 12px;
-    line-height: 1.2;
-    overflow-wrap: anywhere;
-
-    &--common {
-      background: var(--surface-soft);
-      font-style: italic;
-
-      &.active {
-        border-color: var(--border);
-        background: var(--surface-soft);
-        color: var(--text);
-      }
-    }
-
-    &--removed {
-      border-color: #f59e0b;
-      background: var(--yellow-soft);
-    }
-
-    &.active {
-      border-color: #86efac;
-      background: var(--green-soft);
-      color: #14532d;
-    }
   }
 
   &__deleted-tags {
