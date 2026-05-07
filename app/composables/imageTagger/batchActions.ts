@@ -146,6 +146,10 @@ export function createBatchActions({
       return;
     }
 
+    renameTagEverywhereTo(tag, replacement);
+  }
+
+  function renameTagEverywhereTo(tag: string, replacement: string): void {
     const nextTag = replacement.trim();
     if (!nextTag || nextTag.toLowerCase() === tag.toLowerCase()) {
       return;
@@ -153,7 +157,33 @@ export function createBatchActions({
 
     const changes = images.value.map((image) => {
       const renamedTags = image.tags.map((item) => item.toLowerCase() === tag.toLowerCase() ? nextTag : item);
+      const renamedRemovedTags = image.removedTags.map((item) => item.toLowerCase() === tag.toLowerCase() ? nextTag : item);
       const nextTags = orderTags(distinctTags(renamedTags), orderTagsText.value);
+      return {
+        image,
+        after: {
+          ...snapshotImage(image),
+          tags: nextTags,
+          removedTags: distinctTags(renamedRemovedTags),
+          selectedTag: image.selectedTag.toLowerCase() === tag.toLowerCase() ? nextTag : image.selectedTag,
+          editText: formatTags(nextTags)
+        }
+      };
+    });
+
+    if (commitOperation(`Rename ${tag}`, changes)) {
+      setStatus(`Renamed ${tag} to ${nextTag}.`);
+    }
+  }
+
+  function addTagToAllAtStart(tag: string): void {
+    const nextTag = tag.trim();
+    if (!nextTag) {
+      return;
+    }
+
+    const changes = images.value.map((image) => {
+      const nextTags = distinctTags([nextTag, ...removeTag(image.tags, nextTag)]);
       return {
         image,
         after: {
@@ -164,8 +194,8 @@ export function createBatchActions({
       };
     });
 
-    if (commitOperation(`Rename ${tag}`, changes)) {
-      setStatus(`Renamed ${tag} to ${nextTag}.`);
+    if (commitOperation(`Add ${nextTag} to all`, changes)) {
+      setStatus(`Added ${nextTag} to all images.`);
     }
   }
 
@@ -208,10 +238,12 @@ export function createBatchActions({
 
   return {
     addTagToVisible,
+    addTagToAllAtStart,
     removeRegexFromVisible,
     replaceArtistTags,
     renameVisibleFiles,
     renameTagEverywhere,
+    renameTagEverywhereTo,
     removeTagEverywhere,
     applyOrderToVisible
   };

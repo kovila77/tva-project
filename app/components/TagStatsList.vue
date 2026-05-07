@@ -1,21 +1,57 @@
 <template>
-  <div class="tag-stats" :class="{ 'tag-stats--tab': tab }">
+  <div ref="statsRoot" class="tag-stats" :class="{ 'tag-stats--tab': tab }">
+    <div class="tag-stats__row tag-stats__row--new">
+      <div class="tag-stats__name" title="Double-click to add a new tag to the start of every image." @dblclick="startEditing('')">
+        <textarea
+          v-if="editingTag === ''"
+          v-model="editingValue"
+          class="control tag-stats__edit"
+          placeholder="Enter new tag"
+          aria-label="New tag"
+          rows="3"
+          @blur="commitEditing"
+          @keydown.enter.prevent="commitEditing"
+          @keydown.esc.prevent="cancelEditing"
+        />
+        <span v-else class="tag-stats__token tag-stats__token--empty" aria-label="Empty new tag">Click here to add a tag to all images</span>
+      </div>
+      <span class="tag-stats__count" :title="`${images.length} loaded images.`">{{ images.length }}</span>
+      <div class="tag-stats__actions" aria-hidden="true" />
+    </div>
+
     <div v-for="item in topTagStats" :key="item.tag" class="tag-stats__row">
-      <button class="link-button tag-stats__name" type="button" :title="`Filter dataset by '${item.tag}'.`" @click="filterByTag(item.tag)">
-        <span :class="tagClass(item.tag)">
+      <div class="tag-stats__name" :title="`Double-click to rename '${item.tag}' across loaded images.`" @dblclick="startEditing(item.tag)">
+        <textarea
+          v-if="editingTag === item.tag"
+          v-model="editingValue"
+          class="control tag-stats__edit"
+          :aria-label="`Rename ${item.tag}`"
+          rows="3"
+          @blur="commitEditing"
+          @keydown.enter.prevent="commitEditing"
+          @keydown.esc.prevent="cancelEditing"
+        />
+        <span v-else class="tag-stats__token" :class="tagClass(item.tag)">
           <span v-for="part in tagTextParts(item.tag)" :key="part.key" :class="{ 'tag-token--fragment-highlighted': part.highlighted }">{{ part.text }}</span>
         </span>
-      </button>
+      </div>
       <span class="tag-stats__count" :title="`${item.count} images contain this tag.`">{{ item.count }}</span>
-      <button class="mini-btn" type="button" title="Add this tag to common tags." @click="appendConfigTag('commonTagsText', item.tag)"><AppIcon name="common" class="icon" /> Common</button>
-      <button class="mini-btn" type="button" title="Rename this tag across loaded images. Undoable." @click="renameTagEverywhere(item.tag)"><AppIcon name="rename" class="icon" /> Rename</button>
-      <button class="mini-btn danger" type="button" title="Remove this tag across loaded images and keep it restorable per image. Undoable." @click="removeTagEverywhere(item.tag)"><AppIcon name="removeItem" class="icon" /> Remove</button>
+      <div class="tag-stats__actions">
+        <button class="tag-stats__action" type="button" title="Filter dataset by this tag." :aria-label="`Filter dataset by ${item.tag}`" @click="filterByTag(item.tag)"><AppIcon name="filter" class="icon" /></button>
+        <button class="tag-stats__action" type="button" title="Append this tag to the current filter." :aria-label="`Add ${item.tag} to filter`" @click="appendTagToFilter(item.tag)"><AppIcon name="filterAdd" class="icon" /></button>
+        <button class="tag-stats__action" type="button" title="Add this tag to common tags." :aria-label="`Add ${item.tag} to common tags`" @click="appendConfigTag('commonTagsText', item.tag)"><AppIcon name="common" class="icon" /></button>
+        <button class="tag-stats__action" type="button" title="Add this tag to known tags." :aria-label="`Add ${item.tag} to known tags`" @click="appendConfigTag('knownTagsText', item.tag)"><AppIcon name="known" class="icon" /></button>
+        <button class="tag-stats__action" type="button" title="Add this tag to highlighted tags." :aria-label="`Add ${item.tag} to highlighted tags`" @click="appendConfigTag('highlightTagsText', item.tag)"><AppIcon name="highlight" class="icon" /></button>
+        <button class="tag-stats__action" type="button" title="Add this tag to highlighted text fragments." :aria-label="`Add ${item.tag} to highlighted text`" @click="appendConfigTag('highlightText', item.tag)"><AppIcon name="text" class="icon" /></button>
+        <button class="tag-stats__action tag-stats__action--danger" type="button" title="Remove this tag across loaded images and keep it restorable per image. Undoable." :aria-label="`Remove ${item.tag} from loaded images`" @click="removeTagEverywhere(item.tag)"><AppIcon name="removeItem" class="icon" /></button>
+      </div>
     </div>
     <div v-if="!topTagStats.length" class="empty-inline">No tags loaded.</div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { nextTick, ref } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
@@ -26,14 +62,66 @@ withDefaults(defineProps<{
 });
 
 const {
+  images,
+  config,
   topTagStats,
   tagClass,
   tagTextParts,
   filterByTag,
+  applyFilter,
   appendConfigTag,
-  renameTagEverywhere,
+  renameTagEverywhereTo,
+  addTagToAllAtStart,
   removeTagEverywhere
 } = useImageTaggerContext();
+
+const editingTag = ref<string | null>(null);
+const editingValue = ref("");
+const statsRoot = ref<HTMLElement | null>(null);
+
+function startEditing(tag: string): void {
+  editingTag.value = tag;
+  editingValue.value = tag;
+  void nextTick(() => {
+    const input = statsRoot.value?.querySelector<HTMLTextAreaElement>(".tag-stats__edit");
+    input?.focus();
+    input?.select();
+  });
+}
+
+function commitEditing(): void {
+  if (editingTag.value === null) {
+    return;
+  }
+
+  const originalTag = editingTag.value;
+  const nextTag = editingValue.value.replace(/\s+/g, " ").trim();
+  editingTag.value = null;
+  editingValue.value = "";
+
+  if (!nextTag) {
+    return;
+  }
+
+  if (originalTag) {
+    renameTagEverywhereTo(originalTag, nextTag);
+    return;
+  }
+
+  addTagToAllAtStart(nextTag);
+}
+
+function cancelEditing(): void {
+  editingTag.value = null;
+  editingValue.value = "";
+}
+
+function appendTagToFilter(tag: string): void {
+  config.filterText = config.filterText.trim()
+    ? `${config.filterText}, ${tag}`
+    : tag;
+  applyFilter();
+}
 </script>
 
 <style scoped lang="scss">
@@ -44,10 +132,10 @@ const {
 
   &__row {
     display: grid;
-    grid-template-columns: minmax(160px, 1fr) 42px auto auto auto;
-    gap: 1px;
+    grid-template-columns: minmax(160px, 1fr) 42px auto;
+    gap: 4px;
     align-items: center;
-    padding: 1px;
+    padding: 4px;
     border: 1px solid var(--border);
     border-radius: 6px;
     background: var(--surface-raised);
@@ -60,10 +148,67 @@ const {
     line-height: 1.35;
   }
 
+  &__token {
+    cursor: text;
+  }
+
+  &__token--empty {
+    display: inline-block;
+    min-width: 160px;
+    min-height: 1.35em;
+    color: var(--muted);
+    font-size: 12px;
+    opacity: 0.8;
+  }
+
+  &__edit {
+    width: 100%;
+    min-height: 72px;
+    resize: vertical;
+    white-space: pre-wrap;
+  }
+
   &__count {
     color: var(--muted);
     text-align: right;
     font-variant-numeric: tabular-nums;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  &__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--muted);
+    padding: 0;
+    line-height: 1;
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+      color: var(--text);
+    }
+
+    &--danger {
+      color: var(--red);
+    }
+
+    .icon {
+      width: 13px;
+      height: 13px;
+    }
   }
 }
 </style>
