@@ -199,6 +199,35 @@ export function createBatchActions({
     }
   }
 
+  function moveTagEverywhere(tag: string, placement: "start" | "end"): void {
+    const target = tag.trim();
+    if (!target) {
+      return;
+    }
+
+    const changes = images.value
+      .filter((image) => includesTag(image.tags, target))
+      .map((image) => {
+        const remainingTags = removeTag(image.tags, target);
+        const existingTag = image.tags.find((item) => item.toLowerCase() === target.toLowerCase()) ?? target;
+        const nextTags = placement === "start"
+          ? [existingTag, ...remainingTags]
+          : [...remainingTags, existingTag];
+        return {
+          image,
+          after: {
+            ...snapshotImage(image),
+            tags: nextTags,
+            editText: formatTags(nextTags)
+          }
+        };
+      });
+
+    if (commitOperation(`Move ${target} to ${placement}`, changes)) {
+      setStatus(`Moved ${target} to the ${placement} of matching prompts.`);
+    }
+  }
+
   function removeTagEverywhere(tag: string): void {
     const changes = images.value.map((image) => {
       const nextTags = removeTag(image.tags, tag);
@@ -239,6 +268,7 @@ export function createBatchActions({
   return {
     addTagToVisible,
     addTagToAllAtStart,
+    moveTagEverywhere,
     removeRegexFromVisible,
     replaceArtistTags,
     renameVisibleFiles,
