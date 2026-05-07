@@ -9,18 +9,20 @@
       'image-row--no-tags': !showChipColumn
     }"
   >
-    <button class="image-row__thumb" type="button" :title="`Open image viewer for ${image.fileName}. Source file is not modified.`" @click="openViewer(image)">
-      <img :src="image.objectUrl" :alt="image.fileName" loading="lazy" decoding="async">
+    <div class="image-row__image-cell">
+      <button class="image-row__thumb" type="button" :title="`Open image viewer for ${image.fileName}. Source file is not modified.`" @click="openViewer(image)">
+        <img :src="image.objectUrl" :alt="image.fileName" loading="lazy" decoding="async">
+      </button>
       <span
         v-if="config.imageWidthMode === 'flexible'"
-        class="image-row__thumb-resize"
+        class="image-row__image-resize"
         role="separator"
         aria-orientation="vertical"
         title="Drag to resize image columns for all rows."
         @click.stop
         @pointerdown.stop.prevent="startImageWidthResize"
       />
-    </button>
+    </div>
 
     <div class="image-row__editor">
       <div class="image-row__title">
@@ -244,8 +246,13 @@ onBeforeUnmount(() => {
     grid-template-columns: var(--image-fixed-width, 240px) minmax(280px, 1fr);
   }
 
-  &__thumb {
+  &__image-cell {
     position: relative;
+    width: 100%;
+    min-width: 0;
+  }
+
+  &__thumb {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -269,18 +276,19 @@ onBeforeUnmount(() => {
     width: var(--image-fixed-width, 240px);
   }
 
-  &__thumb-resize {
+  &__image-resize {
     position: absolute;
     top: 0;
-    right: 0;
+    right: -8px;
     bottom: 0;
-    width: 10px;
+    z-index: 2;
+    width: 16px;
     cursor: col-resize;
 
     &::after {
       position: absolute;
       top: 12px;
-      right: 3px;
+      right: 6px;
       bottom: 12px;
       width: 3px;
       border-radius: 999px;
@@ -301,6 +309,10 @@ onBeforeUnmount(() => {
     img {
       height: 100%;
     }
+  }
+
+  &--fixed &__image-cell {
+    height: 100%;
   }
 
   &__editor,
