@@ -1,17 +1,20 @@
 <template>
   <div class="runtime-status-bar">
-    <SidePanelToggleButton />
+    <HeaderPanelToggleButton v-if="isRightPanel" />
+    <SidePanelToggleButton v-else />
     <span>Loaded: {{ images.length }}.</span>
     <span>Visible: {{ visibleImages.length }}.</span>
     <span>Tags: {{ tagStats.length }}.</span>
     <HistoryActionButton action="undo" variant="plain" />
     <HistoryActionButton action="redo" variant="plain" />
     <span class="runtime-status-bar__status" :class="{ 'runtime-status-bar__status--busy': isBusy }" :title="statusText">{{ statusText }}</span>
-    <HeaderPanelToggleButton class="runtime-status-bar__header-toggle" />
+    <SidePanelToggleButton v-if="isRightPanel" class="runtime-status-bar__end-toggle" />
+    <HeaderPanelToggleButton v-else class="runtime-status-bar__end-toggle" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import HeaderPanelToggleButton from "~/components/HeaderPanelToggleButton.vue";
 import HistoryActionButton from "~/components/HistoryActionButton.vue";
 import SidePanelToggleButton from "~/components/SidePanelToggleButton.vue";
@@ -22,8 +25,11 @@ const {
   visibleImages,
   tagStats,
   isBusy,
-  statusText
+  statusText,
+  config
 } = useImageTaggerContext();
+
+const isRightPanel = computed(() => config.sidePanelPosition === "right");
 </script>
 
 <style scoped lang="scss">
@@ -61,7 +67,7 @@ const {
     }
   }
 
-  &__header-toggle {
+  &__end-toggle {
     margin-left: auto;
   }
 }
