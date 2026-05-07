@@ -117,22 +117,27 @@ function createImageTaggerContext() {
   const topTagStats = computed(() => tagStats.value.slice(0, 160));
   const lastUndoOperation = computed<DatasetOperation | null>(() => history.past[history.past.length - 1] ?? null);
   const lastRedoOperation = computed<DatasetOperation | null>(() => history.future[history.future.length - 1] ?? null);
-  const hasHeaderContent = computed(() => (
+  const hasHeaderPanelSections = computed(() => (
     config.fileManagementPlacement === "header"
     || config.layoutConfigPlacement === "header"
     || config.filterPlacement === "header"
     || config.tagSetsPlacement === "top"
   ));
+  const hasHeaderContent = computed(() => (
+    config.headerPanelMode !== "hidden"
+    && hasHeaderPanelSections.value
+  ));
+  const hasSidePanelSections = computed(() => (
+    config.fileManagementPlacement === "side"
+    || config.layoutConfigPlacement === "side"
+    || config.filterPlacement === "side"
+    || config.tagSetsPlacement === "side"
+    || config.batchToolsPlacement === "side"
+    || config.statsPlacement === "side"
+  ));
   const hasSidePanelContent = computed(() => (
     config.sidePanelMode !== "hidden"
-    && (
-      config.fileManagementPlacement === "side"
-      || config.layoutConfigPlacement === "side"
-      || config.filterPlacement === "side"
-      || config.tagSetsPlacement === "side"
-      || config.batchToolsPlacement === "side"
-      || config.statsPlacement === "side"
-    )
+    && hasSidePanelSections.value
   ));
   const layoutClasses = computed(() => ({
     "side-panel-right": config.sidePanelPosition === "right",
@@ -446,7 +451,9 @@ function createImageTaggerContext() {
     undoTitle,
     redoTitle,
     layoutClasses,
+    hasHeaderPanelSections,
     hasHeaderContent,
+    hasSidePanelSections,
     hasSidePanelContent,
     viewerImageStyle,
     visibleImages,

@@ -7,10 +7,12 @@
     <HistoryActionButton action="undo" variant="plain" />
     <HistoryActionButton action="redo" variant="plain" />
     <span class="runtime-status-bar__status" :class="{ 'runtime-status-bar__status--busy': isBusy }" :title="statusText">{{ statusText }}</span>
+    <HeaderPanelToggleButton class="runtime-status-bar__header-toggle" />
   </div>
 </template>
 
 <script setup lang="ts">
+import HeaderPanelToggleButton from "~/components/HeaderPanelToggleButton.vue";
 import HistoryActionButton from "~/components/HistoryActionButton.vue";
 import SidePanelToggleButton from "~/components/SidePanelToggleButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
@@ -46,12 +48,17 @@ const {
   }
 
   &__status {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
 
     &--busy {
       color: var(--blue-dark);
     }
+  }
+
+  &__header-toggle {
+    margin-left: auto;
   }
 }
 </style>

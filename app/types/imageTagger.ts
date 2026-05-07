@@ -1,6 +1,7 @@
 export type FilterMode = "tags" | "regex";
 export type ThemeMode = "dark" | "light";
 export type SidePanelMode = "open" | "hidden";
+export type HeaderPanelMode = "open" | "hidden";
 export type TagSetsPlacement = "side" | "top" | "hidden";
 export type StatsPlacement = "tab" | "side" | "hidden";
 export type BatchToolsPlacement = "tab" | "side";
@@ -32,6 +33,7 @@ export interface AppConfig {
   filterMode: FilterMode;
   ignoreCase: boolean;
   theme: ThemeMode;
+  headerPanelMode: HeaderPanelMode;
   sidePanelMode: SidePanelMode;
   tagSetsPlacement: TagSetsPlacement;
   statsPlacement: StatsPlacement;

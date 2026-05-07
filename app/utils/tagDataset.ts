@@ -167,6 +167,7 @@ export function makeDatasetSnapshot(config: AppConfig): AppConfig {
     filterMode: config.filterMode,
     ignoreCase: config.ignoreCase,
     theme: config.theme,
+    headerPanelMode: config.headerPanelMode,
     sidePanelMode: config.sidePanelMode,
     tagSetsPlacement: config.tagSetsPlacement,
     statsPlacement: config.statsPlacement,

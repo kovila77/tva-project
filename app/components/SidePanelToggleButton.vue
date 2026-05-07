@@ -1,5 +1,6 @@
 <template>
   <button
+    v-if="hasSidePanelSections"
     class="side-panel-toggle"
     type="button"
     :title="title"
@@ -18,7 +19,7 @@ import { computed } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
-const { config } = useImageTaggerContext();
+const { config, hasSidePanelSections } = useImageTaggerContext();
 
 const isHidden = computed(() => config.sidePanelMode === "hidden");
 const isRight = computed(() => config.sidePanelPosition === "right");

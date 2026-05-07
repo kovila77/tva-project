@@ -2,6 +2,7 @@ import type {
   AppConfig,
   BatchToolsPlacement,
   FilterMode,
+  HeaderPanelMode,
   HeaderSectionPlacement,
   ImageRowHeightMode,
   ImageWidthMode,
@@ -37,6 +38,7 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     filterMode: normalizeFilterMode(source.filterMode, source.isFilterRegex),
     ignoreCase: Boolean(source.ignoreCase ?? source.filterIgnoreCase ?? false),
     theme: source.theme === "light" ? "light" : "dark",
+    headerPanelMode: source.headerPanelMode === "hidden" ? "hidden" : "open",
     sidePanelMode: source.sidePanelMode === "hidden" ? "hidden" : "open",
     tagSetsPlacement: includesValue(tagSetPlacements, source.tagSetsPlacement) ? source.tagSetsPlacement : "side",
     statsPlacement: includesValue(statsPlacements, source.statsPlacement) ? source.statsPlacement : "tab",
@@ -103,5 +105,9 @@ export function isThemeMode(value: unknown): value is ThemeMode {
 }
 
 export function isSidePanelMode(value: unknown): value is SidePanelMode {
+  return value === "open" || value === "hidden";
+}
+
+export function isHeaderPanelMode(value: unknown): value is HeaderPanelMode {
   return value === "open" || value === "hidden";
 }

@@ -9,6 +9,7 @@
   "filterMode": "tags",
   "ignoreCase": false,
   "theme": "dark",
+  "headerPanelMode": "open",
   "sidePanelMode": "open",
   "tagSetsPlacement": "side",
   "statsPlacement": "tab",
