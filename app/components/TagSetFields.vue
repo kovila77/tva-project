@@ -116,12 +116,9 @@ const fields: TagSetField[] = [
 
 <style scoped lang="scss">
 .tag-set-fields {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 8px;
-
   &__section {
     min-width: 0;
+    margin-bottom: 4px;
 
     summary {
       margin-bottom: 8px;
