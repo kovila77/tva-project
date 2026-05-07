@@ -4,6 +4,7 @@
       <span>{{ label }}</span>
       <select v-model="mode" class="control" :title="modeTitle">
         <option :value="defaultMode">{{ defaultOptionLabel }}</option>
+        <option v-for="option in extraModes" :key="option.value" :value="option.value">{{ option.label }}</option>
         <option value="fixed">Fixed</option>
       </select>
     </label>
@@ -47,10 +48,12 @@ const props = withDefaults(defineProps<{
   sliderMin: number;
   sliderMax: number;
   sliderStep?: number;
+  extraModes?: Array<{ value: string; label: string }>;
   modeTitle: string;
   sliderTitle: string;
 }>(), {
-  sliderStep: 10
+  sliderStep: 10,
+  extraModes: () => []
 });
 
 const mode = defineModel<string>("mode", { required: true });

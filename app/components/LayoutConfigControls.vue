@@ -91,12 +91,13 @@
       v-model:mode="config.imageWidthMode"
       v-model:value="config.imageFixedWidth"
       label="Image width"
-      default-mode="current"
-      default-option-label="Current"
+      default-mode="compact"
+      default-option-label="Compact"
+      :extra-modes="[{ value: 'flexible', label: 'Flexible' }]"
       fixed-label="Width"
       :slider-min="50"
       :slider-max="5000"
-      mode-title="Current image width uses the default row thumbnail column. Fixed uses the configured image width."
+      mode-title="Compact image width uses the default row thumbnail column. Flexible lets image rows resize the shared width by dragging. Fixed uses the configured image width."
       slider-title="Fixed image width slider from 50px to 5000px."
     />
   </div>

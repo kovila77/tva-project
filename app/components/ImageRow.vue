@@ -5,11 +5,21 @@
       'image-row--dirty': image.dirty,
       'image-row--fixed': config.imageRowHeightMode === 'fixed',
       'image-row--image-fixed': config.imageWidthMode === 'fixed',
+      'image-row--image-flexible': config.imageWidthMode === 'flexible',
       'image-row--no-tags': !showChipColumn
     }"
   >
     <button class="image-row__thumb" type="button" :title="`Open image viewer for ${image.fileName}. Source file is not modified.`" @click="openViewer(image)">
       <img :src="image.objectUrl" :alt="image.fileName" loading="lazy" decoding="async">
+      <span
+        v-if="config.imageWidthMode === 'flexible'"
+        class="image-row__thumb-resize"
+        role="separator"
+        aria-orientation="vertical"
+        title="Drag to resize image columns for all rows."
+        @click.stop
+        @pointerdown.stop.prevent="startImageWidthResize"
+      />
     </button>
 
     <div class="image-row__editor">
@@ -107,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onBeforeUnmount } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
 import TagChip from "~/components/TagChip.vue";
 import TagField from "~/components/TagField.vue";
@@ -171,6 +181,33 @@ const hasVisibleChips = computed(() => (
   || Boolean(visibleNonCommonTags.value.length)
   || Boolean(visibleRemovedTags.value.length)
 ));
+
+let resizeStartX = 0;
+let resizeStartWidth = 0;
+
+function startImageWidthResize(event: PointerEvent): void {
+  resizeStartX = event.clientX;
+  resizeStartWidth = config.imageFixedWidth;
+  event.currentTarget instanceof HTMLElement && event.currentTarget.setPointerCapture(event.pointerId);
+  document.body.style.cursor = "col-resize";
+  document.body.style.userSelect = "none";
+  window.addEventListener("pointermove", resizeImageWidth);
+  window.addEventListener("pointerup", stopImageWidthResize, { once: true });
+}
+
+function resizeImageWidth(event: PointerEvent): void {
+  config.imageFixedWidth = Math.max(50, Math.round(resizeStartWidth + event.clientX - resizeStartX));
+}
+
+function stopImageWidthResize(): void {
+  document.body.style.cursor = "";
+  document.body.style.userSelect = "";
+  window.removeEventListener("pointermove", resizeImageWidth);
+}
+
+onBeforeUnmount(() => {
+  stopImageWidthResize();
+});
 </script>
 
 <style scoped lang="scss">
@@ -197,15 +234,18 @@ const hasVisibleChips = computed(() => (
     grid-template-columns: minmax(160px, 240px) minmax(280px, 1fr);
   }
 
-  &--image-fixed {
+  &--image-fixed,
+  &--image-flexible {
     grid-template-columns: var(--image-fixed-width, 240px) minmax(280px, 1fr) minmax(260px, 0.9fr);
   }
 
-  &--image-fixed#{&}--no-tags {
+  &--image-fixed#{&}--no-tags,
+  &--image-flexible#{&}--no-tags {
     grid-template-columns: var(--image-fixed-width, 240px) minmax(280px, 1fr);
   }
 
   &__thumb {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -224,8 +264,35 @@ const hasVisibleChips = computed(() => (
     }
   }
 
-  &--image-fixed &__thumb {
+  &--image-fixed &__thumb,
+  &--image-flexible &__thumb {
     width: var(--image-fixed-width, 240px);
+  }
+
+  &__thumb-resize {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 10px;
+    cursor: col-resize;
+
+    &::after {
+      position: absolute;
+      top: 12px;
+      right: 3px;
+      bottom: 12px;
+      width: 3px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--text) 46%, transparent);
+      content: "";
+      opacity: 0.75;
+    }
+
+    &:hover::after {
+      background: var(--blue);
+      opacity: 1;
+    }
   }
 
   &--fixed &__thumb {
@@ -383,7 +450,8 @@ const hasVisibleChips = computed(() => (
     grid-template-columns: 150px minmax(0, 1fr);
   }
 
-  .image-row--image-fixed {
+  .image-row--image-fixed,
+  .image-row--image-flexible {
     grid-template-columns: var(--image-fixed-width, 240px) minmax(0, 1fr);
   }
 

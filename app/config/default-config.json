@@ -24,6 +24,6 @@
   "rowChipMode": "common-deleted",
   "imageRowHeightMode": "full",
   "imageRowFixedHeight": 360,
-  "imageWidthMode": "current",
+  "imageWidthMode": "compact",
   "imageFixedWidth": 240
 }

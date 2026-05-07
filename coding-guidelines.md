@@ -53,6 +53,7 @@
 - Prefer native controls and compact labels over custom widgets.
 - Use Font Awesome via `AppIcon.vue` for icons. Do not add raw glyph/symbol icons directly in templates.
 - Image-row action buttons and simple repeated actions such as undo, redo, clear, zoom, and close should be icon-only with `title` and `aria-label`.
+- Keep image row sizing centralized in layout config. Image width modes are `compact` for the default thumbnail column, `fixed` for slider/manual width, and `flexible` for mouse-drag resizing that updates the shared row image width.
 - Reuse `TagField.vue` for every tag-like text editor, including image tags, common/known/highlight/order tag sets, filters, batch add-tag fields, and regex tag lists.
 - Configure `TagField.vue` with typed `TagTextStyleRule` rules for known/common/highlight/unknown/regex styling instead of hard-coding new editor-specific token styling.
 - Prefer dataset-backed `autocompleteTags` for `TagField.vue` autocomplete. Disable autocomplete only when the field is not tag-completion friendly, such as regex-only inputs.

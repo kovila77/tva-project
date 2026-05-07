@@ -21,7 +21,7 @@ const headerSectionPlacements: HeaderSectionPlacement[] = ["header", "side"];
 const sidePanelPositions: SidePanelPosition[] = ["left", "right"];
 const rowChipModes: RowChipMode[] = ["hidden", "common-deleted", "deleted", "common", "everything"];
 const imageRowHeightModes: ImageRowHeightMode[] = ["full", "fixed"];
-const imageWidthModes: ImageWidthMode[] = ["current", "fixed"];
+const imageWidthModes: ImageWidthMode[] = ["compact", "flexible", "fixed"];
 const defaultFixedRowHeight = 360;
 const defaultFixedImageWidth = 240;
 const defaultSidePanelWidth = 340;
@@ -55,7 +55,7 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     rowChipMode: normalizeRowChipMode(source.rowChipMode, source.showTagsColumn),
     imageRowHeightMode: includesValue(imageRowHeightModes, source.imageRowHeightMode) ? source.imageRowHeightMode : "full",
     imageRowFixedHeight: normalizeFixedDimension(source.imageRowFixedHeight, defaultFixedRowHeight),
-    imageWidthMode: includesValue(imageWidthModes, source.imageWidthMode) ? source.imageWidthMode : "current",
+    imageWidthMode: normalizeImageWidthMode(source.imageWidthMode),
     imageFixedWidth: normalizeFixedDimension(source.imageFixedWidth, defaultFixedImageWidth)
   };
 }
@@ -109,6 +109,14 @@ function normalizeRowChipMode(value: unknown, legacyShowTagsColumn: unknown): Ro
   }
 
   return legacyShowTagsColumn === false ? "hidden" : "common-deleted";
+}
+
+function normalizeImageWidthMode(value: unknown): ImageWidthMode {
+  if (value === "current") {
+    return "compact";
+  }
+
+  return includesValue(imageWidthModes, value) ? value : "compact";
 }
 
 export function isThemeMode(value: unknown): value is ThemeMode {
