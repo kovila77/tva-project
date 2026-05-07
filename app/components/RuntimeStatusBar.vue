@@ -36,8 +36,12 @@ const {
   align-items: center;
   justify-content: flex-start;
   gap: 6px;
-  margin: 0;
-  padding: 6px 0;
+  margin: 6px 0 0;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
   color: var(--muted);
   font-size: 14px;
   font-weight: 700;
