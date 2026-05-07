@@ -3,24 +3,22 @@
     <span>Loaded: {{ images.length }}.</span>
     <span>Visible: {{ visibleImages.length }}.</span>
     <span>Tags: {{ tagStats.length }}.</span>
-    <button class="btn warn icon-btn" type="button" :title="undoTitle" aria-label="Undo" :disabled="!history.past.length" @click="undoDataset"><AppIcon name="undo" class="icon" /></button>
-    <button class="btn warn icon-btn" type="button" :title="redoTitle" aria-label="Redo" :disabled="!history.future.length" @click="redoDataset"><AppIcon name="redo" class="icon" /></button>
+    <HistoryActionButton action="undo" variant="plain" />
+    <HistoryActionButton action="redo" variant="plain" />
+    <span class="runtime-status-bar__status" :class="{ 'runtime-status-bar__status--busy': isBusy }" :title="statusText">{{ statusText }}</span>
   </div>
 </template>
 
 <script setup lang="ts">
-import AppIcon from "~/components/AppIcon.vue";
+import HistoryActionButton from "~/components/HistoryActionButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const {
   images,
   visibleImages,
   tagStats,
-  history,
-  undoTitle,
-  redoTitle,
-  undoDataset,
-  redoDataset
+  isBusy,
+  statusText
 } = useImageTaggerContext();
 </script>
 
@@ -43,6 +41,15 @@ const {
 
   span {
     white-space: nowrap;
+  }
+
+  &__status {
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &--busy {
+      color: var(--blue-dark);
+    }
   }
 }
 </style>

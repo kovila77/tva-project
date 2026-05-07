@@ -1,12 +1,5 @@
 <template>
   <header ref="headerElement" class="app-header" title="Dataset files are loaded into browser memory. Source files are not modified.">
-    <div class="app-header__topline">
-      <div class="app-header__brand">
-        <h1>TVA Image Tagger</h1>
-        <div class="app-header__status" :class="{ 'app-header__status--busy': isBusy }" :title="statusText">{{ statusText }}</div>
-      </div>
-    </div>
-
     <details class="app-header__section" open>
       <summary>Config and image folders</summary>
       <div class="app-header__actions">
@@ -51,8 +44,6 @@ const {
   configInput,
   images,
   visibleImages,
-  isBusy,
-  statusText,
   openFolderPicker,
   openConfigPicker,
   exportConfig,
@@ -99,34 +90,6 @@ onBeforeUnmount(() => {
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow);
-
-  &__topline {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  &__brand {
-    min-width: 220px;
-
-    h1 {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1.2;
-    }
-  }
-
-  &__status {
-    min-height: 18px;
-    margin-top: 3px;
-    color: var(--muted);
-    font-size: 12px;
-
-    &--busy {
-      color: var(--blue-dark);
-    }
-  }
 
   &__actions {
     display: flex;
