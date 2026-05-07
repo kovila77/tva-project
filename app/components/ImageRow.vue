@@ -93,7 +93,7 @@
         />
       </div>
 
-      <div class="image-row__chip-group image-row__deleted-tags">
+      <div v-if="image.removedTags.length" class="image-row__chip-group image-row__deleted-tags">
         <span class="image-row__chip-heading">Deleted</span>
         <TagChip
           v-for="tag in image.removedTags"
@@ -105,7 +105,6 @@
           :title="`Return deleted tag '${tag}' to this image. Undoable.`"
           @click="restoreRemovedTag(image, tag)"
         />
-        <span v-if="!image.removedTags.length" class="empty-inline">No deleted tags.</span>
       </div>
     </div>
   </article>
@@ -270,12 +269,15 @@ const {
   }
 
   &__tag-column {
-    max-height: 260px;
+    align-self: stretch;
+    min-height: 0;
+    max-height: none;
     overflow: auto;
+    contain: size layout;
   }
 
   &--compact &__tag-column {
-    max-height: 178px;
+    max-height: none;
   }
 
   &__chip-group {
@@ -305,7 +307,6 @@ const {
 
   .image-row__tag-column {
     grid-column: 1 / -1;
-    max-height: none;
   }
 }
 
