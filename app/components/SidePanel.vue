@@ -1,5 +1,9 @@
 <template>
-  <aside v-if="hasSidePanelContent" class="side-panel">
+  <aside
+    v-if="hasSidePanelContent"
+    class="side-panel"
+    :class="{ 'side-panel--right': config.sidePanelPosition === 'right' }"
+  >
     <button
       class="side-panel__resize"
       type="button"
@@ -122,7 +126,7 @@ onBeforeUnmount(stopResize);
     }
   }
 
-  :global(.side-panel-right) &__resize {
+  &--right &__resize {
     right: auto;
     left: 0;
 
