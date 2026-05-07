@@ -117,15 +117,25 @@ function createImageTaggerContext() {
   const topTagStats = computed(() => tagStats.value.slice(0, 160));
   const lastUndoOperation = computed<DatasetOperation | null>(() => history.past[history.past.length - 1] ?? null);
   const lastRedoOperation = computed<DatasetOperation | null>(() => history.future[history.future.length - 1] ?? null);
+  const hasHeaderContent = computed(() => (
+    config.fileManagementPlacement === "header"
+    || config.layoutConfigPlacement === "header"
+    || config.filterPlacement === "header"
+    || config.tagSetsPlacement === "top"
+  ));
   const hasSidePanelContent = computed(() => (
     config.sidePanelMode !== "hidden"
     && (
-      config.tagSetsPlacement === "side"
+      config.fileManagementPlacement === "side"
+      || config.layoutConfigPlacement === "side"
+      || config.filterPlacement === "side"
+      || config.tagSetsPlacement === "side"
       || config.batchToolsPlacement === "side"
       || config.statsPlacement === "side"
     )
   ));
   const layoutClasses = computed(() => ({
+    "side-panel-right": config.sidePanelPosition === "right",
     "side-panel-hidden": !hasSidePanelContent.value,
     "row-tags-hidden": !config.showTagsColumn
   }));
@@ -436,6 +446,7 @@ function createImageTaggerContext() {
     undoTitle,
     redoTitle,
     layoutClasses,
+    hasHeaderContent,
     hasSidePanelContent,
     viewerImageStyle,
     visibleImages,

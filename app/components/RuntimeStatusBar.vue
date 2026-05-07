@@ -1,5 +1,6 @@
 <template>
   <div class="runtime-status-bar">
+    <SidePanelToggleButton />
     <span>Loaded: {{ images.length }}.</span>
     <span>Visible: {{ visibleImages.length }}.</span>
     <span>Tags: {{ tagStats.length }}.</span>
@@ -11,6 +12,7 @@
 
 <script setup lang="ts">
 import HistoryActionButton from "~/components/HistoryActionButton.vue";
+import SidePanelToggleButton from "~/components/SidePanelToggleButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const {

@@ -2,9 +2,11 @@ import type {
   AppConfig,
   BatchToolsPlacement,
   FilterMode,
+  HeaderSectionPlacement,
   ImageRowHeightMode,
   ImageWidthMode,
   SidePanelMode,
+  SidePanelPosition,
   StatsPlacement,
   TagSetsPlacement,
   ThemeMode
@@ -13,6 +15,8 @@ import type {
 const tagSetPlacements: TagSetsPlacement[] = ["side", "top", "hidden"];
 const statsPlacements: StatsPlacement[] = ["tab", "side", "hidden"];
 const batchToolsPlacements: BatchToolsPlacement[] = ["tab", "side"];
+const headerSectionPlacements: HeaderSectionPlacement[] = ["header", "side"];
+const sidePanelPositions: SidePanelPosition[] = ["left", "right"];
 const imageRowHeightModes: ImageRowHeightMode[] = ["full", "fixed"];
 const imageWidthModes: ImageWidthMode[] = ["current", "fixed"];
 const defaultFixedRowHeight = 360;
@@ -37,7 +41,12 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     tagSetsPlacement: includesValue(tagSetPlacements, source.tagSetsPlacement) ? source.tagSetsPlacement : "side",
     statsPlacement: includesValue(statsPlacements, source.statsPlacement) ? source.statsPlacement : "tab",
     batchToolsPlacement: includesValue(batchToolsPlacements, source.batchToolsPlacement) ? source.batchToolsPlacement : "side",
+    fileManagementPlacement: includesValue(headerSectionPlacements, source.fileManagementPlacement) ? source.fileManagementPlacement : "header",
+    layoutConfigPlacement: includesValue(headerSectionPlacements, source.layoutConfigPlacement) ? source.layoutConfigPlacement : "header",
+    filterPlacement: includesValue(headerSectionPlacements, source.filterPlacement) ? source.filterPlacement : "header",
     sidePanelWidth: normalizeSidePanelWidth(source.sidePanelWidth),
+    sidePanelPosition: includesValue(sidePanelPositions, source.sidePanelPosition) ? source.sidePanelPosition : "left",
+    headerHeight: normalizeHeaderHeight(source.headerHeight),
     showTagsColumn: source.showTagsColumn !== false,
     imageRowHeightMode: includesValue(imageRowHeightModes, source.imageRowHeightMode) ? source.imageRowHeightMode : "full",
     imageRowFixedHeight: normalizeFixedDimension(source.imageRowFixedHeight, defaultFixedRowHeight),
@@ -78,6 +87,15 @@ function normalizeSidePanelWidth(value: unknown): number {
   }
 
   return Math.min(720, Math.max(260, Math.round(numberValue)));
+}
+
+function normalizeHeaderHeight(value: unknown): number {
+  const numberValue = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(numberValue)) {
+    return 0;
+  }
+
+  return Math.min(1200, Math.max(0, Math.round(numberValue)));
 }
 
 export function isThemeMode(value: unknown): value is ThemeMode {

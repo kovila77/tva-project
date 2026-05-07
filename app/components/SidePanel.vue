@@ -7,6 +7,21 @@
       aria-label="Resize side panel"
       @pointerdown="startResize"
     />
+    <details v-if="config.fileManagementPlacement === 'side'" open>
+      <summary title="Import/export files and editor configuration.">Config and image folders</summary>
+      <FileManagementControls />
+    </details>
+
+    <details v-if="config.layoutConfigPlacement === 'side'" open>
+      <summary title="Layout and display configuration.">Layout config</summary>
+      <LayoutConfigControls />
+    </details>
+
+    <details v-if="config.filterPlacement === 'side'" open>
+      <summary title="Filter the loaded image dataset.">Filter</summary>
+      <FilterControls />
+    </details>
+
     <details v-if="config.tagSetsPlacement === 'side'" open>
       <summary title="Editable tag sets used by row chips, unknown-tag detection, highlighting, and ordering.">Tag Sets</summary>
       <TagSetFields />
@@ -24,6 +39,9 @@
 <script setup lang="ts">
 import { onBeforeUnmount } from "vue";
 import BatchTools from "~/components/BatchTools.vue";
+import FileManagementControls from "~/components/FileManagementControls.vue";
+import FilterControls from "~/components/FilterControls.vue";
+import LayoutConfigControls from "~/components/LayoutConfigControls.vue";
 import TagSetFields from "~/components/TagSetFields.vue";
 import TagStatsList from "~/components/TagStatsList.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
@@ -46,7 +64,10 @@ function startResize(event: PointerEvent): void {
 }
 
 function resizeSidePanel(event: PointerEvent): void {
-  const nextWidth = resizeStartWidth + event.clientX - resizeStartX;
+  const delta = event.clientX - resizeStartX;
+  const nextWidth = config.sidePanelPosition === "right"
+    ? resizeStartWidth - delta
+    : resizeStartWidth + delta;
   config.sidePanelWidth = Math.min(maximumSidePanelWidth, Math.max(minimumSidePanelWidth, Math.round(nextWidth)));
 }
 
@@ -63,8 +84,8 @@ onBeforeUnmount(stopResize);
 .side-panel {
   position: sticky;
   min-width: 0;
-  top: 86px;
-  max-height: calc(100vh - 98px);
+  top: calc(var(--app-header-height, 0px) + 44px);
+  max-height: calc(100vh - var(--app-header-height, 0px) - 56px);
   overflow: auto;
   padding: 8px;
   border: 1px solid var(--border);
@@ -101,6 +122,16 @@ onBeforeUnmount(stopResize);
     }
   }
 
+  :global(.side-panel-right) &__resize {
+    right: auto;
+    left: 0;
+
+    &::after {
+      right: auto;
+      left: 4px;
+    }
+  }
+
   :deep(details) {
     border-bottom: 1px solid var(--border);
     padding: 8px 0;
@@ -122,14 +153,25 @@ onBeforeUnmount(stopResize);
   }
 }
 
-@media (max-width: 1260px) {
+@media (max-width: 860px) {
   .side-panel {
-    position: static;
+    display: block;
+    position: fixed;
+    top: calc(var(--app-header-height, 0px) + 38px);
+    bottom: 8px;
+    left: 8px;
+    z-index: 998;
+    width: min(var(--side-panel-width, 340px), calc(100vw - 16px));
     max-height: none;
 
     &__resize {
       display: none;
     }
+  }
+
+  :global(.side-panel-right) .side-panel {
+    right: 8px;
+    left: auto;
   }
 }
 </style>

@@ -1,75 +1,101 @@
 <template>
-  <header ref="headerElement" class="app-header" title="Dataset files are loaded into browser memory. Source files are not modified.">
-    <details class="app-header__section" open>
+  <header
+    v-if="hasHeaderContent"
+    ref="headerElement"
+    class="app-header"
+    :style="headerStyle"
+    title="Dataset files are loaded into browser memory. Source files are not modified."
+  >
+    <details v-if="config.fileManagementPlacement === 'header'" class="app-header__section" open>
       <summary>Config and image folders</summary>
-      <div class="app-header__actions">
-        <button class="btn primary" type="button" title="Upload a local folder containing images and matching .txt prompt files. Files are read into memory only." @click="openFolderPicker"><AppIcon name="upload" class="icon" /> Upload Folder</button>
-        <button class="btn" type="button" title="Import editor configuration JSON. This changes UI/tag-set settings, not loaded image files." @click="openConfigPicker"><AppIcon name="import" class="icon" /> Import Config</button>
-        <button class="btn" type="button" title="Download the current editor configuration as JSON." @click="exportConfig"><AppIcon name="export" class="icon" /> Export Config</button>
-        <button class="btn success" type="button" title="Download edited tag .txt files for all loaded images as a ZIP archive." :disabled="!images.length" @click="exportTagsZip(false)"><AppIcon name="download" class="icon" /> Export Tags</button>
-        <button class="btn" type="button" title="Download edited tag .txt files only for currently visible images." :disabled="!visibleImages.length" @click="exportTagsZip(true)"><AppIcon name="exportFile" class="icon" /> Export Visible</button>
-        <button class="btn" type="button" title="Resize visible images in memory and download them with their edited tag files. Source files are not changed." :disabled="!visibleImages.length" @click="exportResizedImagesZip"><AppIcon name="resize" class="icon" /> Export Resized</button>
-      </div>
+      <FileManagementControls />
     </details>
 
     <QuickControls />
-
-    <input
-      ref="folderInput"
-      class="sr-only"
-      type="file"
-      multiple
-      webkitdirectory
-      directory
-      @change="onFolderSelected"
-    >
-    <input
-      ref="configInput"
-      class="sr-only"
-      type="file"
-      accept="application/json,.json"
-      @change="onConfigSelected"
-    >
+    <button
+      class="app-header__resize"
+      type="button"
+      title="Drag to resize the header."
+      aria-label="Resize header"
+      @pointerdown="startResize"
+    />
   </header>
 </template>
 
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
-import AppIcon from "~/components/AppIcon.vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import FileManagementControls from "~/components/FileManagementControls.vue";
 import QuickControls from "~/components/QuickControls.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const {
-  folderInput,
-  configInput,
-  images,
-  visibleImages,
-  openFolderPicker,
-  openConfigPicker,
-  exportConfig,
-  exportTagsZip,
-  exportResizedImagesZip,
-  onFolderSelected,
-  onConfigSelected
+  config,
+  hasHeaderContent
 } = useImageTaggerContext();
 
 const headerElement = ref<HTMLElement | null>(null);
 let resizeObserver: ResizeObserver | null = null;
+let resizeStartY = 0;
+let resizeStartHeight = 0;
+
+const headerStyle = computed(() => config.headerHeight > 0
+  ? { height: `${config.headerHeight}px` }
+  : {});
 
 function updateHeaderOffset(): void {
-  const height = headerElement.value?.offsetHeight ?? 0;
+  const height = hasHeaderContent.value ? headerElement.value?.offsetHeight ?? 0 : 0;
   document.documentElement.style.setProperty("--app-header-height", `${height}px`);
 }
 
-onMounted(() => {
-  void nextTick(updateHeaderOffset);
+function observeHeader(): void {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+
   if (headerElement.value) {
     resizeObserver = new ResizeObserver(updateHeaderOffset);
     resizeObserver.observe(headerElement.value);
   }
+}
+
+function startResize(event: PointerEvent): void {
+  if (!headerElement.value) {
+    return;
+  }
+
+  resizeStartY = event.clientY;
+  resizeStartHeight = config.headerHeight > 0 ? config.headerHeight : headerElement.value.offsetHeight;
+  event.currentTarget instanceof HTMLElement && event.currentTarget.setPointerCapture(event.pointerId);
+  document.body.style.cursor = "row-resize";
+  document.body.style.userSelect = "none";
+  window.addEventListener("pointermove", resizeHeader);
+  window.addEventListener("pointerup", stopResize, { once: true });
+}
+
+function resizeHeader(event: PointerEvent): void {
+  const nextHeight = resizeStartHeight + event.clientY - resizeStartY;
+  config.headerHeight = Math.min(1200, Math.max(48, Math.round(nextHeight)));
+}
+
+function stopResize(): void {
+  document.body.style.cursor = "";
+  document.body.style.userSelect = "";
+  window.removeEventListener("pointermove", resizeHeader);
+}
+
+onMounted(() => {
+  void nextTick(updateHeaderOffset);
+  observeHeader();
+});
+
+watch(hasHeaderContent, () => {
+  void nextTick(() => {
+    observeHeader();
+    updateHeaderOffset();
+  });
 });
 
 onBeforeUnmount(() => {
+  stopResize();
   resizeObserver?.disconnect();
   document.documentElement.style.removeProperty("--app-header-height");
 });
@@ -90,13 +116,7 @@ onBeforeUnmount(() => {
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow);
-
-  &__actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-  }
+  resize: none;
 
   &__section {
     border-top: 1px solid var(--border);
@@ -111,6 +131,31 @@ onBeforeUnmount(() => {
       &::-webkit-details-marker {
         display: none;
       }
+    }
+  }
+
+  &__resize {
+    position: sticky;
+    bottom: -10px;
+    z-index: 2;
+    width: 100%;
+    min-height: 12px;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    cursor: row-resize;
+
+    &::after {
+      content: "";
+      display: block;
+      height: 2px;
+      border-radius: 999px;
+      background: transparent;
+    }
+
+    &:hover::after,
+    &:focus-visible::after {
+      background: var(--blue);
     }
   }
 }

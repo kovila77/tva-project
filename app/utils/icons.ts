@@ -1,7 +1,10 @@
 import {
+  faArrowLeft,
+  faArrowRight,
   faArrowRotateLeft,
   faArrowRotateRight,
   faArrowsRotate,
+  faBars,
   faBroom,
   faChartColumn,
   faCheck,
@@ -39,6 +42,9 @@ import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 export const appIcons = {
   add: faPlus,
   apply: faCheck,
+  arrowLeft: faArrowLeft,
+  arrowRight: faArrowRight,
+  bars: faBars,
   clean: faBroom,
   clear: faXmark,
   close: faXmark,

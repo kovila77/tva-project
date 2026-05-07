@@ -34,20 +34,36 @@ const {
   &__workspace {
     display: grid;
     grid-template-columns: var(--side-panel-width, 340px) minmax(0, 1fr);
+    grid-template-areas: "side dataset";
     gap: 10px;
     align-items: start;
     margin-top: 10px;
   }
 
+  &__workspace > :deep(.side-panel) {
+    grid-area: side;
+  }
+
+  &__workspace > :deep(.dataset-panel) {
+    grid-area: dataset;
+  }
+
+  &.side-panel-right &__workspace {
+    grid-template-columns: minmax(0, 1fr) var(--side-panel-width, 340px);
+    grid-template-areas: "dataset side";
+  }
+
   &.side-panel-hidden &__workspace {
     grid-template-columns: 1fr;
+    grid-template-areas: "dataset";
   }
 }
 
-@media (max-width: 1260px) {
+@media (max-width: 860px) {
   .image-tagger {
     &__workspace {
       grid-template-columns: 1fr;
+      grid-template-areas: "dataset";
     }
   }
 }
