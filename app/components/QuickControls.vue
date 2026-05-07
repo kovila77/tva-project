@@ -75,25 +75,30 @@
         <input v-model="config.showTagsColumn" type="checkbox">
         <span>Row tags</span>
       </label>
-      <label class="field compact">
-        <span>Row height</span>
-        <select v-model="config.imageRowHeightMode" class="control" title="Full rows use image/content height. Fixed rows use the configured row height.">
-          <option value="full">Full</option>
-          <option value="fixed">Fixed</option>
-        </select>
-      </label>
-      <label v-if="config.imageRowHeightMode === 'fixed'" class="field quick-controls__height-field">
-        <span>Fixed height {{ fixedRowHeight }}px</span>
-        <input
-          v-model.number="fixedRowHeight"
-          class="quick-controls__height-range"
-          type="range"
-          min="100"
-          max="2500"
-          step="10"
-          title="Fixed image row height from 100px to 2500px."
-        >
-      </label>
+      <ImageDimensionControl
+        v-model:mode="config.imageRowHeightMode"
+        v-model:value="config.imageRowFixedHeight"
+        label="Row height"
+        default-mode="full"
+        default-option-label="Full"
+        fixed-label="Height"
+        :slider-min="100"
+        :slider-max="2500"
+        mode-title="Full rows use image/content height. Fixed rows use the configured row height."
+        slider-title="Fixed image row height slider from 100px to 2500px."
+      />
+      <ImageDimensionControl
+        v-model:mode="config.imageWidthMode"
+        v-model:value="config.imageFixedWidth"
+        label="Image width"
+        default-mode="current"
+        default-option-label="Current"
+        fixed-label="Width"
+        :slider-min="50"
+        :slider-max="5000"
+        mode-title="Current image width uses the default row thumbnail column. Fixed uses the configured image width."
+        slider-title="Fixed image width slider from 50px to 5000px."
+      />
     </div>
 
     <div v-if="config.tagSetsPlacement === 'top'" class="quick-controls__tag-sets">
@@ -122,8 +127,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
+import ImageDimensionControl from "~/components/ImageDimensionControl.vue";
 import TagField from "~/components/TagField.vue";
 import TagSetFields from "~/components/TagSetFields.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
@@ -145,15 +150,6 @@ const {
   undoDataset,
   redoDataset
 } = useImageTaggerContext();
-
-const minFixedRowHeight = 100;
-const maxFixedRowHeight = 2500;
-const fixedRowHeight = computed({
-  get: () => Math.min(maxFixedRowHeight, Math.max(minFixedRowHeight, config.imageRowFixedHeight)),
-  set: (value: number) => {
-    config.imageRowFixedHeight = Math.min(maxFixedRowHeight, Math.max(minFixedRowHeight, Math.round(Number(value) || minFixedRowHeight)));
-  }
-});
 </script>
 
 <style scoped lang="scss">
@@ -181,15 +177,6 @@ const fixedRowHeight = computed({
     gap: 8px;
     align-items: end;
     margin-top: 10px;
-  }
-
-  &__height-field {
-    width: min(260px, 100%);
-  }
-
-  &__height-range {
-    width: 100%;
-    accent-color: var(--blue);
   }
 
   &__tag-sets {

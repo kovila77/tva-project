@@ -172,6 +172,8 @@ export function makeDatasetSnapshot(config: AppConfig): AppConfig {
     statsPlacement: config.statsPlacement,
     showTagsColumn: config.showTagsColumn,
     imageRowHeightMode: config.imageRowHeightMode,
-    imageRowFixedHeight: config.imageRowFixedHeight
+    imageRowFixedHeight: config.imageRowFixedHeight,
+    imageWidthMode: config.imageWidthMode,
+    imageFixedWidth: config.imageFixedWidth
   };
 }

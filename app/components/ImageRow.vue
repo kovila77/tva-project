@@ -4,6 +4,7 @@
     :class="{
       'image-row--dirty': image.dirty,
       'image-row--fixed': config.imageRowHeightMode === 'fixed',
+      'image-row--image-fixed': config.imageWidthMode === 'fixed',
       'image-row--no-tags': !config.showTagsColumn
     }"
   >
@@ -179,6 +180,14 @@ const {
     grid-template-columns: minmax(160px, 240px) minmax(280px, 1fr);
   }
 
+  &--image-fixed {
+    grid-template-columns: var(--image-fixed-width, 240px) minmax(280px, 1fr) minmax(260px, 0.9fr);
+  }
+
+  &--image-fixed#{&}--no-tags {
+    grid-template-columns: var(--image-fixed-width, 240px) minmax(280px, 1fr);
+  }
+
   &__thumb {
     display: flex;
     align-items: center;
@@ -196,6 +205,10 @@ const {
       height: auto;
       object-fit: contain;
     }
+  }
+
+  &--image-fixed &__thumb {
+    width: var(--image-fixed-width, 240px);
   }
 
   &--fixed &__thumb {
@@ -318,6 +331,10 @@ const {
 @media (max-width: 1260px) {
   .image-row {
     grid-template-columns: 150px minmax(0, 1fr);
+  }
+
+  .image-row--image-fixed {
+    grid-template-columns: var(--image-fixed-width, 240px) minmax(0, 1fr);
   }
 
   .image-row__tag-column {

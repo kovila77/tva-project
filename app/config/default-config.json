@@ -14,5 +14,7 @@
   "statsPlacement": "tab",
   "showTagsColumn": true,
   "imageRowHeightMode": "full",
-  "imageRowFixedHeight": 360
+  "imageRowFixedHeight": 360,
+  "imageWidthMode": "current",
+  "imageFixedWidth": 240
 }

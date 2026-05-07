@@ -2,6 +2,7 @@ import type {
   AppConfig,
   FilterMode,
   ImageRowHeightMode,
+  ImageWidthMode,
   SidePanelMode,
   StatsPlacement,
   TagSetsPlacement,
@@ -11,9 +12,9 @@ import type {
 const tagSetPlacements: TagSetsPlacement[] = ["side", "top", "hidden"];
 const statsPlacements: StatsPlacement[] = ["tab", "side", "hidden"];
 const imageRowHeightModes: ImageRowHeightMode[] = ["full", "fixed"];
+const imageWidthModes: ImageWidthMode[] = ["current", "fixed"];
 const defaultFixedRowHeight = 360;
-const minFixedRowHeight = 100;
-const maxFixedRowHeight = 2500;
+const defaultFixedImageWidth = 240;
 
 type ConfigSource = Partial<Record<keyof AppConfig | string, unknown>>;
 
@@ -34,7 +35,9 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     statsPlacement: includesValue(statsPlacements, source.statsPlacement) ? source.statsPlacement : "tab",
     showTagsColumn: source.showTagsColumn !== false,
     imageRowHeightMode: includesValue(imageRowHeightModes, source.imageRowHeightMode) ? source.imageRowHeightMode : "full",
-    imageRowFixedHeight: normalizeFixedRowHeight(source.imageRowFixedHeight)
+    imageRowFixedHeight: normalizeFixedDimension(source.imageRowFixedHeight, defaultFixedRowHeight),
+    imageWidthMode: includesValue(imageWidthModes, source.imageWidthMode) ? source.imageWidthMode : "current",
+    imageFixedWidth: normalizeFixedDimension(source.imageFixedWidth, defaultFixedImageWidth)
   };
 }
 
@@ -54,13 +57,13 @@ function includesValue<T extends string>(values: T[], value: unknown): value is 
   return typeof value === "string" && values.includes(value as T);
 }
 
-function normalizeFixedRowHeight(value: unknown): number {
+function normalizeFixedDimension(value: unknown, fallback: number): number {
   const numberValue = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(numberValue)) {
-    return defaultFixedRowHeight;
+    return fallback;
   }
 
-  return Math.min(maxFixedRowHeight, Math.max(minFixedRowHeight, Math.round(numberValue)));
+  return Math.max(1, Math.round(numberValue));
 }
 
 export function isThemeMode(value: unknown): value is ThemeMode {

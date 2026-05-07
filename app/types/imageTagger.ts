@@ -4,6 +4,7 @@ export type SidePanelMode = "open" | "hidden";
 export type TagSetsPlacement = "side" | "top" | "hidden";
 export type StatsPlacement = "tab" | "side" | "hidden";
 export type ImageRowHeightMode = "full" | "fixed";
+export type ImageWidthMode = "current" | "fixed";
 export type MainTab = "images" | "stats";
 export type TagTextFieldMode = "tags" | "single-tag" | "filter" | "regex" | "text";
 export type TagTextStyleMatch = "tag" | "fragment" | "regex" | "unmatched-tag" | "all-tags";
@@ -34,6 +35,8 @@ export interface AppConfig {
   showTagsColumn: boolean;
   imageRowHeightMode: ImageRowHeightMode;
   imageRowFixedHeight: number;
+  imageWidthMode: ImageWidthMode;
+  imageFixedWidth: number;
 }
 
 export interface ImageMetadata {

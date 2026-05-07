@@ -34,7 +34,10 @@
     <div
       v-if="activeMainTab === 'images'"
       class="dataset-panel__image-list"
-      :style="{ '--image-row-fixed-height': `${config.imageRowFixedHeight}px` }"
+      :style="{
+        '--image-row-fixed-height': `${config.imageRowFixedHeight}px`,
+        '--image-fixed-width': `${config.imageFixedWidth}px`
+      }"
     >
       <ImageRow
         v-for="image in renderedImages"
