@@ -1,10 +1,10 @@
 <template>
   <div class="field tag-field" :class="fieldClasses" :title="title">
-    <div v-if="label || showHistoryButtons" class="tag-field-header">
-      <span v-if="label" :id="labelId" class="tag-field-label">{{ label }}</span>
-      <div v-if="showHistoryButtons" class="tag-field-actions">
+    <div v-if="label || showHistoryButtons" class="tag-field__header">
+      <span v-if="label" :id="labelId" class="tag-field__label">{{ label }}</span>
+      <div v-if="showHistoryButtons" class="tag-field__actions">
         <button
-          class="btn icon-btn tag-field-history-btn"
+          class="btn icon-btn tag-field__history-btn"
           type="button"
           title="Undo editor draft change."
           aria-label="Undo editor draft change"
@@ -15,7 +15,7 @@
           <AppIcon name="undo" class="icon" />
         </button>
         <button
-          class="btn icon-btn tag-field-history-btn"
+          class="btn icon-btn tag-field__history-btn"
           type="button"
           title="Redo editor draft change."
           aria-label="Redo editor draft change"
@@ -30,7 +30,7 @@
 
     <div
       ref="editorHost"
-      class="tag-field-editor"
+      class="tag-field__editor"
       :class="editorClasses"
       :style="editorStyle"
       :aria-labelledby="label ? labelId : undefined"
@@ -38,10 +38,10 @@
 
     <div
       v-if="showSelected"
-      class="selected-tag-bar tag-field-selected"
+      class="tag-field__selected"
       :title="selectedTagText ? `Selected tag: ${selectedTagText}` : 'Place the caret inside a tag to select it.'"
     >
-      <span class="selected-label">{{ selectedLabel }}</span>
+      <span class="tag-field__selected-label">{{ selectedLabel }}</span>
       <strong>{{ selectedTagText || "No selected tag" }}</strong>
     </div>
   </div>
@@ -122,12 +122,12 @@ const editorStyle = computed(() => ({
   "--tag-field-rows": String(Math.max(1, props.rows))
 }));
 const fieldClasses = computed(() => ({
-  "tag-field-focused": focused.value,
-  "tag-field-single-line": !multiline.value
+  "tag-field--focused": focused.value,
+  "tag-field--single-line": !multiline.value
 }));
 const editorClasses = computed(() => ({
-  "single-line": !multiline.value,
-  "is-focused": focused.value
+  "tag-field__editor--single-line": !multiline.value,
+  "tag-field__editor--focused": focused.value
 }));
 const autocompleteOptions = computed<Completion[]>(() => {
   const seen = new Set<string>();
@@ -439,3 +439,180 @@ function normalizeValueForMode(value: string): string {
   return normalizeSingleLineValue(value);
 }
 </script>
+
+<style scoped lang="scss">
+.tag-field {
+  min-width: 0;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  &__label {
+    min-width: 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex: 0 0 auto;
+  }
+
+  &__history-btn {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 5px 6px;
+  }
+
+  &__editor {
+    width: 100%;
+    min-height: 34px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface-raised);
+    color: var(--text);
+
+    &:focus-within,
+    &--focused {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    :deep(.cm-editor) {
+      height: 100%;
+      background: transparent;
+      color: var(--text);
+      outline: none;
+    }
+
+    :deep(.cm-focused) {
+      outline: none;
+    }
+
+    :deep(.cm-scroller) {
+      min-height: 34px;
+      max-height: min(46vh, calc((var(--tag-field-rows, 4) * 1.45em) + 18px));
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    :deep(.cm-content) {
+      min-height: calc((var(--tag-field-rows, 4) * 1.45em) + 16px);
+      padding: 8px;
+      caret-color: var(--text);
+    }
+
+    :deep(.cm-line) {
+      padding: 0;
+    }
+
+    :deep(.cm-placeholder) {
+      color: var(--muted);
+      opacity: 0.78;
+    }
+
+    &--single-line {
+      :deep(.cm-scroller) {
+        max-height: 34px;
+        overflow: hidden;
+      }
+
+      :deep(.cm-content) {
+        min-height: 32px;
+        padding: 7px 9px;
+        white-space: pre;
+      }
+    }
+  }
+
+  &__selected {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 30px;
+    margin-top: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface-soft);
+    padding: 5px 8px;
+
+    strong {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      font-size: 12px;
+    }
+  }
+
+  &__selected-label {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+  }
+}
+
+:global(.tag-text-selected) {
+  border-radius: 3px;
+  background: rgba(56, 189, 248, 0.22);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.3);
+}
+
+:global(.tag-text-common) {
+  font-style: italic;
+}
+
+:global(.tag-text-unknown) {
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: var(--red);
+  text-underline-offset: 3px;
+}
+
+:global(.tag-text-highlighted) {
+  border-radius: 3px;
+  box-shadow: 0 0 0 2px var(--green);
+}
+
+:global(.tag-text-fragment-highlighted) {
+  color: var(--amber) !important;
+  font-weight: 850 !important;
+}
+
+:global(.tag-text-regex) {
+  color: #c4b5fd;
+}
+
+:global(.tag-text-filtered-blink) {
+  border-radius: 3px;
+  animation: filtered-tag-blink 0.48s ease-in-out 6;
+}
+
+:global(.cm-tooltip) {
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+:global(.cm-tooltip-autocomplete ul) {
+  max-height: 240px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+:global(.cm-tooltip-autocomplete ul li[aria-selected]) {
+  background: var(--blue);
+  color: #fff;
+}
+</style>

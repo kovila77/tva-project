@@ -1,7 +1,7 @@
 <template>
   <details open>
     <summary title="Batch tools operate on loaded or currently visible images in browser memory. Every batch mutation is added to undo history.">Batch Tools</summary>
-    <div class="tool-description">
+    <div class="batch-tools__description">
       Batch tools never edit source files directly. They change the in-memory dataset, then you export ZIP files when ready. Undo/redo can reverse each batch operation.
     </div>
     <TagField
@@ -14,7 +14,7 @@
       :autocomplete-items="autocompleteTags"
       :style-rules="imageTagTextStyleRules"
     />
-    <div class="tool-description">
+    <div class="batch-tools__description">
       Adds one exact tag to each currently visible image that does not already have it. Filtered-out rows are untouched and the whole batch is one undo step.
     </div>
     <button class="btn primary full" type="button" title="Append the typed tag to each visible image. This is one undoable operation." :disabled="!batch.addTag.trim() || !visibleImages.length" @click="addTagToVisible">
@@ -32,10 +32,10 @@
       :style-rules="regexTextStyleRules"
       show-history-buttons
     />
-    <div class="tool-description">
+    <div class="batch-tools__description">
       Clean Visible removes matching tags only from currently visible rows. Removed tags remain restorable on each image.
     </div>
-    <div class="split-actions">
+    <div class="batch-tools__split-actions">
       <button class="btn danger" type="button" title="Remove tags matching the regex list from visible images. Undo restores the prior tag lists." :disabled="!config.removePatternsText.trim()" @click="removeRegexFromVisible">
         <AppIcon name="clean" class="icon" /> Clean Visible
       </button>
@@ -44,7 +44,7 @@
       </button>
     </div>
 
-    <div class="tool-description">
+    <div class="batch-tools__description">
       Rename Visible changes export names only, using the current visible order. Apply Tag Order moves configured tags to the front of visible rows without deleting unlisted tags.
     </div>
     <button class="btn full" type="button" title="Rename visible image/tag output names to 00001, 00002, etc. This changes export names only, not source files." :disabled="!visibleImages.length" @click="renameVisibleFiles">
@@ -76,3 +76,23 @@ const {
   applyOrderToVisible
 } = useImageTaggerContext();
 </script>
+
+<style scoped lang="scss">
+.batch-tools {
+  &__description {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface-soft);
+    padding: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  &__split-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+}
+</style>

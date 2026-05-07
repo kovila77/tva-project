@@ -1,9 +1,9 @@
 <template>
-  <div v-if="viewer.image" class="viewer-overlay" @click.self="closeViewer">
-    <div class="viewer-shell" role="dialog" aria-modal="true">
-      <div class="viewer-bar">
+  <div v-if="viewer.image" class="image-viewer" @click.self="closeViewer">
+    <div class="image-viewer__shell" role="dialog" aria-modal="true">
+      <div class="image-viewer__bar">
         <strong>{{ viewer.image.fileName }}</strong>
-        <div class="viewer-actions">
+        <div class="image-viewer__actions">
           <button class="btn icon-btn" type="button" title="Zoom image preview out." aria-label="Zoom out" @click="zoomViewer(0.85)"><AppIcon name="zoomOut" class="icon" /></button>
           <span>{{ Math.round(viewer.scale * 100) }}%</span>
           <button class="btn icon-btn" type="button" title="Zoom image preview in." aria-label="Zoom in" @click="zoomViewer(1.15)"><AppIcon name="zoomIn" class="icon" /></button>
@@ -12,8 +12,8 @@
         </div>
       </div>
       <div
-        class="viewer-stage"
-        :class="{ dragging: viewer.dragging }"
+        class="image-viewer__stage"
+        :class="{ 'image-viewer__stage--dragging': viewer.dragging }"
         @wheel.prevent="onViewerWheel"
         @pointerdown="onViewerStagePointerDown"
         @pointermove="moveViewerDrag"
@@ -89,3 +89,76 @@ function onViewerStagePointerUp(event: PointerEvent | Event): void {
   stopViewerDrag();
 }
 </script>
+
+<style scoped lang="scss">
+.image-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(8, 11, 18, 0.72);
+
+  &__shell {
+    width: min(1600px, 100%);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+  }
+
+  &__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px;
+    background: transparent;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+
+    span {
+      min-width: 54px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  &__stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    touch-action: none;
+    background: transparent;
+
+    &--dragging {
+      cursor: grabbing;
+    }
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      transform-origin: center center;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+  }
+}
+</style>

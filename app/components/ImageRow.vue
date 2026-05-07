@@ -1,11 +1,18 @@
 <template>
-  <article class="image-row" :class="{ dirty: image.dirty }">
-    <button class="thumb-button" type="button" :title="`Open image viewer for ${image.fileName}. Source file is not modified.`" @click="openViewer(image)">
+  <article
+    class="image-row"
+    :class="{
+      'image-row--dirty': image.dirty,
+      'image-row--compact': config.density === 'compact',
+      'image-row--no-tags': !config.showTagsColumn
+    }"
+  >
+    <button class="image-row__thumb" type="button" :title="`Open image viewer for ${image.fileName}. Source file is not modified.`" @click="openViewer(image)">
       <img :src="image.objectUrl" :alt="image.fileName" loading="lazy" decoding="async">
     </button>
 
-    <div class="editor-column">
-      <div class="row-title">
+    <div class="image-row__editor">
+      <div class="image-row__title">
         <div>
           <h3>{{ image.fileName }}</h3>
           <span>{{ imageMetadataLine(image) }}</span>
@@ -16,7 +23,7 @@
       <TagField
         v-model="image.editText"
         :selected-tag="image.selectedTag"
-        class="image-tag-field"
+        class="image-row__tag-field"
         mode="tags"
         :rows="5"
         :autocomplete-items="autocompleteTags"
@@ -31,7 +38,7 @@
         @commit="commitEditor(image, 'edit')"
       />
 
-      <div class="row-actions context-actions">
+      <div class="image-row__actions">
         <button class="btn icon-btn" type="button" :title="`Preview ${image.fileName} with zoom and pan.`" :aria-label="`Preview ${image.fileName}`" @click="openViewer(image)"><AppIcon name="preview" class="icon" /></button>
         <button class="btn icon-btn" type="button" :title="`Copy temporary browser object URL for ${image.fileName}.`" :aria-label="`Copy temporary URL for ${image.fileName}`" @click="copyImageUrl(image)"><AppIcon name="copy" class="icon" /></button>
         <button class="btn success icon-btn" type="button" :title="`Apply the current text draft for ${image.fileName}. Creates one undoable history entry.`" :aria-label="`Apply tag draft for ${image.fileName}`" :disabled="!image.draftDirty" @click="commitEditor(image, 'edit')"><AppIcon name="apply" class="icon" /></button>
@@ -42,7 +49,7 @@
         <button class="btn danger icon-btn" type="button" :title="`Hide ${image.fileName} from this in-memory session. Source files are not deleted and global Undo restores this row.`" :aria-label="`Remove ${image.fileName} from memory`" @click="removeImage(image)"><AppIcon name="removeItem" class="icon" /></button>
       </div>
 
-      <div class="row-actions context-actions">
+      <div class="image-row__actions">
         <button class="btn icon-btn" type="button" title="Filter the dataset by the selected tag." aria-label="Filter by selected tag" :disabled="!image.selectedTag" @click="filterByTag(image.selectedTag)"><AppIcon name="filter" class="icon" /></button>
         <button class="btn icon-btn" type="button" title="Append the selected tag to the current filter." aria-label="Add selected tag to filter" :disabled="!image.selectedTag" @click="addSelectedToFilter(image)"><AppIcon name="filterAdd" class="icon" /></button>
         <button class="btn icon-btn" type="button" title="Add selected tag to common tags, making it available as a row chip." aria-label="Add selected tag to common tags" :disabled="!image.selectedTag" @click="appendConfigTag('commonTagsText', image.selectedTag)"><AppIcon name="common" class="icon" /></button>
@@ -52,21 +59,21 @@
         <button class="btn danger icon-btn" type="button" title="Remove the selected tag from this image and keep it restorable in Deleted tags." aria-label="Remove selected tag" :disabled="!image.selectedTag" @click="removeTagFromImage(image, image.selectedTag)"><AppIcon name="remove" class="icon" /></button>
       </div>
 
-      <div v-if="image.historyOpen" class="inline-history" :title="`Recent undo/redo entries touching ${image.fileName}.`">
+      <div v-if="image.historyOpen" class="image-row__history" :title="`Recent undo/redo entries touching ${image.fileName}.`">
         <strong>History preview</strong>
-        <div v-for="entry in imageHistory(image)" :key="entry.key" class="history-line">
+        <div v-for="entry in imageHistory(image)" :key="entry.key" class="image-row__history-line">
           {{ entry.text }}
         </div>
         <div v-if="!imageHistory(image).length" class="empty-inline">No committed history for this image yet.</div>
       </div>
     </div>
 
-    <div v-if="config.showTagsColumn" class="tag-column" title="Clickable row tags. Use display controls to hide this column when image/editor width matters more.">
-      <div class="chip-group">
+    <div v-if="config.showTagsColumn" class="image-row__tag-column" title="Clickable row tags. Use display controls to hide this column when image/editor width matters more.">
+      <div class="image-row__chip-group">
         <button
           v-for="tag in commonTags"
           :key="`${image.id}-common-${tag}`"
-          class="tag-chip common"
+          class="image-row__tag-chip image-row__tag-chip--common"
           :class="[tagClass(tag), { active: hasTag(image, tag) }]"
           type="button"
           :title="hasTag(image, tag) ? `Remove common tag '${tag}' from this image. Undoable.` : `Add common tag '${tag}' to this image. Undoable.`"
@@ -74,16 +81,16 @@
         >
           <AppIcon :name="hasTag(image, tag) ? 'remove' : 'add'" class="icon" />
           <span>
-            <span v-for="part in tagTextParts(tag)" :key="part.key" :class="{ textHighlighted: part.highlighted }">{{ part.text }}</span>
+            <span v-for="part in tagTextParts(tag)" :key="part.key" :class="{ 'tag-token--fragment-highlighted': part.highlighted }">{{ part.text }}</span>
           </span>
         </button>
       </div>
 
-      <div class="chip-group tags">
+      <div class="image-row__chip-group">
         <button
           v-for="tag in nonCommonTags(image)"
           :key="`${image.id}-tag-${tag}`"
-          class="tag-chip"
+          class="image-row__tag-chip"
           :class="tagClass(tag)"
           type="button"
           :title="`Remove tag '${tag}' and store it in Deleted tags. Undoable.`"
@@ -91,24 +98,24 @@
         >
           <AppIcon name="remove" class="icon" />
           <span>
-            <span v-for="part in tagTextParts(tag)" :key="part.key" :class="{ textHighlighted: part.highlighted }">{{ part.text }}</span>
+            <span v-for="part in tagTextParts(tag)" :key="part.key" :class="{ 'tag-token--fragment-highlighted': part.highlighted }">{{ part.text }}</span>
           </span>
         </button>
       </div>
 
-      <div class="chip-group deleted-tags">
-        <span class="chip-heading">Deleted</span>
+      <div class="image-row__chip-group image-row__deleted-tags">
+        <span class="image-row__chip-heading">Deleted</span>
         <button
           v-for="tag in image.removedTags"
           :key="`${image.id}-removed-${tag}`"
-          class="tag-chip removed"
+          class="image-row__tag-chip image-row__tag-chip--removed"
           type="button"
           :title="`Return deleted tag '${tag}' to this image. Undoable.`"
           @click="restoreRemovedTag(image, tag)"
         >
           <AppIcon name="add" class="icon" />
           <span>
-            <span v-for="part in tagTextParts(tag)" :key="part.key" :class="{ textHighlighted: part.highlighted }">{{ part.text }}</span>
+            <span v-for="part in tagTextParts(tag)" :key="part.key" :class="{ 'tag-token--fragment-highlighted': part.highlighted }">{{ part.text }}</span>
           </span>
         </button>
         <span v-if="!image.removedTags.length" class="empty-inline">No deleted tags.</span>
@@ -162,3 +169,206 @@ const {
   restoreRemovedTag
 } = useImageTaggerContext();
 </script>
+
+<style scoped lang="scss">
+.image-row {
+  display: grid;
+  grid-template-columns: minmax(120px, var(--thumb-size, 220px)) minmax(280px, 1fr) minmax(260px, 0.9fr);
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+
+  &--dirty {
+    border-color: #f59e0b;
+    box-shadow: inset 3px 0 0 #f59e0b;
+  }
+
+  &--compact {
+    grid-template-columns: minmax(120px, var(--thumb-size, 160px)) minmax(260px, 1fr) minmax(220px, 0.8fr);
+    padding: 8px;
+  }
+
+  &--no-tags {
+    grid-template-columns: var(--thumb-size, 220px) minmax(280px, 1fr);
+  }
+
+  &__thumb {
+    display: block;
+    width: 100%;
+    height: var(--thumb-height, 220px);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface-soft);
+    padding: 0;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  &--compact &__thumb {
+    height: min(var(--thumb-height, 144px), 190px);
+  }
+
+  &__editor,
+  &__tag-column {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__title {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+
+    h3 {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+  }
+
+  &__tag-field {
+    :deep(.tag-field__editor .cm-content) {
+      min-height: 126px;
+    }
+  }
+
+  &--compact &__tag-field {
+    :deep(.tag-field__editor .cm-content) {
+      min-height: 88px;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+  }
+
+  &__history {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface-soft);
+    padding: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+
+    strong {
+      color: var(--text);
+    }
+  }
+
+  &__history-line {
+    overflow-wrap: anywhere;
+  }
+
+  &__tag-column {
+    max-height: 260px;
+    overflow: auto;
+  }
+
+  &--compact &__tag-column {
+    max-height: 178px;
+  }
+
+  &__chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: flex-start;
+  }
+
+  &__tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--button-bg);
+    color: var(--text);
+    padding: 4px 7px;
+    font-size: 12px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+
+    &--common {
+      background: var(--surface-soft);
+      font-style: italic;
+
+      &.active {
+        border-color: var(--border);
+        background: var(--surface-soft);
+        color: var(--text);
+      }
+    }
+
+    &--removed {
+      border-color: #f59e0b;
+      background: var(--yellow-soft);
+    }
+
+    &.active {
+      border-color: #86efac;
+      background: var(--green-soft);
+      color: #14532d;
+    }
+  }
+
+  &__deleted-tags {
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+  }
+
+  &__chip-heading {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+  }
+}
+
+@media (max-width: 1260px) {
+  .image-row,
+  .image-row--compact {
+    grid-template-columns: 150px minmax(0, 1fr);
+  }
+
+  .image-row__tag-column {
+    grid-column: 1 / -1;
+    max-height: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .image-row,
+  .image-row--compact {
+    grid-template-columns: 1fr;
+  }
+
+  .image-row__thumb,
+  .image-row--compact .image-row__thumb {
+    height: 240px;
+  }
+}
+</style>

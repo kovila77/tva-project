@@ -156,10 +156,10 @@ export function createRowTagActions({
     const filteredBlink = filteredBlinkTags.value.some((item) => item.toLowerCase() === key);
 
     return {
-      unknown: known.size > 0 && !known.has(key),
-      common,
-      highlighted,
-      filteredBlink
+      "tag-token--unknown": known.size > 0 && !known.has(key),
+      "tag-token--common": common,
+      "tag-token--highlighted": highlighted,
+      "tag-token--filtered-blink": filteredBlink
     };
   }
 

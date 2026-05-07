@@ -1,12 +1,12 @@
 <template>
   <section class="dataset-panel">
-    <div class="dataset-header">
+    <div class="dataset-panel__header">
       <div>
         <h2>Dataset</h2>
         <p>{{ datasetName }}</p>
       </div>
-      <div class="dataset-actions">
-        <div class="tab-row">
+      <div class="dataset-panel__actions">
+        <div class="dataset-panel__tabs">
           <button class="btn" type="button" title="Show the image editing dataset." :class="{ active: activeMainTab === 'images' }" @click="activeMainTab = 'images'"><AppIcon name="images" class="icon" /> Images</button>
           <button v-if="config.statsPlacement === 'tab'" class="btn" type="button" title="Show tag statistics as a separate tab." :class="{ active: activeMainTab === 'stats' }" @click="activeMainTab = 'stats'"><AppIcon name="stats" class="icon" /> Stats</button>
         </div>
@@ -23,22 +23,30 @@
       </div>
     </div>
 
-    <div v-if="loadError" class="notice danger">{{ loadError }}</div>
+    <div v-if="loadError" class="dataset-panel__notice dataset-panel__notice--danger">{{ loadError }}</div>
 
-    <div v-if="activeMainTab === 'stats' && config.statsPlacement === 'tab'" class="tab-panel">
+    <div v-if="activeMainTab === 'stats' && config.statsPlacement === 'tab'" class="dataset-panel__tab">
       <TagStatsList tab />
     </div>
 
-    <div v-else-if="!images.length" class="empty-state">
+    <div v-else-if="!images.length" class="dataset-panel__empty">
       <strong>No dataset loaded.</strong>
       <span>Upload a folder containing images and matching .txt prompt files.</span>
     </div>
 
-    <div v-else class="render-note">
+    <div v-else class="dataset-panel__render-note">
       Rendering {{ renderedImages.length }} of {{ visibleImages.length }} visible images.
     </div>
 
-    <div v-if="activeMainTab === 'images'" class="image-list" :class="[config.density, `image-size-${config.imageSize}`, { 'hide-tag-column': !config.showTagsColumn }]">
+    <div
+      v-if="activeMainTab === 'images'"
+      class="dataset-panel__image-list"
+      :class="[
+        `dataset-panel__image-list--${config.density}`,
+        `dataset-panel__image-list--image-${config.imageSize}`,
+        { 'dataset-panel__image-list--no-tags': !config.showTagsColumn }
+      ]"
+    >
       <ImageRow
         v-for="image in renderedImages"
         :key="image.id"
@@ -66,3 +74,118 @@ const {
   showMore
 } = useImageTaggerContext();
 </script>
+
+<style scoped lang="scss">
+.dataset-panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+  }
+
+  &__actions,
+  &__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__notice {
+    margin: 10px 12px 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface-soft);
+
+    &--danger {
+      border-color: #fecaca;
+      background: var(--red-soft);
+      color: var(--red);
+    }
+  }
+
+  &__empty,
+  &__render-note {
+    margin: 12px;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 22px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--surface-soft);
+    color: var(--muted);
+    text-align: center;
+
+    strong {
+      color: var(--text);
+    }
+  }
+
+  &__render-note {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  &__image-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 12px 12px;
+
+    &--image-tiny {
+      --thumb-size: 96px;
+      --thumb-height: 112px;
+    }
+
+    &--image-small {
+      --thumb-size: 140px;
+      --thumb-height: 160px;
+    }
+
+    &--image-medium {
+      --thumb-size: 220px;
+      --thumb-height: 240px;
+    }
+
+    &--image-large {
+      --thumb-size: 340px;
+      --thumb-height: 380px;
+    }
+  }
+}
+
+@media (max-width: 860px) {
+  .dataset-panel {
+    &__header {
+      align-items: stretch;
+      flex-direction: column;
+    }
+  }
+}
+</style>

@@ -1,9 +1,9 @@
 <template>
-  <div class="app-layout" :data-theme="config.theme" :class="layoutClasses">
+  <div class="app-layout image-tagger" :data-theme="config.theme" :class="layoutClasses">
     <AppHeader />
     <QuickControls />
 
-    <main class="workspace-grid">
+    <main class="image-tagger__workspace">
       <SidePanel />
       <DatasetPanel />
     </main>
@@ -25,3 +25,33 @@ const {
   layoutClasses
 } = provideImageTagger();
 </script>
+
+<style scoped lang="scss">
+.image-tagger {
+  &__workspace {
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    margin-top: 10px;
+  }
+
+  &.side-panel-hidden &__workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1260px) {
+  .image-tagger {
+    &__workspace {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 860px) {
+  .app-layout {
+    padding: 8px;
+  }
+}
+</style>

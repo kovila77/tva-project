@@ -1,11 +1,11 @@
 <template>
-  <header class="topbar" title="Dataset files are loaded into browser memory. Source files are not modified.">
-    <div class="brand-block">
+  <header class="app-header" title="Dataset files are loaded into browser memory. Source files are not modified.">
+    <div class="app-header__brand">
       <h1>TVA Image Tagger</h1>
-      <div class="status-line" :class="{ busy: isBusy }" :title="statusText">{{ statusText }}</div>
+      <div class="app-header__status" :class="{ 'app-header__status--busy': isBusy }" :title="statusText">{{ statusText }}</div>
     </div>
 
-    <div class="top-actions">
+    <div class="app-header__actions">
       <button class="btn primary" type="button" title="Upload a local folder containing images and matching .txt prompt files. Files are read into memory only." @click="openFolderPicker"><AppIcon name="upload" class="icon" /> Upload Folder</button>
       <button class="btn" type="button" title="Import editor configuration JSON. This changes UI/tag-set settings, not loaded image files." @click="openConfigPicker"><AppIcon name="import" class="icon" /> Import Config</button>
       <button class="btn" type="button" title="Download the current editor configuration as JSON." @click="exportConfig"><AppIcon name="export" class="icon" /> Export Config</button>
@@ -53,3 +53,52 @@ const {
   onConfigSelected
 } = useImageTaggerContext();
 </script>
+
+<style scoped lang="scss">
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+
+  &__brand {
+    min-width: 220px;
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+  }
+
+  &__status {
+    min-height: 18px;
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 12px;
+
+    &--busy {
+      color: var(--blue-dark);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 860px) {
+  .app-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+</style>

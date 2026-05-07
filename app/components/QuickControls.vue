@@ -1,6 +1,6 @@
 <template>
-  <section class="quickbar" title="Sticky quick controls. Use display controls to move tag sets, stats, and tags beside images.">
-    <div class="filter-bar">
+  <section class="quick-controls" title="Sticky quick controls. Use display controls to move tag sets, stats, and tags beside images.">
+    <div class="quick-controls__filters">
       <TagField
         v-model="config.filterText"
         class="grow"
@@ -40,7 +40,7 @@
       </div>
     </div>
 
-    <div class="layout-controls">
+    <div class="quick-controls__layout">
       <label class="field compact">
         <span>Theme</span>
         <select v-model="config.theme" class="control" title="Switch between dark and light UI themes.">
@@ -86,24 +86,24 @@
       </label>
     </div>
 
-    <div v-if="config.tagSetsPlacement === 'top'" class="top-config-panel">
+    <div v-if="config.tagSetsPlacement === 'top'" class="quick-controls__tag-sets">
       <TagSetFields />
     </div>
 
-    <div class="summary-grid">
-      <div class="metric">
+    <div class="quick-controls__summary">
+      <div class="quick-controls__metric">
         <strong>{{ images.length }}</strong>
         <span>images</span>
       </div>
-      <div class="metric">
+      <div class="quick-controls__metric">
         <strong>{{ visibleImages.length }}</strong>
         <span>visible</span>
       </div>
-      <div class="metric">
+      <div class="quick-controls__metric">
         <strong>{{ dirtyImages.length }}</strong>
         <span>changed</span>
       </div>
-      <div class="metric">
+      <div class="quick-controls__metric">
         <strong>{{ tagStats.length }}</strong>
         <span>unique tags</span>
       </div>
@@ -135,3 +135,75 @@ const {
   redoDataset
 } = useImageTaggerContext();
 </script>
+
+<style scoped lang="scss">
+.quick-controls {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+
+  &__filters {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) 120px auto auto auto;
+    gap: 8px;
+    align-items: end;
+  }
+
+  &__layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: end;
+    margin-top: 10px;
+  }
+
+  &__tag-sets {
+    margin-top: 10px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+
+  &__summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  &__metric {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface-soft);
+
+    strong {
+      display: block;
+      font-size: 20px;
+      line-height: 1.1;
+    }
+
+    span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+  }
+}
+
+@media (max-width: 860px) {
+  .quick-controls {
+    &__filters {
+      grid-template-columns: 1fr;
+    }
+
+    &__summary {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}
+</style>

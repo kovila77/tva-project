@@ -1,5 +1,5 @@
 <template>
-  <div class="tag-sets-panel">
+  <div class="tag-set-fields">
     <TagField
       v-for="field in fields"
       :key="field.key"
@@ -92,3 +92,11 @@ const fields: TagSetField[] = [
   }
 ];
 </script>
+
+<style scoped lang="scss">
+.tag-set-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+</style>

@@ -59,18 +59,16 @@
 - Keep row actions explicit: apply, undo, redo, original, remove.
 - Avoid visible instructional copy in the app; use labels, placeholders, and button titles for context.
 - Keep mobile and desktop layouts usable without overlapping controls.
-- Keep CSS separated by concern in `app/assets/css`; update `nuxt.config.ts` when adding or removing stylesheet files. Current stylesheets are:
-  - `base.css` for tokens, reset, body, and accessibility helpers.
-  - `controls.css` for shared buttons, fields, pills, icons, and inline utility controls.
-  - `layout.css` for app shell, topbar, quickbar, side panel, and dataset panel layout.
-  - `stats.css` for tag-stat rows.
-  - `image-rows.css` for image rows, editors, chips, and inline history.
-  - `viewer.css` for the image preview overlay.
-  - `responsive.css` for breakpoint-specific overrides.
+- Use SCSS for styling.
+- Keep global SCSS minimal. `app/assets/scss/base.scss` is for theme tokens, reset/body styles, accessibility helpers, and truly shared primitives such as buttons, controls, icons, pills, empty-inline text, and reusable tag-token state classes.
+- Put component-owned styles in the owning Vue component with `<style scoped lang="scss">`.
+- Use BEM class names for component styles. The block should match the component domain, such as `image-row`, `dataset-panel`, or `quick-controls`; use `__element` and `--modifier` classes for internal structure and state.
+- Avoid adding new unscoped global selectors for component layout or view-specific styling. Use `:deep()` only when a scoped component must style child component internals, and `:global()` only for third-party DOM or generated classes such as CodeMirror token/tooltip classes.
+- Update `nuxt.config.ts` only when adding or removing global SCSS entry files. Component-scoped SCSS should stay imported implicitly through the Vue component.
 
 ## Build And Deploy
 
 - Use `npm run build` before deployment checks.
 - For behavior refactors, run `npm run build` before handing off. Documentation-only changes do not need a build.
 - Production output must be `.output/public`.
-- `.vercel`, `.output`, `.nuxt`, `dist`, and `node_modules` must stay out of git.
+- `.vercel`, `.output`, `.nuxt`, `.vite`, `dist`, and `node_modules` must stay out of git.
