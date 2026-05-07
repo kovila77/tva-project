@@ -312,7 +312,6 @@ const {
   &__chip-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
     align-items: flex-start;
   }
 
