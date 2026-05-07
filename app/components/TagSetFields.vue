@@ -1,19 +1,34 @@
 <template>
   <div class="tag-set-fields">
-    <TagField
-      v-for="field in fields"
-      :key="field.key"
-      v-model="config[field.key]"
-      :label="field.label"
-      :rows="field.rows"
-      :mode="field.mode"
-      :placeholder="field.placeholder"
-      :title="field.title"
-      :autocomplete="field.autocomplete"
-      :autocomplete-items="autocompleteTags"
-      :style-rules="field.decorate ? tagTextStyleRules : []"
-      show-history-buttons
-    />
+    <template v-for="field in fields" :key="field.key">
+      <details v-if="collapsible" class="tag-set-fields__section">
+        <summary>{{ field.label }}</summary>
+        <TagField
+          v-model="config[field.key]"
+          :rows="field.rows"
+          :mode="field.mode"
+          :placeholder="field.placeholder"
+          :title="field.title"
+          :autocomplete="field.autocomplete"
+          :autocomplete-items="autocompleteTags"
+          :style-rules="field.decorate ? tagTextStyleRules : []"
+          show-history-buttons
+        />
+      </details>
+      <TagField
+        v-else
+        v-model="config[field.key]"
+        :label="field.label"
+        :rows="field.rows"
+        :mode="field.mode"
+        :placeholder="field.placeholder"
+        :title="field.title"
+        :autocomplete="field.autocomplete"
+        :autocomplete-items="autocompleteTags"
+        :style-rules="field.decorate ? tagTextStyleRules : []"
+        show-history-buttons
+      />
+    </template>
   </div>
 </template>
 
@@ -38,6 +53,12 @@ const {
   autocompleteTags,
   tagTextStyleRules
 } = useImageTaggerContext();
+
+withDefaults(defineProps<{
+  collapsible?: boolean;
+}>(), {
+  collapsible: false
+});
 
 const fields: TagSetField[] = [
   {
@@ -98,5 +119,20 @@ const fields: TagSetField[] = [
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 8px;
+
+  &__section {
+    min-width: 0;
+
+    summary {
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-weight: 750;
+      list-style: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+    }
+  }
 }
 </style>
