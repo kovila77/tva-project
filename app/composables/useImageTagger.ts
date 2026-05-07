@@ -117,8 +117,17 @@ function createImageTaggerContext() {
   const topTagStats = computed(() => tagStats.value.slice(0, 160));
   const lastUndoOperation = computed<DatasetOperation | null>(() => history.past[history.past.length - 1] ?? null);
   const lastRedoOperation = computed<DatasetOperation | null>(() => history.future[history.future.length - 1] ?? null);
+  const hasSidePanelContent = computed(() => (
+    config.sidePanelMode !== "hidden"
+    && (
+      config.tagSetsPlacement === "side"
+      || config.batchToolsPlacement === "side"
+      || config.historyPlacement === "side"
+      || config.statsPlacement === "side"
+    )
+  ));
   const layoutClasses = computed(() => ({
-    "side-panel-hidden": config.sidePanelMode === "hidden",
+    "side-panel-hidden": !hasSidePanelContent.value,
     "row-tags-hidden": !config.showTagsColumn
   }));
   const viewerImageStyle = computed(() => ({
@@ -356,9 +365,12 @@ function createImageTaggerContext() {
   );
 
   watch(
-    () => config.statsPlacement,
-    (placement) => {
-      if (placement !== "tab" && activeMainTab.value === "stats") {
+    () => [config.statsPlacement, config.batchToolsPlacement],
+    ([statsPlacement, batchToolsPlacement]) => {
+      if (statsPlacement !== "tab" && activeMainTab.value === "stats") {
+        activeMainTab.value = "images";
+      }
+      if (batchToolsPlacement !== "tab" && activeMainTab.value === "batch") {
         activeMainTab.value = "images";
       }
     }
@@ -425,6 +437,7 @@ function createImageTaggerContext() {
     undoTitle,
     redoTitle,
     layoutClasses,
+    hasSidePanelContent,
     viewerImageStyle,
     visibleImages,
     renderedImages,

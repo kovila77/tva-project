@@ -1,6 +1,8 @@
 import type {
   AppConfig,
+  BatchToolsPlacement,
   FilterMode,
+  HistoryPlacement,
   ImageRowHeightMode,
   ImageWidthMode,
   SidePanelMode,
@@ -11,10 +13,13 @@ import type {
 
 const tagSetPlacements: TagSetsPlacement[] = ["side", "top", "hidden"];
 const statsPlacements: StatsPlacement[] = ["tab", "side", "hidden"];
+const batchToolsPlacements: BatchToolsPlacement[] = ["tab", "side"];
+const historyPlacements: HistoryPlacement[] = ["top", "side"];
 const imageRowHeightModes: ImageRowHeightMode[] = ["full", "fixed"];
 const imageWidthModes: ImageWidthMode[] = ["current", "fixed"];
 const defaultFixedRowHeight = 360;
 const defaultFixedImageWidth = 240;
+const defaultSidePanelWidth = 340;
 
 type ConfigSource = Partial<Record<keyof AppConfig | string, unknown>>;
 
@@ -33,6 +38,9 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     sidePanelMode: source.sidePanelMode === "hidden" ? "hidden" : "open",
     tagSetsPlacement: includesValue(tagSetPlacements, source.tagSetsPlacement) ? source.tagSetsPlacement : "side",
     statsPlacement: includesValue(statsPlacements, source.statsPlacement) ? source.statsPlacement : "tab",
+    batchToolsPlacement: includesValue(batchToolsPlacements, source.batchToolsPlacement) ? source.batchToolsPlacement : "side",
+    historyPlacement: includesValue(historyPlacements, source.historyPlacement) ? source.historyPlacement : "side",
+    sidePanelWidth: normalizeSidePanelWidth(source.sidePanelWidth),
     showTagsColumn: source.showTagsColumn !== false,
     imageRowHeightMode: includesValue(imageRowHeightModes, source.imageRowHeightMode) ? source.imageRowHeightMode : "full",
     imageRowFixedHeight: normalizeFixedDimension(source.imageRowFixedHeight, defaultFixedRowHeight),
@@ -64,6 +72,15 @@ function normalizeFixedDimension(value: unknown, fallback: number): number {
   }
 
   return Math.max(1, Math.round(numberValue));
+}
+
+function normalizeSidePanelWidth(value: unknown): number {
+  const numberValue = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(numberValue)) {
+    return defaultSidePanelWidth;
+  }
+
+  return Math.min(720, Math.max(260, Math.round(numberValue)));
 }
 
 export function isThemeMode(value: unknown): value is ThemeMode {

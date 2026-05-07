@@ -71,6 +71,20 @@
           <option value="hidden">Hidden</option>
         </select>
       </label>
+      <label class="field compact">
+        <span>Batch tools</span>
+        <select v-model="config.batchToolsPlacement" class="control" title="Choose whether batch tools are shown in the side panel or as a dataset tab.">
+          <option value="side">Side</option>
+          <option value="tab">Tab</option>
+        </select>
+      </label>
+      <label class="field compact">
+        <span>History</span>
+        <select v-model="config.historyPlacement" class="control" title="Choose whether undo/redo history preview is shown in the top controls or side panel.">
+          <option value="side">Side</option>
+          <option value="top">Top</option>
+        </select>
+      </label>
       <label class="check-field" title="Show the clickable tag chips beside each image. Hide this to make the image/editor columns wider.">
         <input v-model="config.showTagsColumn" type="checkbox">
         <span>Row tags</span>
@@ -105,6 +119,10 @@
       <TagSetFields />
     </div>
 
+    <div v-if="config.historyPlacement === 'top'" class="quick-controls__history">
+      <HistoryPanel />
+    </div>
+
     <div class="quick-controls__summary">
       <div class="quick-controls__metric">
         <strong>{{ images.length }}</strong>
@@ -128,6 +146,7 @@
 
 <script setup lang="ts">
 import AppIcon from "~/components/AppIcon.vue";
+import HistoryPanel from "~/components/HistoryPanel.vue";
 import ImageDimensionControl from "~/components/ImageDimensionControl.vue";
 import TagField from "~/components/TagField.vue";
 import TagSetFields from "~/components/TagSetFields.vue";
@@ -180,6 +199,12 @@ const {
   }
 
   &__tag-sets {
+    margin-top: 10px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+
+  &__history {
     margin-top: 10px;
     border-top: 1px solid var(--border);
     padding-top: 10px;

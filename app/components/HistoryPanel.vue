@@ -1,7 +1,7 @@
 <template>
-  <details open>
+  <details class="history-panel" open>
     <summary title="Undo/redo preview. Shows what the next undo or redo will affect.">History</summary>
-    <div class="history-panel">
+    <div class="history-panel__content">
       <div class="history-panel__card">
         <strong>Next undo</strong>
         <span>{{ operationPreview(lastUndoOperation) }}</span>
@@ -32,7 +32,7 @@ const {
 </script>
 
 <style scoped lang="scss">
-.history-panel,
+.history-panel__content,
 .history-panel__card {
   display: flex;
   flex-direction: column;
@@ -40,6 +40,19 @@ const {
 }
 
 .history-panel {
+  padding: 8px 0;
+
+  summary {
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-weight: 750;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
   &__card {
     border: 1px solid var(--border);
     border-radius: 6px;

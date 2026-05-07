@@ -9,8 +9,9 @@
         <div class="dataset-panel__tabs">
           <button class="btn" type="button" title="Show the image editing dataset." :class="{ active: activeMainTab === 'images' }" @click="activeMainTab = 'images'"><AppIcon name="images" class="icon" /> Images</button>
           <button v-if="config.statsPlacement === 'tab'" class="btn" type="button" title="Show tag statistics as a separate tab." :class="{ active: activeMainTab === 'stats' }" @click="activeMainTab = 'stats'"><AppIcon name="stats" class="icon" /> Stats</button>
+          <button v-if="config.batchToolsPlacement === 'tab'" class="btn" type="button" title="Show batch tools as a separate tab." :class="{ active: activeMainTab === 'batch' }" @click="activeMainTab = 'batch'"><AppIcon name="tools" class="icon" /> Batch</button>
         </div>
-        <button class="btn" type="button" title="Render another batch of visible images. Large datasets render in batches to keep the browser fast." :disabled="visibleLimit >= visibleImages.length" @click="showMore">
+        <button v-if="activeMainTab === 'images'" class="btn" type="button" title="Render another batch of visible images. Large datasets render in batches to keep the browser fast." :disabled="visibleLimit >= visibleImages.length" @click="showMore">
           <AppIcon name="showMore" class="icon" /> Show More
         </button>
       </div>
@@ -22,12 +23,16 @@
       <TagStatsList tab />
     </div>
 
-    <div v-else-if="!images.length" class="dataset-panel__empty">
+    <div v-else-if="activeMainTab === 'batch' && config.batchToolsPlacement === 'tab'" class="dataset-panel__tab">
+      <BatchTools />
+    </div>
+
+    <div v-else-if="activeMainTab === 'images' && !images.length" class="dataset-panel__empty">
       <strong>No dataset loaded.</strong>
       <span>Upload a folder containing images and matching .txt prompt files.</span>
     </div>
 
-    <div v-else class="dataset-panel__render-note">
+    <div v-else-if="activeMainTab === 'images'" class="dataset-panel__render-note">
       Rendering {{ renderedImages.length }} of {{ visibleImages.length }} visible images.
     </div>
 
@@ -50,6 +55,7 @@
 
 <script setup lang="ts">
 import AppIcon from "~/components/AppIcon.vue";
+import BatchTools from "~/components/BatchTools.vue";
 import ImageRow from "~/components/ImageRow.vue";
 import TagStatsList from "~/components/TagStatsList.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
@@ -102,6 +108,10 @@ const {
     flex-wrap: wrap;
     align-items: center;
     gap: 6px;
+  }
+
+  &__tab {
+    padding: 12px;
   }
 
   &__notice {

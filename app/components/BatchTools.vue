@@ -1,5 +1,5 @@
 <template>
-  <details open>
+  <details class="batch-tools" open>
     <summary title="Batch tools operate on loaded or currently visible images in browser memory. Every batch mutation is added to undo history.">Batch Tools</summary>
     <div class="batch-tools__description">
       Batch tools never edit source files directly. They change the in-memory dataset, then you export ZIP files when ready. Undo/redo can reverse each batch operation.
@@ -79,6 +79,19 @@ const {
 
 <style scoped lang="scss">
 .batch-tools {
+  padding: 8px 0;
+
+  summary {
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-weight: 750;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
   &__description {
     border: 1px solid var(--border);
     border-radius: 6px;

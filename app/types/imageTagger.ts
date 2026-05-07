@@ -3,9 +3,11 @@ export type ThemeMode = "dark" | "light";
 export type SidePanelMode = "open" | "hidden";
 export type TagSetsPlacement = "side" | "top" | "hidden";
 export type StatsPlacement = "tab" | "side" | "hidden";
+export type BatchToolsPlacement = "tab" | "side";
+export type HistoryPlacement = "top" | "side";
 export type ImageRowHeightMode = "full" | "fixed";
 export type ImageWidthMode = "current" | "fixed";
-export type MainTab = "images" | "stats";
+export type MainTab = "images" | "stats" | "batch";
 export type TagTextFieldMode = "tags" | "single-tag" | "filter" | "regex" | "text";
 export type TagTextStyleMatch = "tag" | "fragment" | "regex" | "unmatched-tag" | "all-tags";
 
@@ -32,6 +34,9 @@ export interface AppConfig {
   sidePanelMode: SidePanelMode;
   tagSetsPlacement: TagSetsPlacement;
   statsPlacement: StatsPlacement;
+  batchToolsPlacement: BatchToolsPlacement;
+  historyPlacement: HistoryPlacement;
+  sidePanelWidth: number;
   showTagsColumn: boolean;
   imageRowHeightMode: ImageRowHeightMode;
   imageRowFixedHeight: number;

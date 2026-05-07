@@ -3,7 +3,10 @@
     <AppHeader />
     <QuickControls />
 
-    <main class="image-tagger__workspace">
+    <main
+      class="image-tagger__workspace"
+      :style="{ '--side-panel-width': `${config.sidePanelWidth}px` }"
+    >
       <SidePanel />
       <DatasetPanel />
     </main>
@@ -30,7 +33,7 @@ const {
 .image-tagger {
   &__workspace {
     display: grid;
-    grid-template-columns: 340px minmax(0, 1fr);
+    grid-template-columns: var(--side-panel-width, 340px) minmax(0, 1fr);
     gap: 10px;
     align-items: start;
     margin-top: 10px;
