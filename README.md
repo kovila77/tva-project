@@ -2,8 +2,6 @@
 
 Static Nuxt app for fast local image prompt/tag dataset editing in the browser. It loads a folder into memory, edits matching `.txt` tag files, and exports the edited results.
 
-Vercel deploys `.output/public` as static files using `vercel.json`.
-
 ## Functions
 
 - Upload image folders with matching `.txt` prompt files.
