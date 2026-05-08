@@ -2,7 +2,7 @@
 
 ## Product Rules
 
-- Keep the app static-only. Do not add server routes, Nitro server handlers, API endpoints, or Vercel functions.
+- Keep the app static-only. Do not add server routes, Nitro server handlers, API endpoints, or functions.
 - Treat local files as user-owned data. Load files into memory and export explicit downloads; never imply that source files are edited in place.
 - Optimize for dataset editing speed: dense controls, low visual noise, lazy image loading, and bounded rendering for large folders.
 - Every destructive or batch dataset mutation must be reversible through the shared undo/redo history.
@@ -72,4 +72,4 @@
 - Use `npm run build` before deployment checks.
 - For behavior refactors, run `npm run build` before handing off. Documentation-only changes do not need a build.
 - Production output must be `.output/public`.
-- `.vercel`, `.output`, `.nuxt`, `.vite`, `dist`, and `node_modules` must stay out of git.
+- `.nuxt`, `.vite`, `dist`, and `node_modules` must stay out of git.
