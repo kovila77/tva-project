@@ -1,3 +1,5 @@
+const baseURL = process.env.NODE_ENV === "development" ? "/" : "/tva-project/";
+
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   css: [
@@ -12,6 +14,7 @@ export default defineNuxtConfig({
   },
   ssr: false,
   app: {
+    baseURL,
     head: {
       htmlAttrs: {
         lang: "en"
