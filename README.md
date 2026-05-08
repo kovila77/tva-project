@@ -22,3 +22,9 @@ npm run dev
 ```
 
 Open `http://127.0.0.1:3000/`.
+
+### Update subtree for github pages
+
+```
+git subtree push --prefix .output/public origin gh-pages
+```
