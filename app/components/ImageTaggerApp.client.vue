@@ -91,7 +91,7 @@ function hideSidePanel(): void {
     &__drawer-backdrop {
       display: block;
       position: fixed;
-      top: calc(var(--app-header-height, 0px) + 38px);
+      top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + 14px);
       right: 0;
       bottom: 0;
       left: 0;

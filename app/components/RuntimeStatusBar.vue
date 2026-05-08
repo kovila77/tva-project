@@ -1,5 +1,5 @@
 <template>
-  <div class="runtime-status-bar">
+  <div ref="statusBarElement" class="runtime-status-bar">
     <HeaderPanelToggleButton v-if="isRightPanel" />
     <SidePanelToggleButton v-else />
     <span>Loaded: {{ images.length }}.</span>
@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import HeaderPanelToggleButton from "~/components/HeaderPanelToggleButton.vue";
 import HistoryActionButton from "~/components/HistoryActionButton.vue";
 import SidePanelToggleButton from "~/components/SidePanelToggleButton.vue";
@@ -30,6 +30,26 @@ const {
 } = useImageTaggerContext();
 
 const isRightPanel = computed(() => config.sidePanelPosition === "right");
+const statusBarElement = ref<HTMLElement | null>(null);
+let resizeObserver: ResizeObserver | null = null;
+
+function updateStatusBarOffset(): void {
+  const height = statusBarElement.value?.offsetHeight ?? 0;
+  document.documentElement.style.setProperty("--app-runtime-status-height", `${height}px`);
+}
+
+onMounted(() => {
+  void nextTick(updateStatusBarOffset);
+  if (statusBarElement.value) {
+    resizeObserver = new ResizeObserver(updateStatusBarOffset);
+    resizeObserver.observe(statusBarElement.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+  document.documentElement.style.removeProperty("--app-runtime-status-height");
+});
 </script>
 
 <style scoped lang="scss">

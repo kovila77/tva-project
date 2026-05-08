@@ -97,8 +97,8 @@ onBeforeUnmount(stopResize);
 .side-panel {
   position: sticky;
   min-width: 0;
-  top: calc(var(--app-header-height, 0px) + 44px);
-  max-height: calc(100vh - var(--app-header-height, 0px) - 56px);
+  top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + 16px);
+  max-height: calc(100vh - var(--app-header-height, 0px) - var(--app-runtime-status-height, 0px) - 28px);
   overflow: auto;
   padding: 8px;
   border: 1px solid var(--border);
@@ -183,7 +183,7 @@ onBeforeUnmount(stopResize);
   .side-panel {
     display: block;
     position: fixed;
-    top: calc(var(--app-header-height, 0px) + 38px);
+    top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + 14px);
     bottom: 8px;
     left: 8px;
     z-index: 998;
