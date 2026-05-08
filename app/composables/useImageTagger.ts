@@ -1,4 +1,4 @@
-import { computed, inject, onBeforeUnmount, onMounted, provide, reactive, ref, shallowRef, watch } from "vue";
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, reactive, ref, shallowRef, watch } from "vue";
 import type { InjectionKey } from "vue";
 import defaultConfig from "~/config/default-config.json";
 import { createBatchActions } from "~/composables/imageTagger/batchActions";
@@ -25,6 +25,7 @@ import { collectKnownTags, countTags, createFilterMatcher, makeDatasetSnapshot, 
 
 const configStorageKey = "tva-image-tagger.config.v2";
 const visibleBatchSize = 80;
+const focusFilterEventName = "tva-image-tagger:focus-filter";
 
 function createImageTaggerContext() {
   const folderInput = ref<HTMLInputElement | null>(null);
@@ -341,6 +342,17 @@ function createImageTaggerContext() {
     persistenceReady = true;
   }
 
+  async function focusFilter(): Promise<void> {
+    if (config.filterPlacement === "header") {
+      config.headerPanelMode = "open";
+    } else {
+      config.sidePanelMode = "open";
+    }
+
+    await nextTick();
+    window.dispatchEvent(new CustomEvent(focusFilterEventName));
+  }
+
   function onGlobalKeydown(event: KeyboardEvent): void {
     const target = event.target;
     const isTyping = target instanceof HTMLInputElement
@@ -350,6 +362,12 @@ function createImageTaggerContext() {
     if (event.key === "Escape" && viewer.image) {
       event.preventDefault();
       viewerActions.closeViewer();
+      return;
+    }
+
+    if ((event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === "k" || event.code === "KeyK")) {
+      event.preventDefault();
+      void focusFilter();
       return;
     }
 

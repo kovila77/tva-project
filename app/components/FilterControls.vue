@@ -1,6 +1,7 @@
 <template>
-  <div class="filter-controls">
+  <div ref="filterRoot" class="filter-controls">
     <TagField
+      ref="filterField"
       v-model="config.filterText"
       class="filter-controls__field"
       label="Filter"
@@ -46,10 +47,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
 import TagField from "~/components/TagField.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
+
+const focusFilterEventName = "tva-image-tagger:focus-filter";
 
 const {
   config,
@@ -59,6 +62,9 @@ const {
   invertFilter,
   clearFilter
 } = useImageTaggerContext();
+
+const filterField = ref<InstanceType<typeof TagField> | null>(null);
+const filterRoot = ref<HTMLElement | null>(null);
 
 const filterPlaceholder = computed(() => {
   if (config.filterMode === "regex") {
@@ -78,6 +84,67 @@ const filterTitle = computed(() => {
   return config.filterTarget === "filename"
     ? "Full tag mode searches filenames by text terms when Filename is selected."
     : "Full tag mode requires exact caption tags for all comma-separated terms.";
+});
+
+function focusFilter(): void {
+  void nextTick(() => {
+    const activeElement = document.activeElement;
+    const hasFilterFocus = activeElement instanceof Node && filterRoot.value?.contains(activeElement);
+    if (filterRoot.value && !hasFilterFocus && !isElementVisible(filterRoot.value)) {
+      scrollNearestContainerToElement(filterRoot.value);
+    }
+    filterField.value?.focus();
+  });
+}
+
+function isElementVisible(element: HTMLElement): boolean {
+  const rect = element.getBoundingClientRect();
+  const parent = findScrollParent(element);
+  const bounds = parent
+    ? parent.getBoundingClientRect()
+    : { top: 0, bottom: window.innerHeight };
+
+  return rect.top >= bounds.top && rect.bottom <= bounds.bottom && rect.top >= 0 && rect.bottom <= window.innerHeight;
+}
+
+function scrollNearestContainerToElement(element: HTMLElement): void {
+  const parent = findScrollParent(element);
+  const elementRect = element.getBoundingClientRect();
+  const parentRect = parent
+    ? parent.getBoundingClientRect()
+    : { top: 0, bottom: window.innerHeight };
+
+  if (elementRect.top < parentRect.top) {
+    const delta = elementRect.top - parentRect.top - 8;
+    parent ? parent.scrollTop += delta : window.scrollBy({ top: delta });
+    return;
+  }
+
+  if (elementRect.bottom > parentRect.bottom) {
+    const delta = elementRect.bottom - parentRect.bottom + 8;
+    parent ? parent.scrollTop += delta : window.scrollBy({ top: delta });
+  }
+}
+
+function findScrollParent(element: HTMLElement): HTMLElement | null {
+  let parent = element.parentElement;
+  while (parent) {
+    const style = window.getComputedStyle(parent);
+    if (/(auto|scroll)/.test(`${style.overflow}${style.overflowY}${style.overflowX}`) && parent.scrollHeight > parent.clientHeight) {
+      return parent;
+    }
+    parent = parent.parentElement;
+  }
+
+  return null;
+}
+
+onMounted(() => {
+  window.addEventListener(focusFilterEventName, focusFilter);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener(focusFilterEventName, focusFilter);
 });
 </script>
 
@@ -143,6 +210,18 @@ const filterTitle = computed(() => {
 @media (max-width: 1120px) {
   .filter-controls {
     grid-template-columns: 1fr;
+  }
+}
+
+:global(.side-panel) .filter-controls {
+  grid-template-columns: 1fr;
+
+  &__bar {
+    grid-template-columns: 1fr;
+  }
+
+  &__actions {
+    justify-content: flex-start;
   }
 }
 </style>
