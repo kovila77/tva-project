@@ -247,6 +247,27 @@ export function createBatchActions({
     }
   }
 
+  function removeTagFromVisible(tag: string): void {
+    const changes = visibleImages.value
+      .filter((image) => includesTag(image.tags, tag))
+      .map((image) => {
+        const nextTags = removeTag(image.tags, tag);
+        return {
+          image,
+          after: {
+            ...snapshotImage(image),
+            tags: nextTags,
+            removedTags: addTag(image.removedTags, tag),
+            editText: formatTags(nextTags)
+          }
+        };
+      });
+
+    if (commitOperation(`Remove ${tag} from visible`, changes)) {
+      setStatus(`Removed ${tag} from visible images.`);
+    }
+  }
+
   function applyOrderToVisible(): void {
     const changes = visibleImages.value.map((image) => {
       const nextTags = orderTags(image.tags, orderTagsText.value);
@@ -275,6 +296,7 @@ export function createBatchActions({
     renameTagEverywhere,
     renameTagEverywhereTo,
     removeTagEverywhere,
+    removeTagFromVisible,
     applyOrderToVisible
   };
 }

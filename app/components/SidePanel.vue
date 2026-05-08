@@ -42,10 +42,9 @@
 
     <BatchTools v-if="config.batchToolsPlacement === 'side'" />
 
-    <details v-if="config.statsPlacement === 'side'" open>
-      <summary title="Tag count statistics. Long natural-language tags wrap instead of being clipped.">Tag Statistics</summary>
+    <div v-if="config.statsPlacement === 'side'" class="side-panel__section" title="Tag count statistics. Long natural-language tags wrap instead of being clipped.">
       <TagStatsList />
-    </details>
+    </div>
   </aside>
 </template>
 
@@ -147,6 +146,15 @@ onBeforeUnmount(stopResize);
   }
 
   :deep(details) {
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  &__section {
     border-bottom: 1px solid var(--border);
     padding: 8px 0;
 

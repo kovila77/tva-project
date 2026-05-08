@@ -1,5 +1,18 @@
 <template>
-  <div ref="statsRoot" class="tag-stats" :class="{ 'tag-stats--tab': tab }">
+  <details ref="statsRoot" class="tag-stats" :class="{ 'tag-stats--tab': tab }" open>
+    <summary class="tag-stats__header">
+      <h3>Tag Statistics</h3>
+      <input
+        v-model="statsSearch"
+        class="control tag-stats__search"
+        type="search"
+        placeholder="Search tags"
+        title="Search tag statistics. Results update while typing."
+        autocomplete="off"
+        @click.stop
+        @keydown.stop
+      >
+    </summary>
     <div class="tag-stats__row tag-stats__row--new">
       <div class="tag-stats__name" title="Double-click to add a new tag to the start of every image." @dblclick="startEditing('')">
         <textarea
@@ -19,7 +32,7 @@
       <div class="tag-stats__actions" aria-hidden="true" />
     </div>
 
-    <div v-for="item in topTagStats" :key="item.tag" class="tag-stats__row">
+    <div v-for="item in visibleTagStats" :key="item.tag" class="tag-stats__row">
       <div class="tag-stats__name" :title="`Double-click to rename '${item.tag}' across loaded images.`" @dblclick="startEditing(item.tag)">
         <textarea
           v-if="editingTag === item.tag"
@@ -50,17 +63,18 @@
             <button class="tag-stats__action" type="button" title="Add this tag to highlighted text fragments." :aria-label="`Add ${item.tag} to highlighted text`" @click="addConfigTagAndClose('highlightText', item.tag)"><AppIcon name="text" class="icon" /></button>
             <button class="tag-stats__action" type="button" title="Move this tag to the start of every prompt where it appears. Undoable." :aria-label="`Move ${item.tag} to prompt start`" @click="moveTagAndClose(item.tag, 'start')"><AppIcon name="arrowUp" class="icon" /></button>
             <button class="tag-stats__action" type="button" title="Move this tag to the end of every prompt where it appears. Undoable." :aria-label="`Move ${item.tag} to prompt end`" @click="moveTagAndClose(item.tag, 'end')"><AppIcon name="arrowDown" class="icon" /></button>
+            <button class="tag-stats__action tag-stats__action--danger" type="button" title="Remove this tag only from currently visible images. Undoable." :aria-label="`Remove ${item.tag} from visible images`" @click="removeVisibleAndClose(item.tag)"><AppIcon name="removeItem" class="icon" /></button>
           </div>
         </div>
         <button class="tag-stats__action tag-stats__action--danger" type="button" title="Remove this tag across loaded images and keep it restorable per image. Undoable." :aria-label="`Remove ${item.tag} from loaded images`" @click="removeTagEverywhere(item.tag)"><AppIcon name="removeItem" class="icon" /></button>
       </div>
     </div>
-    <div v-if="!topTagStats.length" class="empty-inline">No tags loaded.</div>
-  </div>
+    <div v-if="!visibleTagStats.length" class="empty-inline">{{ statsSearch.trim() ? "No matching tags." : "No tags loaded." }}</div>
+  </details>
 </template>
 
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 import AppIcon from "~/components/AppIcon.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { ConfigTextKey } from "~/types/imageTagger";
@@ -74,7 +88,7 @@ withDefaults(defineProps<{
 const {
   images,
   config,
-  topTagStats,
+  tagStats,
   tagClass,
   tagTextParts,
   filterByTag,
@@ -83,13 +97,23 @@ const {
   renameTagEverywhereTo,
   addTagToAllAtStart,
   moveTagEverywhere,
-  removeTagEverywhere
+  removeTagEverywhere,
+  removeTagFromVisible
 } = useImageTaggerContext();
 
 const editingTag = ref<string | null>(null);
 const editingValue = ref("");
 const openMenuTag = ref<string | null>(null);
 const statsRoot = ref<HTMLElement | null>(null);
+const statsSearch = ref("");
+const visibleTagStats = computed(() => {
+  const query = statsSearch.value.trim().toLowerCase();
+  const matches = query
+    ? tagStats.value.filter((item) => item.tag.toLowerCase().includes(query))
+    : tagStats.value;
+
+  return matches.slice(0, 160);
+});
 
 function startEditing(tag: string): void {
   editingTag.value = tag;
@@ -149,6 +173,11 @@ function moveTagAndClose(tag: string, placement: "start" | "end"): void {
   moveTagEverywhere(tag, placement);
   openMenuTag.value = null;
 }
+
+function removeVisibleAndClose(tag: string): void {
+  removeTagFromVisible(tag);
+  openMenuTag.value = null;
+}
 </script>
 
 <style scoped lang="scss">
@@ -156,6 +185,31 @@ function moveTagAndClose(tag: string, placement: "start" | "end"): void {
   display: flex;
   flex-direction: column;
   gap: 1px;
+
+  &__header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+  }
+
+  &__search {
+    min-width: 0;
+  }
 
   &__row {
     display: grid;
