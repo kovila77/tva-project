@@ -38,7 +38,7 @@
       </label>
 
       <div class="filter-controls__actions">
-        <button class="filter-controls__action" type="button" title="Search images with the current filter." aria-label="Search images" @click="applyFilter"><AppIcon name="filter" class="icon" /></button>
+        <button class="filter-controls__action" type="button" title="Search images with the current filter. Shortcut: Ctrl+K focuses this filter." aria-label="Search images" @click="applyFilter"><AppIcon name="filter" class="icon" /></button>
         <button class="filter-controls__action" type="button" title="Invert the current filter, showing images that do not match." aria-label="Invert filter" @click="invertFilter"><AppIcon name="filterInvert" class="icon" /></button>
         <button class="filter-controls__action" type="button" title="Clear the filter and show all loaded images." aria-label="Clear filter" @click="clearFilter"><AppIcon name="clear" class="icon" /></button>
       </div>
@@ -68,10 +68,10 @@ const filterRoot = ref<HTMLElement | null>(null);
 
 const filterPlaceholder = computed(() => {
   if (config.filterMode === "regex") {
-    return config.filterTarget === "filename" ? "filename regex" : "caption tag regex";
+    return config.filterTarget === "filename" ? "filename regex, Ctrl+K" : "caption tag regex, Ctrl+K";
   }
 
-  return config.filterTarget === "filename" ? "filename text" : "tag, another tag";
+  return config.filterTarget === "filename" ? "filename text, Ctrl+K" : "tag, another tag, Ctrl+K";
 });
 
 const filterTitle = computed(() => {
@@ -82,8 +82,8 @@ const filterTitle = computed(() => {
   }
 
   return config.filterTarget === "filename"
-    ? "Full tag mode searches filenames by text terms when Filename is selected."
-    : "Full tag mode requires exact caption tags for all comma-separated terms.";
+    ? "Full tag mode searches filenames by text terms when Filename is selected. Shortcut: Ctrl+K focuses this filter."
+    : "Full tag mode requires exact caption tags for all comma-separated terms. Shortcut: Ctrl+K focuses this filter.";
 });
 
 function focusFilter(): void {
