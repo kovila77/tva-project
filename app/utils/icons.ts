@@ -35,7 +35,6 @@ import {
   faTags,
   faTextHeight,
   faTrash,
-  faUpRightAndDownLeftFromCenter,
   faUpload,
   faXmark
 } from "@fortawesome/free-solid-svg-icons";
@@ -72,7 +71,6 @@ export const appIcons = {
   rename: faPen,
   replace: faRightLeft,
   reset: faArrowsRotate,
-  resize: faUpRightAndDownLeftFromCenter,
   revert: faRotateLeft,
   showMore: faPlus,
   stats: faChartColumn,

@@ -1,4 +1,5 @@
 import type { AppConfig, FilterMatcherInput, ImageRecord, TagStat } from "~/types/imageTagger";
+import { normalizeConfigName } from "~/utils/config";
 
 export const imageExtensions = [".jpg", ".jpeg", ".png", ".webp"] as const;
 
@@ -155,6 +156,7 @@ export function createFilterMatcher({ text, mode, target, ignoreCase }: FilterMa
 
 export function makeDatasetSnapshot(config: AppConfig): AppConfig {
   return {
+    name: normalizeConfigName(config.name),
     commonTagsText: config.commonTagsText,
     knownTagsText: config.knownTagsText,
     highlightTagsText: config.highlightTagsText,

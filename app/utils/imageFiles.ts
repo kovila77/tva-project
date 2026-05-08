@@ -1,5 +1,4 @@
 import type { ImageMetadata, ThemeMode } from "~/types/imageTagger";
-import { getFileExtension } from "~/utils/tagDataset";
 
 type BrowserFile = File & {
   webkitRelativePath?: string;
@@ -34,38 +33,6 @@ export function formatBytes(value: number): string {
     return `${(bytes / 1024).toFixed(1)} KB`;
   }
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
-}
-
-export async function resizeImage(file: File, maxPixels: number): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, maxPixels / Math.max(bitmap.width, bitmap.height));
-  const width = Math.max(1, Math.round(bitmap.width * scale));
-  const height = Math.max(1, Math.round(bitmap.height * scale));
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-
-  const context = canvas.getContext("2d", { alpha: getFileExtension(file.name) === ".png" });
-  if (!context) {
-    bitmap.close?.();
-    throw new Error("Could not create canvas context.");
-  }
-
-  context.imageSmoothingEnabled = true;
-  context.imageSmoothingQuality = "high";
-  context.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close?.();
-
-  const mimeType = getFileExtension(file.name) === ".png" ? "image/png" : "image/jpeg";
-  return await new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject(new Error("Could not create resized image blob."));
-      }
-    }, mimeType, 0.94);
-  });
 }
 
 export function downloadBlob(blob: Blob, fileName: string): void {

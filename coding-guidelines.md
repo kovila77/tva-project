@@ -26,7 +26,7 @@
   - `rowTagActions.ts` for per-row editor/tag-chip behavior.
   - `batchActions.ts` for multi-image mutations.
   - `filterActions.ts` for filter and render-window controls.
-  - `exportActions.ts` for config, tag ZIP, resized ZIP, and image URL export actions.
+  - `exportActions.ts` for config, dataset ZIP, and image URL export actions.
   - `viewerActions.ts` for zoom/pan modal state transitions.
 - Keep pure tag/dataset logic in `app/utils/tagDataset.ts`; add helpers there when logic can be tested without DOM APIs.
 - Keep CodeMirror tag-editor token parsing, selection, completion, and decoration helpers in `app/utils/tagTextEditor.ts`.

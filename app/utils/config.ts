@@ -27,11 +27,15 @@ const imageWidthModes: ImageWidthMode[] = ["compact", "flexible", "fixed"];
 const defaultFixedRowHeight = 360;
 const defaultFixedImageWidth = 240;
 const defaultSidePanelWidth = 340;
+const defaultConfigName = "tva-dataset";
+const windowsReservedNames = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i;
+const invalidFileNameCharacters = /[<>:"/\\|?*\u0000-\u001f]/g;
 
 type ConfigSource = Partial<Record<keyof AppConfig | string, unknown>>;
 
 export function normalizeConfig(source: ConfigSource = {}): AppConfig {
   return {
+    name: normalizeConfigName(source.name),
     commonTagsText: stringValue(source.commonTagsText),
     knownTagsText: stringValue(source.knownTagsText),
     highlightTagsText: stringValue(source.highlightTagsText ?? source.highlightedTagsText),
@@ -66,6 +70,27 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     imageWidthMode: normalizeImageWidthMode(source.imageWidthMode),
     imageFixedWidth: normalizeFixedDimension(source.imageFixedWidth, defaultFixedImageWidth)
   };
+}
+
+export function normalizeConfigName(value: unknown): string {
+  const name = typeof value === "string" ? value : "";
+  const sanitized = sanitizeConfigNameInput(name)
+    .replace(/[ .]+$/g, "")
+    .trim();
+
+  if (!sanitized || windowsReservedNames.test(sanitized)) {
+    return defaultConfigName;
+  }
+
+  return sanitized;
+}
+
+export function sanitizeConfigNameInput(value: string): string {
+  return value.replace(invalidFileNameCharacters, "");
+}
+
+export function isValidConfigName(value: string): boolean {
+  return normalizeConfigName(value) === value;
 }
 
 function stringValue(value: unknown): string {

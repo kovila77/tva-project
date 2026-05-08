@@ -25,6 +25,7 @@ export type ConfigTextKey =
   | "filterText";
 
 export interface AppConfig {
+  name: string;
   commonTagsText: string;
   knownTagsText: string;
   highlightTagsText: string;

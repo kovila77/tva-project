@@ -25,7 +25,6 @@ import { collectKnownTags, countTags, createFilterMatcher, makeDatasetSnapshot, 
 
 const configStorageKey = "tva-image-tagger.config.v2";
 const visibleBatchSize = 80;
-const resizedMaxPixels = 1536;
 
 function createImageTaggerContext() {
   const folderInput = ref<HTMLInputElement | null>(null);
@@ -290,7 +289,6 @@ function createImageTaggerContext() {
     visibleImages,
     isBusy,
     loadError,
-    resizedMaxPixels,
     setStatus
   });
   const viewerActions = createViewerActions({ viewer });
