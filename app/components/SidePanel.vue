@@ -190,14 +190,14 @@ onBeforeUnmount(stopResize);
     width: min(var(--side-panel-width, 340px), calc(100vw - 16px));
     max-height: none;
 
+    &--right {
+      right: 8px;
+      left: auto;
+    }
+
     &__resize {
       display: none;
     }
-  }
-
-  :global(.side-panel-right) .side-panel {
-    right: 8px;
-    left: auto;
   }
 }
 </style>

@@ -7,6 +7,14 @@
       class="image-tagger__workspace"
       :style="{ '--side-panel-width': `${config.sidePanelWidth}px` }"
     >
+      <button
+        v-if="hasSidePanelContent"
+        class="image-tagger__drawer-backdrop"
+        type="button"
+        title="Hide side panel"
+        aria-label="Hide side panel"
+        @click="hideSidePanel"
+      />
       <SidePanel />
       <DatasetPanel />
     </main>
@@ -25,8 +33,13 @@ import { provideImageTagger } from "~/composables/useImageTagger";
 
 const {
   config,
-  layoutClasses
+  layoutClasses,
+  hasSidePanelContent
 } = provideImageTagger();
+
+function hideSidePanel(): void {
+  config.sidePanelMode = "hidden";
+}
 </script>
 
 <style scoped lang="scss">
@@ -48,6 +61,10 @@ const {
     grid-area: dataset;
   }
 
+  &__drawer-backdrop {
+    display: none;
+  }
+
   &.side-panel-right &__workspace {
     grid-template-columns: minmax(0, 1fr) var(--side-panel-width, 340px);
     grid-template-areas: "dataset side";
@@ -64,6 +81,25 @@ const {
     &__workspace {
       grid-template-columns: 1fr;
       grid-template-areas: "dataset";
+    }
+
+    &.side-panel-right &__workspace {
+      grid-template-columns: 1fr;
+      grid-template-areas: "dataset";
+    }
+
+    &__drawer-backdrop {
+      display: block;
+      position: fixed;
+      top: calc(var(--app-header-height, 0px) + 38px);
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 997;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      cursor: default;
     }
   }
 }

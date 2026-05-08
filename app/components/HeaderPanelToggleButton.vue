@@ -8,7 +8,6 @@
     @click="toggleHeaderPanel"
   >
     <AppIcon :name="arrowIcon" class="icon header-panel-toggle__icon" />
-    <span>{{ label }}</span>
   </button>
 </template>
 

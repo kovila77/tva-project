@@ -8,9 +8,8 @@
     @click="toggleSidePanel"
   >
     <AppIcon v-if="showArrowBefore" :name="arrowIcon" class="icon side-panel-toggle__icon" />
-    <AppIcon name="bars" class="icon side-panel-toggle__icon side-panel-toggle__bars" />
     <AppIcon v-if="!showArrowBefore" :name="arrowIcon" class="icon side-panel-toggle__icon" />
-    <span>{{ label }}</span>
+    <AppIcon name="bars" class="icon side-panel-toggle__icon side-panel-toggle__bars" />
   </button>
 </template>
 
