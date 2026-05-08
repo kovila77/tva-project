@@ -1,4 +1,14 @@
 import type { Ref, ShallowRef } from "vue";
+import placeholder001Caption from "~/assets/placeholder-dataset/placeholder-001.txt?raw";
+import placeholder001Url from "~/assets/placeholder-dataset/placeholder-001.png";
+import placeholder002Caption from "~/assets/placeholder-dataset/placeholder-002.txt?raw";
+import placeholder002Url from "~/assets/placeholder-dataset/placeholder-002.png";
+import placeholder003Caption from "~/assets/placeholder-dataset/placeholder-003.txt?raw";
+import placeholder003Url from "~/assets/placeholder-dataset/placeholder-003.png";
+import placeholder004Caption from "~/assets/placeholder-dataset/placeholder-004.txt?raw";
+import placeholder004Url from "~/assets/placeholder-dataset/placeholder-004.png";
+import placeholder005Caption from "~/assets/placeholder-dataset/placeholder-005.txt?raw";
+import placeholder005Url from "~/assets/placeholder-dataset/placeholder-005.png";
 import type { AppConfig, HistoryState, ImageRecord } from "~/types/imageTagger";
 import { normalizeConfig } from "~/utils/config";
 import {
@@ -219,6 +229,63 @@ export function createDatasetActions({
     }
   }
 
+  async function loadPlaceholderDataset(): Promise<void> {
+    isBusy.value = true;
+    loadError.value = "";
+    setStatus("Creating placeholder dataset...");
+
+    try {
+      revokeImageUrls();
+      history.past.splice(0);
+      history.future.splice(0);
+
+      const nextImages: ImageRecord[] = [];
+      for (let index = 0; index < placeholderAssets.length; index += 1) {
+        const asset = placeholderAssets[index];
+        const imageNumber = index + 1;
+        const tags = parseTags(asset.caption);
+        const file = await createPlaceholderImageFile(asset.url, asset.fileName, imageNumber);
+        const objectUrl = URL.createObjectURL(file);
+
+        nextImages.push({
+          id: `placeholder-${imageNumber}-${file.size}`,
+          index,
+          file,
+          relativePath: `placeholder-dataset/${asset.fileName}`,
+          fileName: asset.fileName,
+          originalFileName: asset.fileName,
+          objectUrl,
+          tagFileName: asset.tagFileName,
+          outputTagPath: `placeholder-dataset/${asset.tagFileName}`,
+          width: placeholderImageSize,
+          height: placeholderImageSize,
+          fileSize: file.size,
+          tags,
+          originalTags: [...tags],
+          removedTags: [],
+          selectedTag: "",
+          historyOpen: false,
+          editText: formatTags(tags),
+          draftDirty: false,
+          dirty: false,
+          lastSavedAt: 0
+        });
+      }
+
+      images.value = nextImages;
+      datasetName.value = "Placeholder dataset";
+      visibleLimit.value = visibleBatchSize;
+      recalculateDerivedTags();
+      setStatus("Loaded placeholder dataset.");
+    } catch (error) {
+      console.error(error);
+      loadError.value = `Could not create placeholder dataset: ${getErrorMessage(error)}`;
+      setStatus("Placeholder dataset failed.");
+    } finally {
+      isBusy.value = false;
+    }
+  }
+
   async function persistCurrentDataset(includeFiles = false): Promise<void> {
     if (!images.value.length) {
       return;
@@ -260,9 +327,29 @@ export function createDatasetActions({
     onConfigSelected,
     loadFolder,
     restorePersistedDataset,
+    loadPlaceholderDataset,
     persistCurrentDataset,
     imageMetadataLine
   };
+}
+
+const placeholderImageSize = 1024;
+const placeholderAssets = [
+  { url: placeholder001Url, caption: placeholder001Caption, fileName: "placeholder-001.png", tagFileName: "placeholder-001.txt" },
+  { url: placeholder002Url, caption: placeholder002Caption, fileName: "placeholder-002.png", tagFileName: "placeholder-002.txt" },
+  { url: placeholder003Url, caption: placeholder003Caption, fileName: "placeholder-003.png", tagFileName: "placeholder-003.txt" },
+  { url: placeholder004Url, caption: placeholder004Caption, fileName: "placeholder-004.png", tagFileName: "placeholder-004.txt" },
+  { url: placeholder005Url, caption: placeholder005Caption, fileName: "placeholder-005.png", tagFileName: "placeholder-005.txt" }
+] as const;
+
+async function createPlaceholderImageFile(url: string, fileName: string, imageNumber: number): Promise<File> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Could not load ${fileName}.`);
+  }
+
+  const blob = await response.blob();
+  return new File([blob], fileName, { type: blob.type || "image/png", lastModified: Date.now() + imageNumber });
 }
 
 function getErrorMessage(error: unknown): string {

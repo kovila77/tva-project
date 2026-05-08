@@ -338,7 +338,10 @@ function createImageTaggerContext() {
   }
 
   async function restoreSavedDataset(): Promise<void> {
-    await datasetActions.restorePersistedDataset();
+    const restored = await datasetActions.restorePersistedDataset();
+    if (!restored) {
+      await datasetActions.loadPlaceholderDataset();
+    }
     persistenceReady = true;
   }
 
