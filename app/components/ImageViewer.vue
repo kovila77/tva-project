@@ -94,7 +94,7 @@ function onViewerStagePointerUp(event: PointerEvent | Event): void {
 .image-viewer {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 2000;
   display: flex;
   align-items: stretch;
   justify-content: center;
