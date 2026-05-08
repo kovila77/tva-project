@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt generate",
-    "dev": "nuxt dev",
+    "dev": "export EDITOR='code' && nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview"
   },
