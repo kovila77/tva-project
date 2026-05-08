@@ -117,7 +117,7 @@
         />
       </div>
 
-      <div v-if="!hasVisibleChips" class="image-row__chip-placeholder">&lt;no tags&gt;</div>
+      <div v-if="!hasVisibleChips" class="image-row__chip-placeholder">...</div>
     </div>
   </article>
 </template>
@@ -508,6 +508,7 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
     color: var(--muted);
     font-size: 12px;
     font-weight: 750;
+    text-align: center;
   }
 }
 
