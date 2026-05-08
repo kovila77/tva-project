@@ -1,5 +1,9 @@
 <template>
-  <div ref="filterRoot" class="filter-controls">
+  <div
+    ref="filterRoot"
+    class="filter-controls"
+    :class="{ 'filter-controls--side': config.filterPlacement === 'side' }"
+  >
     <TagField
       ref="filterField"
       v-model="config.filterText"
@@ -68,10 +72,10 @@ const filterRoot = ref<HTMLElement | null>(null);
 
 const filterPlaceholder = computed(() => {
   if (config.filterMode === "regex") {
-    return config.filterTarget === "filename" ? "filename regex, Ctrl+K" : "caption tag regex, Ctrl+K";
+    return config.filterTarget === "filename" ? "filename regex" : "caption regex";
   }
 
-  return config.filterTarget === "filename" ? "filename text, Ctrl+K" : "tag, another tag, Ctrl+K";
+  return config.filterTarget === "filename" ? "filename text" : "tag, another tag";
 });
 
 const filterTitle = computed(() => {
@@ -214,14 +218,51 @@ onBeforeUnmount(() => {
 }
 
 :global(.side-panel) .filter-controls {
+  @extend .filter-controls--side;
+}
+
+.filter-controls--side {
   grid-template-columns: 1fr;
+  max-width: 100%;
+  overflow: visible;
+
+  > * {
+    min-width: 0;
+    max-width: 100%;
+  }
 
   &__bar {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 0;
+    max-width: 100%;
+    gap: 6px;
   }
 
   &__actions {
     justify-content: flex-start;
+    flex: 0 0 auto;
+  }
+
+  &__select {
+    flex: 1 1 104px;
+    width: auto;
+    min-width: 0;
+  }
+
+  &__case {
+    flex: 1 1 112px;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  :deep(.tag-field),
+  :deep(.tag-field__editor),
+  :deep(.cm-editor),
+  :deep(.cm-scroller),
+  :deep(.cm-content) {
+    min-width: 0;
+    max-width: 100%;
   }
 }
 </style>
