@@ -136,7 +136,7 @@ export function createBatchActions({
     });
 
     if (commitOperation("Rename visible files", changes)) {
-      setStatus("Renamed visible files in memory.");
+      setStatus("Renamed visible files in current order.");
     }
   }
 

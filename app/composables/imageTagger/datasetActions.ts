@@ -127,7 +127,7 @@ export function createDatasetActions({
         }
       }
 
-      imageFiles.sort((left, right) => getRelativePath(left).localeCompare(getRelativePath(right)));
+      imageFiles.sort(compareWindowsFileOrder);
 
       const nextImages: ImageRecord[] = [];
       for (let index = 0; index < imageFiles.length; index += 1) {
@@ -340,6 +340,11 @@ export function createDatasetActions({
 }
 
 const placeholderImageSize = 1024;
+const windowsFileOrderCollator = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: "base"
+});
+
 const placeholderAssets = [
   { url: placeholder001Url, caption: placeholder001Caption, fileName: "placeholder-001.png", tagFileName: "placeholder-001.txt" },
   { url: placeholder002Url, caption: placeholder002Caption, fileName: "placeholder-002.png", tagFileName: "placeholder-002.txt" },
@@ -347,6 +352,18 @@ const placeholderAssets = [
   { url: placeholder004Url, caption: placeholder004Caption, fileName: "placeholder-004.png", tagFileName: "placeholder-004.txt" },
   { url: placeholder005Url, caption: placeholder005Caption, fileName: "placeholder-005.png", tagFileName: "placeholder-005.txt" }
 ] as const;
+
+function compareWindowsFileOrder(left: File, right: File): number {
+  const leftPath = normalizeSortPath(getRelativePath(left));
+  const rightPath = normalizeSortPath(getRelativePath(right));
+  return windowsFileOrderCollator.compare(leftPath, rightPath)
+    || leftPath.localeCompare(rightPath)
+    || getRelativePath(left).localeCompare(getRelativePath(right));
+}
+
+function normalizeSortPath(path: string): string {
+  return path.replace(/\\/g, "/");
+}
 
 async function createPlaceholderImageFile(url: string, fileName: string, imageNumber: number): Promise<File> {
   const response = await fetch(url);

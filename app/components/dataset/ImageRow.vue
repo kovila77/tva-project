@@ -7,11 +7,25 @@
       'image-row--fixed': config.imageRowHeightMode === 'fixed',
       'image-row--image-fixed': config.imageWidthMode === 'fixed',
       'image-row--image-flexible': config.imageWidthMode === 'flexible',
-      'image-row--no-tags': !showChipColumn
+      'image-row--no-tags': !showChipColumn,
+      'image-row--row-dragging': rowDragging,
+      'image-row--drop-before': rowDropPlacement === 'before',
+      'image-row--drop-after': rowDropPlacement === 'after'
     }"
+    @dragover="onImageRowDragOver"
+    @dragleave="onImageRowDragLeave"
+    @drop="onImageRowDrop"
   >
     <div class="image-row__image-cell">
-      <button class="image-row__thumb" type="button" :title="`Open image viewer for ${image.fileName}. Source file is not modified.`" @click="openViewer(image)">
+      <button
+        class="image-row__thumb"
+        type="button"
+        :title="imageThumbTitle"
+        :draggable="canReorderImages"
+        @click="onImageThumbClick"
+        @dragstart="startImageRowDrag"
+        @dragend="stopImageRowDrag"
+      >
         <img :src="image.objectUrl" :alt="image.fileName" loading="lazy" decoding="async">
       </button>
       <span
@@ -218,6 +232,8 @@ const {
   imageTagTextStyleRules,
   imageMetadataLine,
   openViewer,
+  canReorderImages,
+  moveImageRow,
   commitEditor,
   onEditorInput,
   setSelectedTag,
@@ -274,9 +290,14 @@ const fileNameParts = computed(() => {
 
   return splitRegexMatches(props.image.fileName, filteredBlinkPatterns.value, config.ignoreCase);
 });
+const imageThumbTitle = computed(() => canReorderImages.value
+  ? `Open image viewer for ${props.image.fileName}. Drag this image to reorder dataset rows.`
+  : `Open image viewer for ${props.image.fileName}. Row dragging is available only when all loaded images are visible.`);
 const rowElement = ref<HTMLElement | null>(null);
 const tagColumnElement = ref<HTMLElement | null>(null);
 const chipDropCursor = ref<ChipDropCursor | null>(null);
+const rowDragging = ref(false);
+const rowDropPlacement = ref<ImageRowDropPlacement | null>(null);
 const chipDropCursorStyle = computed(() => (
   chipDropCursor.value
     ? {
@@ -289,6 +310,88 @@ const chipDropCursorStyle = computed(() => (
 
 let resizeStartX = 0;
 let resizeStartWidth = 0;
+let imageDragClickSuppressed = false;
+
+type ImageRowDropPlacement = "before" | "after";
+
+const imageRowDragMimeType = "application/x-tva-image-row";
+
+function onImageThumbClick(): void {
+  if (imageDragClickSuppressed) {
+    return;
+  }
+
+  openViewer(props.image);
+}
+
+function startImageRowDrag(event: DragEvent): void {
+  if (!canReorderImages.value) {
+    event.preventDefault();
+    return;
+  }
+
+  rowDragging.value = true;
+  imageDragClickSuppressed = true;
+  event.dataTransfer?.setData(imageRowDragMimeType, props.image.id);
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = "move";
+  }
+}
+
+function stopImageRowDrag(): void {
+  rowDragging.value = false;
+  clearImageRowDropState();
+  window.setTimeout(() => {
+    imageDragClickSuppressed = false;
+  }, 0);
+}
+
+function onImageRowDragOver(event: DragEvent): void {
+  const isImageRowDrag = event.dataTransfer?.types.includes(imageRowDragMimeType) ?? false;
+  if (!canReorderImages.value || rowDragging.value || !isImageRowDrag) {
+    return;
+  }
+
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = "move";
+  }
+  rowDropPlacement.value = resolveImageRowDropPlacement(event);
+}
+
+function onImageRowDragLeave(event: DragEvent): void {
+  const nextTarget = event.relatedTarget;
+  if (nextTarget instanceof Node && rowElement.value?.contains(nextTarget)) {
+    return;
+  }
+
+  clearImageRowDropState();
+}
+
+function onImageRowDrop(event: DragEvent): void {
+  const draggedId = event.dataTransfer?.getData(imageRowDragMimeType) ?? "";
+  if (!canReorderImages.value || !draggedId || draggedId === props.image.id) {
+    clearImageRowDropState();
+    return;
+  }
+
+  event.preventDefault();
+  moveImageRow(draggedId, props.image.id, rowDropPlacement.value ?? resolveImageRowDropPlacement(event));
+  clearImageRowDropState();
+}
+
+function resolveImageRowDropPlacement(event: DragEvent): ImageRowDropPlacement {
+  const rect = rowElement.value?.getBoundingClientRect();
+  if (!rect) {
+    return "after";
+  }
+
+  return event.clientY < rect.top + rect.height / 2 ? "before" : "after";
+}
+
+function clearImageRowDropState(): void {
+  rowDropPlacement.value = null;
+}
 
 function startImageWidthResize(event: PointerEvent): void {
   resizeStartX = event.clientX;
@@ -512,6 +615,7 @@ function sameTag(left: string, right: string): boolean {
 }
 
 onBeforeUnmount(() => {
+  stopImageRowDrag();
   stopImageWidthResize();
   clearChipDropCursor();
 });
@@ -574,6 +678,18 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
     box-shadow: inset 3px 0 0 #f59e0b;
   }
 
+  &--row-dragging {
+    opacity: 0.62;
+  }
+
+  &--drop-before {
+    box-shadow: inset 0 3px 0 var(--blue);
+  }
+
+  &--drop-after {
+    box-shadow: inset 0 -3px 0 var(--blue);
+  }
+
   &--fixed {
     height: var(--image-row-fixed-height, 360px);
     min-height: 100px;
@@ -609,6 +725,15 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
     border-radius: var(--control-radius);
     background: var(--surface-soft);
     padding: 0;
+    cursor: pointer;
+
+    &[draggable="true"] {
+      cursor: grab;
+    }
+
+    .image-row--row-dragging & {
+      cursor: grabbing;
+    }
 
     img {
       display: block;

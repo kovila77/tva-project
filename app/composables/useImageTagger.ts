@@ -200,6 +200,11 @@ function createImageTaggerContext() {
   });
 
   const renderedImages = computed(() => visibleImages.value.slice(0, visibleLimit.value));
+  const canReorderImages = computed(() => (
+    images.value.length > 1
+    && visibleImages.value.length === images.value.length
+    && renderedImages.value.length === images.value.length
+  ));
 
   function refreshImages(): void {
     images.value = images.value.map((image) => ({ ...image }));
@@ -234,7 +239,7 @@ function createImageTaggerContext() {
   }
 
   function visibleImagesSignature(): string {
-    return visibleImages.value.map((image) => image.id).join("\n");
+    return visibleImages.value.map((image) => image.id).sort().join("\n");
   }
 
   function filterStateSignature(): string {
@@ -401,6 +406,44 @@ function createImageTaggerContext() {
     }
 
     void datasetActions.persistCurrentDataset();
+  }
+
+  function moveImageRow(draggedId: string, targetId: string, placement: "before" | "after"): boolean {
+    if (!canReorderImages.value) {
+      setStatus("Show all loaded images before reordering rows.");
+      return false;
+    }
+    if (draggedId === targetId) {
+      return false;
+    }
+
+    const draggedIndex = images.value.findIndex((image) => image.id === draggedId);
+    const targetImage = images.value.find((image) => image.id === targetId);
+    if (draggedIndex < 0 || !targetImage) {
+      return false;
+    }
+
+    const nextImages = [...images.value];
+    const [draggedImage] = nextImages.splice(draggedIndex, 1);
+    const targetIndex = nextImages.findIndex((image) => image.id === targetId);
+    if (!draggedImage || targetIndex < 0) {
+      return false;
+    }
+
+    nextImages.splice(placement === "after" ? targetIndex + 1 : targetIndex, 0, draggedImage);
+    if (nextImages.every((image, index) => image.id === images.value[index]?.id)) {
+      return false;
+    }
+
+    nextImages.forEach((image, index) => {
+      image.index = index;
+    });
+    images.value = nextImages;
+    setStatus(`Moved ${draggedImage.fileName} ${placement} ${targetImage.fileName}.`);
+    if (persistenceReady) {
+      void datasetActions.persistCurrentDataset();
+    }
+    return true;
   }
 
   async function restoreSavedDataset(): Promise<void> {
@@ -617,9 +660,11 @@ function createImageTaggerContext() {
     viewerImageStyle,
     visibleImages,
     renderedImages,
+    canReorderImages,
     imageUndoTitle,
     imageRedoTitle,
     imageHistoryTitle,
+    moveImageRow,
     ...historyActions,
     ...filterActions,
     ...rowTagActions,
