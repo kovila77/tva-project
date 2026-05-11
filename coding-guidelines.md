@@ -5,6 +5,7 @@
 - Keep the app static-only. Do not add server routes, Nitro server handlers, API endpoints, or functions.
 - Treat local files as user-owned data. Import them as browser-owned copies, optionally cache those copies in IndexedDB for reload restore, and make every user-visible write an explicit download; never imply that source files are edited in place.
 - Optimize for dataset editing speed: dense controls, low visual noise, lazy image loading, and bounded rendering for large folders.
+- Load image folders in Windows-like lexicographic relative-path order so the default dataset order matches the user's file browser.
 - Every destructive or batch dataset mutation must be reversible through the shared undo/redo history.
 
 ## Architecture
@@ -45,6 +46,7 @@
 - `image.tags` is the committed state.
 - `image.editText` is the tag editor draft.
 - `image.draftDirty` is persisted for reload restoration, but it is not an undoable committed field; history application resets it after committed mutations.
+- `images.value` order is the dataset order. Dragging an image thumbnail may reorder rows only when every loaded image is currently visible and rendered, and batch rename must use the current `visibleImages` order.
 - `commitOperation()` is the only path for committed tag/file mutations that should support undo/redo.
 - `TagField.vue` owns editor-only draft history, selection detection, autocomplete, and token styling. This local history must not replace committed dataset undo/redo through `commitOperation()`.
 - Batch tools should build a list of image snapshots first, then commit one operation.
