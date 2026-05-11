@@ -3,7 +3,11 @@
     <HeaderPanelToggleButton v-if="isRightPanel" />
     <SidePanelToggleButton v-else />
     <span>Loaded: {{ images.length }}.</span>
-    <span>Visible: {{ visibleImages.length }}.</span>
+    <span
+      :key="visibleStatusBlinkKey"
+      class="runtime-status-bar__metric"
+      :class="{ 'runtime-status-bar__metric--blink': visibleStatusBlinking }"
+    >Visible: {{ visibleImages.length }}.</span>
     <span>Tags: {{ tagStats.length }}.</span>
     <HistoryActionButton action="undo" variant="plain" />
     <HistoryActionButton action="redo" variant="plain" />
@@ -32,6 +36,8 @@ import { useImageTaggerContext } from "~/composables/useImageTagger";
 const {
   images,
   visibleImages,
+  visibleStatusBlinking,
+  visibleStatusBlinkKey,
   tagStats,
   isBusy,
   statusText,
@@ -102,8 +108,25 @@ onBeforeUnmount(() => {
     }
   }
 
+  &__metric--blink {
+    animation: runtime-status-visible-blink 0.4s ease-in-out 4;
+  }
+
   &__end-toggle {
     margin-left: auto;
+  }
+}
+
+@keyframes runtime-status-visible-blink {
+  0%,
+  100% {
+    color: var(--muted);
+    text-shadow: none;
+  }
+
+  50% {
+    color: var(--blue);
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
   }
 }
 </style>

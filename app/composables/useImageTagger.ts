@@ -38,6 +38,8 @@ function createImageTaggerContext() {
   const filteredBlinkTags = shallowRef<string[]>([]);
   const filteredBlinkPatterns = shallowRef<string[]>([]);
   const visibleLimit = ref(visibleBatchSize);
+  const visibleStatusBlinking = ref(false);
+  const visibleStatusBlinkKey = ref(0);
   const isBusy = ref(false);
   const statusText = ref("Ready");
   const loadError = ref("");
@@ -213,8 +215,58 @@ function createImageTaggerContext() {
   }
 
   let filteredBlinkTimer: ReturnType<typeof window.setTimeout> | null = null;
+  let visibleStatusBlinkTimer: ReturnType<typeof window.setTimeout> | null = null;
+  let visibleSignatureReady = false;
+  let lastVisibleStatusCount = 0;
+  let reportedFilterSignature = "";
+  let reportedVisibleSignature = "";
+
+  function blinkVisibleStatus(): void {
+    visibleStatusBlinkKey.value += 1;
+    visibleStatusBlinking.value = true;
+    if (visibleStatusBlinkTimer) {
+      window.clearTimeout(visibleStatusBlinkTimer);
+    }
+    visibleStatusBlinkTimer = window.setTimeout(() => {
+      visibleStatusBlinkTimer = null;
+      visibleStatusBlinking.value = false;
+    }, 1600);
+  }
+
+  function visibleImagesSignature(): string {
+    return visibleImages.value.map((image) => image.id).join("\n");
+  }
+
+  function filterStateSignature(): string {
+    return [
+      config.filterText,
+      config.filterMode,
+      config.filterTarget,
+      config.ignoreCase ? "ignore-case" : "case-sensitive",
+      filterInverted.value ? "inverted" : "normal"
+    ].join("\n");
+  }
+
+  function signatureCount(signature: string | undefined): number {
+    return signature ? signature.split("\n").filter(Boolean).length : 0;
+  }
+
+  function reportFilterApplied(previousCount = lastVisibleStatusCount): void {
+    const nextSignature = visibleImagesSignature();
+    const nextCount = signatureCount(nextSignature);
+
+    blinkVisibleStatus();
+    if (images.value.length) {
+      setStatus(`Filter applied. Visible ${previousCount}->${nextCount}.`);
+    }
+
+    lastVisibleStatusCount = nextCount;
+    reportedFilterSignature = filterStateSignature();
+    reportedVisibleSignature = nextSignature;
+  }
 
   function blinkFilteredTags(): void {
+    reportFilterApplied();
     filteredBlinkTags.value = config.filterMode === "tags" && config.filterTarget === "caption"
       ? parseTags(config.filterText)
       : [];
@@ -417,6 +469,36 @@ function createImageTaggerContext() {
     () => [config.filterText, config.filterMode, config.filterTarget, config.ignoreCase, filterInverted.value],
     () => {
       visibleLimit.value = visibleBatchSize;
+      if (reportedFilterSignature === filterStateSignature()) {
+        return;
+      }
+
+      reportFilterApplied();
+    }
+  );
+
+  watch(
+    () => visibleImagesSignature(),
+    (nextSignature, previousSignature) => {
+      const nextCount = signatureCount(nextSignature);
+      if (!visibleSignatureReady) {
+        visibleSignatureReady = true;
+        lastVisibleStatusCount = nextCount;
+        return;
+      }
+
+      if (reportedVisibleSignature === nextSignature) {
+        lastVisibleStatusCount = nextCount;
+        return;
+      }
+
+      const hasActiveFilter = Boolean(config.filterText.trim()) || filterInverted.value;
+      if (hasActiveFilter && nextSignature !== previousSignature) {
+        reportFilterApplied(signatureCount(previousSignature));
+        return;
+      }
+
+      lastVisibleStatusCount = nextCount;
     }
   );
 
@@ -481,6 +563,9 @@ function createImageTaggerContext() {
     if (filteredBlinkTimer) {
       window.clearTimeout(filteredBlinkTimer);
     }
+    if (visibleStatusBlinkTimer) {
+      window.clearTimeout(visibleStatusBlinkTimer);
+    }
     window.removeEventListener("keydown", onGlobalKeydown);
     historyActions.revokeImageUrls();
     document.body.style.overflow = "";
@@ -492,6 +577,8 @@ function createImageTaggerContext() {
     images,
     autocompleteTags,
     filteredBlinkTags,
+    visibleStatusBlinking,
+    visibleStatusBlinkKey,
     tagStats,
     visibleLimit,
     isBusy,
