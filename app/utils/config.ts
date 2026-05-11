@@ -2,6 +2,7 @@ import type {
   AppConfig,
   BatchToolsPlacement,
   CornersStyle,
+  FilterBarMode,
   FilterMode,
   FilterTarget,
   HeaderPanelMode,
@@ -53,7 +54,8 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     theme: source.theme === "light" ? "light" : "dark",
     cornersStyle: includesValue(cornersStyles, source.cornersStyle) ? source.cornersStyle : "round",
     spacingMode: includesValue(spacingModes, source.spacingMode) ? source.spacingMode : "default",
-    headerPanelMode: source.headerPanelMode === "hidden" ? "hidden" : "open",
+    headerPanelMode: source.headerPanelMode === "open" ? "open" : "hidden",
+    filterBarMode: source.filterBarMode === "open" ? "open" : "hidden",
     sidePanelMode: source.sidePanelMode === "hidden" ? "hidden" : "open",
     tagSetsPlacement: includesValue(tagSetPlacements, source.tagSetsPlacement) ? source.tagSetsPlacement : "side",
     commonTagsPlacement: normalizeTagSetPlacement(source.commonTagsPlacement, source.tagSetsPlacement),
@@ -175,5 +177,9 @@ export function isSidePanelMode(value: unknown): value is SidePanelMode {
 }
 
 export function isHeaderPanelMode(value: unknown): value is HeaderPanelMode {
+  return value === "open" || value === "hidden";
+}
+
+export function isFilterBarMode(value: unknown): value is FilterBarMode {
   return value === "open" || value === "hidden";
 }

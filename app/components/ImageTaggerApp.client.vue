@@ -2,6 +2,7 @@
   <div class="app-layout image-tagger" :data-theme="config.theme" :class="layoutClasses">
     <AppHeader />
     <RuntimeStatusBar />
+    <FilterBar />
 
     <main
       class="image-tagger__workspace"
@@ -27,6 +28,7 @@
 <script setup lang="ts">
 import AppHeader from "~/components/AppHeader.vue";
 import DatasetPanel from "~/components/DatasetPanel.vue";
+import FilterBar from "~/components/FilterBar.vue";
 import ImageViewer from "~/components/ImageViewer.vue";
 import SettingsModal from "~/components/SettingsModal.vue";
 import RuntimeStatusBar from "~/components/RuntimeStatusBar.vue";
@@ -93,7 +95,7 @@ function hideSidePanel(): void {
     &__drawer-backdrop {
       display: block;
       position: fixed;
-      top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + var(--app-space-sticky-offset));
+      top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + var(--app-filter-bar-height, 0px) + var(--app-space-sticky-offset));
       right: 0;
       bottom: 0;
       left: 0;

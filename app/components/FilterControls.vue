@@ -2,7 +2,6 @@
   <div
     ref="filterRoot"
     class="filter-controls"
-    :class="{ 'filter-controls--side': config.filterPlacement === 'side' }"
   >
     <TagField
       ref="filterField"
@@ -154,34 +153,40 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 .filter-controls {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) auto;
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--app-space-gap);
-  align-items: end;
+  align-items: flex-end;
 
   &__field {
+    flex: 1 1 420px;
     min-width: 0;
   }
 
   &__bar {
-    display: grid;
-    grid-template-columns: minmax(96px, 1fr) minmax(104px, 1fr);
+    display: flex;
+    flex: 0 1 auto;
+    flex-wrap: wrap;
     gap: var(--app-space-gap);
-    align-items: end;
+    align-items: flex-end;
+    min-width: 0;
   }
 
   &__select {
+    flex: 0 1 118px;
     min-width: 0;
   }
 
   &__case {
-    align-self: center;
+    flex: 0 0 auto;
+    align-self: flex-end;
   }
 
   &__actions {
     display: flex;
+    flex: 0 0 auto;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: var(--app-space-layout);
   }
 
@@ -192,58 +197,23 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 860px) {
   .filter-controls {
-    grid-template-columns: 1fr;
-  }
-}
+    &__field {
+      flex-basis: 100%;
+    }
 
-:global(.side-panel) .filter-controls {
-  @extend .filter-controls--side;
-}
+    &__bar {
+      flex: 1 1 100%;
+    }
 
-.filter-controls--side {
-  grid-template-columns: 1fr;
-  max-width: 100%;
-  overflow: visible;
-
-  > * {
-    min-width: 0;
-    max-width: 100%;
-  }
-
-  &__bar {
-    display: flex;
-    flex-wrap: wrap;
-    min-width: 0;
-    max-width: 100%;
-    gap: var(--app-space-gap);
-  }
-
-  &__actions {
-    justify-content: flex-start;
-    flex: 0 0 auto;
-  }
-
-  &__select {
-    flex: 1 1 104px;
-    width: auto;
-    min-width: 0;
-  }
-
-  &__case {
-    flex: 1 1 112px;
-    min-width: 0;
-    white-space: normal;
-  }
-
-  :deep(.tag-field),
-  :deep(.tag-field__editor),
-  :deep(.cm-editor),
-  :deep(.cm-scroller),
-  :deep(.cm-content) {
-    min-width: 0;
-    max-width: 100%;
+    &__select,
+    &__case {
+      flex: 1 1 112px;
+      width: auto;
+      min-width: 0;
+      white-space: normal;
+    }
   }
 }
 </style>

@@ -8,6 +8,13 @@
     <HistoryActionButton action="undo" variant="plain" />
     <HistoryActionButton action="redo" variant="plain" />
     <span class="runtime-status-bar__status" :class="{ 'runtime-status-bar__status--busy': isBusy }" :title="statusText">{{ statusText }}</span>
+    <AppIconButton
+      icon="filter"
+      :title="filterToggleTitle"
+      :aria-label="filterToggleTitle"
+      :active="config.filterBarMode === 'open'"
+      @click="toggleFilterBar"
+    />
     <AppIconButton icon="settings" title="Open settings." aria-label="Open settings" @click="openSettingsModal()" />
     <SidePanelToggleButton v-if="isRightPanel" class="runtime-status-bar__end-toggle" />
     <HeaderPanelToggleButton v-else class="runtime-status-bar__end-toggle" />
@@ -33,8 +40,13 @@ const {
 } = useImageTaggerContext();
 
 const isRightPanel = computed(() => config.sidePanelPosition === "right");
+const filterToggleTitle = computed(() => config.filterBarMode === "open" ? "Hide filter bar" : "Show filter bar");
 const statusBarElement = ref<HTMLElement | null>(null);
 let resizeObserver: ResizeObserver | null = null;
+
+function toggleFilterBar(): void {
+  config.filterBarMode = config.filterBarMode === "open" ? "hidden" : "open";
+}
 
 function updateStatusBarOffset(): void {
   const height = statusBarElement.value?.offsetHeight ?? 0;

@@ -11,14 +11,6 @@
       aria-label="Resize side panel"
       @pointerdown="startResize"
     />
-    <details v-if="config.filterPlacement === 'side'" open>
-      <summary title="Filter the loaded image dataset.">
-        <span>Filter</span>
-        <SectionPlacementButtons v-model="config.filterPlacement" />
-      </summary>
-      <FilterControls />
-    </details>
-
     <details v-if="hasSideTagSets" open>
       <summary title="Editable tag sets used by row chips, unknown-tag detection, highlighting, and ordering.">Tag Sets</summary>
       <TagSetFields placement="side" />
@@ -35,8 +27,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount } from "vue";
 import BatchTools from "~/components/BatchTools.vue";
-import FilterControls from "~/components/FilterControls.vue";
-import SectionPlacementButtons from "~/components/SectionPlacementButtons.vue";
 import TagSetFields from "~/components/TagSetFields.vue";
 import TagStatsList from "~/components/TagStatsList.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
@@ -79,8 +69,8 @@ onBeforeUnmount(stopResize);
 .side-panel {
   position: sticky;
   min-width: 0;
-  top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + var(--app-space-sticky-offset));
-  max-height: calc(100vh - var(--app-header-height, 0px) - var(--app-runtime-status-height, 0px) - var(--app-space-sticky-offset) - var(--app-space-page));
+  top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + var(--app-filter-bar-height, 0px) + var(--app-space-sticky-offset));
+  max-height: calc(100vh - var(--app-header-height, 0px) - var(--app-runtime-status-height, 0px) - var(--app-filter-bar-height, 0px) - var(--app-space-sticky-offset) - var(--app-space-page));
   overflow: auto;
   padding: var(--app-space-panel);
   border: 1px solid var(--border);
@@ -165,7 +155,7 @@ onBeforeUnmount(stopResize);
   .side-panel {
     display: block;
     position: fixed;
-    top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + var(--app-space-sticky-offset));
+    top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + var(--app-filter-bar-height, 0px) + var(--app-space-sticky-offset));
     bottom: var(--app-space-page);
     left: var(--app-space-page);
     z-index: 998;

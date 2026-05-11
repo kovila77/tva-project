@@ -38,13 +38,6 @@
       </select>
     </label>
     <label class="field compact">
-      <span>Filter</span>
-      <select v-model="config.filterPlacement" class="control" title="Show filter controls in the header or side panel.">
-        <option value="header">Header</option>
-        <option value="side">Side</option>
-      </select>
-    </label>
-    <label class="field compact">
       <span>Tag sets</span>
       <select v-model="bulkTagSetsPlacement" class="control" title="Choose where all editable tag sets are shown. Individual tag-set sections can override this from their headings.">
         <option v-if="bulkTagSetsPlacement === 'mixed'" value="mixed" disabled>Mixed</option>

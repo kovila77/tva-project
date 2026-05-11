@@ -3,6 +3,7 @@ export type FilterTarget = "filename" | "caption";
 export type ThemeMode = "dark" | "light";
 export type SidePanelMode = "open" | "hidden";
 export type HeaderPanelMode = "open" | "hidden";
+export type FilterBarMode = "open" | "hidden";
 export type TagSetsPlacement = "side" | "top" | "hidden";
 export type StatsPlacement = "tab" | "side" | "hidden";
 export type BatchToolsPlacement = "tab" | "side";
@@ -42,6 +43,7 @@ export interface AppConfig {
   cornersStyle: CornersStyle;
   spacingMode: SpacingMode;
   headerPanelMode: HeaderPanelMode;
+  filterBarMode: FilterBarMode;
   sidePanelMode: SidePanelMode;
   tagSetsPlacement: TagSetsPlacement;
   commonTagsPlacement: TagSetsPlacement;

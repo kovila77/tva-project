@@ -146,16 +146,14 @@ function createImageTaggerContext() {
     || config.orderTagsPlacement === "side"
   ));
   const hasHeaderPanelSections = computed(() => (
-    config.filterPlacement === "header"
-    || hasHeaderTagSets.value
+    hasHeaderTagSets.value
   ));
   const hasHeaderContent = computed(() => (
     config.headerPanelMode !== "hidden"
     && hasHeaderPanelSections.value
   ));
   const hasSidePanelSections = computed(() => (
-    config.filterPlacement === "side"
-    || hasSideTagSets.value
+    hasSideTagSets.value
     || config.batchToolsPlacement === "side"
     || config.statsPlacement === "side"
   ));
@@ -353,12 +351,7 @@ function createImageTaggerContext() {
   }
 
   async function focusFilter(): Promise<void> {
-    if (config.filterPlacement === "header") {
-      config.headerPanelMode = "open";
-    } else {
-      config.sidePanelMode = "open";
-    }
-
+    config.filterBarMode = "open";
     await nextTick();
     window.dispatchEvent(new CustomEvent(focusFilterEventName));
   }

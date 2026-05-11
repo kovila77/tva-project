@@ -3,30 +3,18 @@
     <div v-if="hasHeaderTagSets" class="quick-controls__tag-sets">
       <TagSetFields placement="top" collapsible />
     </div>
-
-    <details v-if="config.filterPlacement === 'header'" class="quick-controls__section" open>
-      <summary>
-        <span>Filter</span>
-        <SectionPlacementButtons v-model="config.filterPlacement" />
-      </summary>
-      <FilterControls />
-    </details>
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
-import FilterControls from "~/components/FilterControls.vue";
-import SectionPlacementButtons from "~/components/SectionPlacementButtons.vue";
 import TagSetFields from "~/components/TagSetFields.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
-const { config, hasHeaderTagSets } = useImageTaggerContext();
+const { hasHeaderTagSets } = useImageTaggerContext();
 
 const hasQuickControls = computed(() => (
-  config.filterPlacement === "header"
-  || hasHeaderTagSets.value
+  hasHeaderTagSets.value
 ));
 </script>
 
