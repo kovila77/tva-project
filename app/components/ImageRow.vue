@@ -270,8 +270,8 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
 .image-row {
   display: grid;
   grid-template-columns: minmax(160px, 240px) minmax(280px, 1fr) minmax(260px, 0.9fr);
-  gap: 10px;
-  padding: 10px;
+  gap: var(--app-space-gap);
+  padding: var(--app-space-panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface-raised);
@@ -313,7 +313,7 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
     width: 100%;
     overflow: hidden;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--control-radius);
     background: var(--surface-soft);
     padding: 0;
 
@@ -345,7 +345,7 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
       right: 6px;
       bottom: 12px;
       width: 3px;
-      border-radius: 999px;
+      border-radius: var(--pill-radius);
       background: color-mix(in srgb, var(--text) 46%, transparent);
       content: "";
       opacity: 0.75;
@@ -374,7 +374,7 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--app-space-gap);
   }
 
   &--fixed &__editor {
@@ -386,7 +386,7 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 8px;
+    gap: var(--app-space-gap);
 
     h3 {
       margin: 0;
@@ -423,7 +423,7 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 5px;
+    gap: var(--app-space-layout);
   }
 
   &__plain-action {
@@ -433,11 +433,11 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
   &__history {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--app-space-gap);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--control-radius);
     background: var(--surface-soft);
-    padding: 8px;
+    padding: var(--app-space-panel);
     color: var(--muted);
     font-size: 12px;
     line-height: 1.45;
@@ -471,7 +471,7 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
 
   &__deleted-tags {
     border-top: 1px solid var(--border);
-    padding-top: 8px;
+    padding-top: var(--app-space-panel);
   }
 
   &__chip-heading {
@@ -482,9 +482,9 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
 
   &__chip-placeholder {
     border: 1px dashed var(--border);
-    border-radius: 6px;
+    border-radius: var(--control-radius);
     background: var(--surface-soft);
-    padding: 8px;
+    padding: var(--app-space-panel);
     color: var(--muted);
     font-size: 12px;
     font-weight: 750;

@@ -162,7 +162,7 @@ const visibleFields = computed(() => fields.filter((field) => config[field.place
 .tag-set-fields {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--app-space-gap);
 
   &__section {
     min-width: 0;
@@ -172,8 +172,8 @@ const visibleFields = computed(() => fields.filter((field) => config[field.place
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 8px;
+      gap: var(--app-space-gap);
+      margin-bottom: var(--app-space-panel);
       cursor: pointer;
       font-weight: 750;
       list-style: none;
@@ -188,7 +188,7 @@ const visibleFields = computed(() => fields.filter((field) => config[field.place
     display: inline-flex;
     min-width: 0;
     align-items: center;
-    gap: 6px;
+    gap: var(--app-space-gap);
   }
 
   &__placement {

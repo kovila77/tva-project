@@ -156,7 +156,7 @@ onBeforeUnmount(() => {
 .filter-controls {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) auto;
-  gap: 8px;
+  gap: var(--app-space-gap);
   align-items: end;
 
   &__field {
@@ -166,7 +166,7 @@ onBeforeUnmount(() => {
   &__bar {
     display: grid;
     grid-template-columns: minmax(96px, 1fr) minmax(104px, 1fr);
-    gap: 8px;
+    gap: var(--app-space-gap);
     align-items: end;
   }
 
@@ -182,7 +182,7 @@ onBeforeUnmount(() => {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 4px;
+    gap: var(--app-space-layout);
   }
 
   &__action {
@@ -217,7 +217,7 @@ onBeforeUnmount(() => {
     flex-wrap: wrap;
     min-width: 0;
     max-width: 100%;
-    gap: 6px;
+    gap: var(--app-space-gap);
   }
 
   &__actions {

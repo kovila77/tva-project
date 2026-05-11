@@ -11,6 +11,8 @@
   "filterTarget": "caption",
   "ignoreCase": false,
   "theme": "dark",
+  "cornersStyle": "round",
+  "spacingMode": "default",
   "headerPanelMode": "open",
   "sidePanelMode": "open",
   "tagSetsPlacement": "top",

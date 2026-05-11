@@ -73,7 +73,7 @@ function commitDatasetName(): void {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) repeat(auto-fit, minmax(150px, max-content));
   align-items: end;
-  gap: 6px;
+  gap: var(--app-space-gap);
 
   &__name {
     margin: 0;

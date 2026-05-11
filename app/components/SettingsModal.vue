@@ -53,7 +53,7 @@ const {
   z-index: 2000;
   display: grid;
   place-items: center;
-  padding: 12px;
+  padding: var(--app-space-page);
   background: rgba(8, 11, 18, 0.72);
   backdrop-filter: blur(4px);
 
@@ -73,8 +73,8 @@ const {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 14px 16px 12px;
+    gap: var(--app-space-gap);
+    padding: var(--app-space-page);
     border-bottom: 1px solid var(--border);
     background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, white 6%), var(--surface));
   }
@@ -93,18 +93,18 @@ const {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 16px;
+    gap: var(--app-space-gap);
+    padding: var(--app-space-page);
     overflow: auto;
   }
 
   &__section {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 14px;
+    gap: var(--app-space-gap);
+    padding: var(--app-space-page);
     border: 1px solid var(--border);
-    border-radius: calc(var(--radius) - 2px);
+    border-radius: max(0px, calc(var(--radius) - 2px));
     background: var(--surface-soft);
   }
 
@@ -119,7 +119,7 @@ const {
     display: flex;
     flex-wrap: wrap;
     align-items: end;
-    gap: 8px;
+    gap: var(--app-space-gap);
   }
 
   :deep(.field.compact) {
@@ -138,7 +138,7 @@ const {
 
 @media (max-width: 860px) {
   .settings-modal {
-    padding: 8px;
+    padding: var(--app-space-panel);
 
     &__panel {
       max-height: calc(100vh - 16px);
@@ -146,8 +146,8 @@ const {
 
     &__header,
     &__body {
-      padding-left: 12px;
-      padding-right: 12px;
+      padding-left: var(--app-space-page);
+      padding-right: var(--app-space-page);
     }
   }
 }

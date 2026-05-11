@@ -98,7 +98,7 @@ function onViewerStagePointerUp(event: PointerEvent | Event): void {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  padding: 12px;
+  padding: var(--app-space-page);
   background: rgba(8, 11, 18, 0.72);
 
   &__shell {
@@ -116,8 +116,8 @@ function onViewerStagePointerUp(event: PointerEvent | Event): void {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 10px;
+    gap: var(--app-space-gap);
+    padding: var(--app-space-panel);
     background: transparent;
   }
 
@@ -125,7 +125,7 @@ function onViewerStagePointerUp(event: PointerEvent | Event): void {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: var(--app-space-gap);
 
     span {
       min-width: 54px;

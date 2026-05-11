@@ -11,6 +11,8 @@ export type SidePanelPosition = "left" | "right";
 export type RowChipMode = "hidden" | "common-deleted" | "deleted" | "common" | "everything";
 export type ImageRowHeightMode = "full" | "fixed";
 export type ImageWidthMode = "compact" | "flexible" | "fixed";
+export type CornersStyle = "round" | "square";
+export type SpacingMode = "default" | "minimal" | "super-minimal" | "none";
 export type MainTab = "images" | "stats" | "batch";
 export type TagTextFieldMode = "tags" | "single-tag" | "filter" | "regex" | "text";
 export type TagTextStyleMatch = "tag" | "fragment" | "regex" | "unmatched-tag" | "all-tags";
@@ -37,6 +39,8 @@ export interface AppConfig {
   filterTarget: FilterTarget;
   ignoreCase: boolean;
   theme: ThemeMode;
+  cornersStyle: CornersStyle;
+  spacingMode: SpacingMode;
   headerPanelMode: HeaderPanelMode;
   sidePanelMode: SidePanelMode;
   tagSetsPlacement: TagSetsPlacement;

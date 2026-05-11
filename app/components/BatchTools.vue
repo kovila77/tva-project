@@ -51,10 +51,10 @@ const {
 
 <style scoped lang="scss">
 .batch-tools {
-  padding: 8px 0;
+  padding: var(--app-space-panel) 0;
 
   summary {
-    margin-bottom: 8px;
+    margin-bottom: var(--app-space-panel);
     cursor: pointer;
     font-weight: 750;
     list-style: none;
@@ -66,9 +66,9 @@ const {
 
   &__description {
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--control-radius);
     background: var(--surface-soft);
-    padding: 8px;
+    padding: var(--app-space-panel);
     color: var(--muted);
     font-size: 12px;
     line-height: 1.45;

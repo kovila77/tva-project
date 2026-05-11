@@ -8,6 +8,22 @@
       </select>
     </label>
     <label class="field compact">
+      <span>Corners style</span>
+      <select v-model="config.cornersStyle" class="control" title="Choose rounded corners or square UI corners.">
+        <option value="round">Round</option>
+        <option value="square">Square</option>
+      </select>
+    </label>
+    <label class="field compact">
+      <span>Spacing</span>
+      <select v-model="config.spacingMode" class="control" title="Choose how much padding and gap space the interface uses.">
+        <option value="default">Default</option>
+        <option value="minimal">Minimal</option>
+        <option value="super-minimal">Super minimal</option>
+        <option value="none">No spacings</option>
+      </select>
+    </label>
+    <label class="field compact">
       <span>Panel</span>
       <select v-model="config.sidePanelMode" class="control" title="Show or hide the side panel. Hidden mode gives more width to images.">
         <option value="open">Open</option>
@@ -128,7 +144,7 @@ const bulkTagSetsPlacement = computed<TagSetsPlacement | "mixed">({
 .layout-config-controls {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 8px;
+  gap: var(--app-space-gap);
   align-items: end;
 }
 </style>

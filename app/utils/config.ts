@@ -1,6 +1,7 @@
 import type {
   AppConfig,
   BatchToolsPlacement,
+  CornersStyle,
   FilterMode,
   FilterTarget,
   HeaderPanelMode,
@@ -10,6 +11,7 @@ import type {
   RowChipMode,
   SidePanelMode,
   SidePanelPosition,
+  SpacingMode,
   StatsPlacement,
   TagSetsPlacement,
   ThemeMode
@@ -24,6 +26,8 @@ const sidePanelPositions: SidePanelPosition[] = ["left", "right"];
 const rowChipModes: RowChipMode[] = ["hidden", "common-deleted", "deleted", "common", "everything"];
 const imageRowHeightModes: ImageRowHeightMode[] = ["full", "fixed"];
 const imageWidthModes: ImageWidthMode[] = ["compact", "flexible", "fixed"];
+const cornersStyles: CornersStyle[] = ["round", "square"];
+const spacingModes: SpacingMode[] = ["default", "minimal", "super-minimal", "none"];
 const defaultFixedRowHeight = 360;
 const defaultFixedImageWidth = 240;
 const defaultSidePanelWidth = 340;
@@ -47,6 +51,8 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     filterTarget: includesValue(filterTargets, source.filterTarget) ? source.filterTarget : "caption",
     ignoreCase: Boolean(source.ignoreCase ?? source.filterIgnoreCase ?? false),
     theme: source.theme === "light" ? "light" : "dark",
+    cornersStyle: includesValue(cornersStyles, source.cornersStyle) ? source.cornersStyle : "round",
+    spacingMode: includesValue(spacingModes, source.spacingMode) ? source.spacingMode : "default",
     headerPanelMode: source.headerPanelMode === "hidden" ? "hidden" : "open",
     sidePanelMode: source.sidePanelMode === "hidden" ? "hidden" : "open",
     tagSetsPlacement: includesValue(tagSetPlacements, source.tagSetsPlacement) ? source.tagSetsPlacement : "side",

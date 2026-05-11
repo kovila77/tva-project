@@ -50,9 +50,9 @@ function hideSidePanel(): void {
     display: grid;
     grid-template-columns: var(--side-panel-width, 340px) minmax(0, 1fr);
     grid-template-areas: "side dataset";
-    gap: 4px;
+    gap: var(--app-space-layout);
     align-items: start;
-    margin-top: 4px;
+    margin-top: var(--app-space-layout);
   }
 
   &__workspace > :deep(.side-panel) {
@@ -93,7 +93,7 @@ function hideSidePanel(): void {
     &__drawer-backdrop {
       display: block;
       position: fixed;
-      top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + 14px);
+      top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + var(--app-space-sticky-offset));
       right: 0;
       bottom: 0;
       left: 0;
@@ -108,7 +108,7 @@ function hideSidePanel(): void {
 
 @media (max-width: 860px) {
   .app-layout {
-    padding: 8px;
+    padding: var(--app-space-panel);
   }
 }
 </style>

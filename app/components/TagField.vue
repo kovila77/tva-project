@@ -444,7 +444,7 @@ function normalizeValueForMode(value: string): string {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
+    gap: var(--app-space-gap);
     min-width: 0;
   }
 
@@ -459,7 +459,7 @@ function normalizeValueForMode(value: string): string {
   &__actions {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--app-space-layout);
     flex: 0 0 auto;
   }
 
@@ -472,7 +472,7 @@ function normalizeValueForMode(value: string): string {
     min-height: 34px;
     overflow: hidden;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--control-radius);
     background: var(--surface-raised);
     color: var(--text);
 
@@ -504,7 +504,7 @@ function normalizeValueForMode(value: string): string {
 
     :deep(.cm-content) {
       min-height: calc((var(--tag-field-rows, 4) * 1.45em) + 16px);
-      padding: 8px;
+      padding: var(--app-space-panel);
       caret-color: var(--text);
     }
 
@@ -525,7 +525,7 @@ function normalizeValueForMode(value: string): string {
 
       :deep(.cm-content) {
         min-height: 32px;
-        padding: 7px 9px;
+        padding: var(--app-space-control-y) var(--app-space-control-x);
         white-space: pre;
       }
     }
@@ -534,14 +534,14 @@ function normalizeValueForMode(value: string): string {
   &__selected {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--app-space-gap);
     min-height: 30px;
     margin-top: 0;
     overflow: hidden;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--control-radius);
     background: var(--surface-soft);
-    padding: 5px 8px;
+    padding: min(var(--app-space-control-y), 5px) var(--app-space-control-x);
 
     strong {
       min-width: 0;
@@ -558,7 +558,7 @@ function normalizeValueForMode(value: string): string {
 }
 
 :global(.tag-text-selected) {
-  border-radius: 3px;
+  border-radius: calc(var(--control-radius) / 2);
   background: rgba(56, 189, 248, 0.22);
   box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.3);
 }
@@ -575,7 +575,7 @@ function normalizeValueForMode(value: string): string {
 }
 
 :global(.tag-text-highlighted) {
-  border-radius: 3px;
+  border-radius: calc(var(--control-radius) / 2);
   box-shadow: 0 0 0 2px var(--green);
 }
 
@@ -589,7 +589,7 @@ function normalizeValueForMode(value: string): string {
 }
 
 :global(.tag-text-filtered-blink) {
-  border-radius: 3px;
+  border-radius: calc(var(--control-radius) / 2);
   animation: filtered-tag-blink 0.48s ease-in-out 6;
 }
 

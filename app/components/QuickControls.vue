@@ -34,18 +34,18 @@ const hasQuickControls = computed(() => (
 .quick-controls {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--app-space-gap);
 
   &__section {
     border-top: 1px solid var(--border);
-    padding-top: 8px;
+    padding-top: var(--app-space-panel);
 
     summary {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 8px;
+      gap: var(--app-space-gap);
+      margin-bottom: var(--app-space-panel);
       cursor: pointer;
       font-weight: 750;
       list-style: none;
@@ -58,7 +58,7 @@ const hasQuickControls = computed(() => (
 
   &__tag-sets {
     border-top: 1px solid var(--border);
-    padding-top: 8px;
+    padding-top: var(--app-space-panel);
   }
 }
 </style>

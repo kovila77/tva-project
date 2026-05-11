@@ -182,14 +182,14 @@ function removeVisibleAndClose(tag: string): void {
 .tag-stats {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: min(var(--app-space-layout), 1px);
 
   &__header {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
-    gap: 8px;
+    gap: var(--app-space-gap);
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: var(--app-space-gap);
     cursor: pointer;
     list-style: none;
 
@@ -212,11 +212,11 @@ function removeVisibleAndClose(tag: string): void {
   &__row {
     display: grid;
     grid-template-columns: minmax(160px, 1fr) 42px auto;
-    gap: 4px;
+    gap: var(--app-space-layout);
     align-items: center;
-    padding: 4px;
+    padding: var(--app-space-layout);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--control-radius);
     background: var(--surface-raised);
   }
 
@@ -257,7 +257,7 @@ function removeVisibleAndClose(tag: string): void {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 4px;
+    gap: var(--app-space-layout);
   }
 
   &__menu {
@@ -271,14 +271,14 @@ function removeVisibleAndClose(tag: string): void {
 
   &__menu-popover {
     position: absolute;
-    top: calc(100% + 4px);
+    top: calc(100% + var(--app-space-layout));
     right: 0;
     z-index: 6;
     display: flex;
-    gap: 4px;
-    padding: 5px;
+    gap: var(--app-space-layout);
+    padding: var(--app-space-layout);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--control-radius);
     background: var(--surface);
     box-shadow: var(--shadow);
   }

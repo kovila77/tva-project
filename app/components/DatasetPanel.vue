@@ -86,8 +86,8 @@ const {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 12px;
+    gap: var(--app-space-gap);
+    padding: var(--app-space-page);
     border-bottom: 1px solid var(--border);
 
     h2 {
@@ -96,7 +96,7 @@ const {
     }
 
     p {
-      margin: 2px 0 0;
+      margin: min(var(--app-space-layout), 2px) 0 0;
       color: var(--muted);
       font-size: 12px;
     }
@@ -107,18 +107,18 @@ const {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: var(--app-space-gap);
   }
 
   &__tab {
-    padding: 12px;
+    padding: var(--app-space-page);
   }
 
   &__notice {
-    margin: 10px 12px 0;
-    padding: 8px 10px;
+    margin: var(--app-space-panel) var(--app-space-page) 0;
+    padding: var(--app-space-panel) var(--app-space-button-x);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--control-radius);
     background: var(--surface-soft);
 
     &--danger {
@@ -130,14 +130,14 @@ const {
 
   &__empty,
   &__render-note {
-    margin: 12px;
+    margin: var(--app-space-page);
   }
 
   &__empty {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 22px;
+    gap: var(--app-space-layout);
+    padding: calc(var(--app-space-page) + var(--app-space-button-x));
     border: 1px dashed var(--border-strong);
     border-radius: var(--radius);
     background: var(--surface-soft);
@@ -157,8 +157,8 @@ const {
   &__image-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 0 12px 12px;
+    gap: var(--app-space-gap);
+    padding: 0 var(--app-space-page) var(--app-space-page);
 
   }
 }

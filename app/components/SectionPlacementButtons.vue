@@ -59,7 +59,7 @@ const sideIcon = computed<AppIconName>(() => config.sidePanelPosition === "right
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 3px;
+  gap: min(var(--app-space-layout), 3px);
 
   &__btn {
     --app-icon-button-size: 22px;

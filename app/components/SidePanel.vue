@@ -79,10 +79,10 @@ onBeforeUnmount(stopResize);
 .side-panel {
   position: sticky;
   min-width: 0;
-  top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + 16px);
-  max-height: calc(100vh - var(--app-header-height, 0px) - var(--app-runtime-status-height, 0px) - 28px);
+  top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + var(--app-space-sticky-offset));
+  max-height: calc(100vh - var(--app-header-height, 0px) - var(--app-runtime-status-height, 0px) - var(--app-space-sticky-offset) - var(--app-space-page));
   overflow: auto;
-  padding: 8px;
+  padding: var(--app-space-panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
@@ -129,7 +129,7 @@ onBeforeUnmount(stopResize);
 
   :deep(details) {
     border-bottom: 1px solid var(--border);
-    padding: 8px 0;
+    padding: var(--app-space-section) 0;
 
     &:last-child {
       border-bottom: 0;
@@ -138,7 +138,7 @@ onBeforeUnmount(stopResize);
 
   &__section {
     border-bottom: 1px solid var(--border);
-    padding: 8px 0;
+    padding: var(--app-space-section) 0;
 
     &:last-child {
       border-bottom: 0;
@@ -149,8 +149,8 @@ onBeforeUnmount(stopResize);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: var(--app-space-gap);
+    margin-bottom: var(--app-space-section);
     cursor: pointer;
     font-weight: 750;
     list-style: none;
@@ -165,15 +165,15 @@ onBeforeUnmount(stopResize);
   .side-panel {
     display: block;
     position: fixed;
-    top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + 14px);
-    bottom: 8px;
-    left: 8px;
+    top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + var(--app-space-sticky-offset));
+    bottom: var(--app-space-page);
+    left: var(--app-space-page);
     z-index: 998;
-    width: min(var(--side-panel-width, 340px), calc(100vw - 16px));
+    width: min(var(--side-panel-width, 340px), calc(100vw - (var(--app-space-page) * 2)));
     max-height: none;
 
     &--right {
-      right: 8px;
+      right: var(--app-space-page);
       left: auto;
     }
 

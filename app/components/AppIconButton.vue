@@ -36,7 +36,7 @@ defineProps<{
   height: var(--app-icon-button-height, var(--app-icon-button-size, 34px));
   min-height: var(--app-icon-button-height, var(--app-icon-button-size, 34px));
   border: 0;
-  border-radius: var(--app-icon-button-radius, 6px);
+  border-radius: var(--app-icon-button-radius, var(--control-radius));
   background: transparent;
   color: var(--muted);
   outline: 0;

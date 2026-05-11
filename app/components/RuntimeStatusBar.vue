@@ -64,11 +64,11 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
-  margin: 6px 0 0;
-  padding: 6px 8px;
+  gap: var(--app-space-gap);
+  margin: var(--app-space-layout) 0 0;
+  padding: var(--app-space-button-y) var(--app-space-panel);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--control-radius);
   background: var(--surface);
   box-shadow: var(--shadow);
   color: var(--muted);

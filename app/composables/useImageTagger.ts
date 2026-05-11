@@ -166,7 +166,11 @@ function createImageTaggerContext() {
   const layoutClasses = computed(() => ({
     "side-panel-right": config.sidePanelPosition === "right",
     "side-panel-hidden": !hasSidePanelContent.value,
-    "row-tags-hidden": config.rowChipMode === "hidden"
+    "row-tags-hidden": config.rowChipMode === "hidden",
+    "corners-square": config.cornersStyle === "square",
+    "spacing-minimal": config.spacingMode === "minimal",
+    "spacing-super-minimal": config.spacingMode === "super-minimal",
+    "spacing-none": config.spacingMode === "none"
   }));
   const viewerImageStyle = computed(() => ({
     transform: `translate(${viewer.x}px, ${viewer.y}px) scale(${viewer.scale})`

@@ -58,13 +58,13 @@ const stateClasses = computed(() => (props.decorateStates ? tagClass(props.tag) 
 .tag-chip {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: min(var(--app-space-layout), 2px);
   max-width: 100%;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--pill-radius);
   background: var(--button-bg);
   color: var(--text);
-  padding: 1px 1px;
+  padding: min(var(--app-space-control-y), 1px) min(var(--app-space-control-x), 1px);
   font-size: 12px;
   line-height: 1.2;
   overflow-wrap: anywhere;

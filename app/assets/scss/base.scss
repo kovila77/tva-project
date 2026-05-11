@@ -19,6 +19,18 @@
   --button-bg: #182235;
   --shadow: 0 14px 38px rgba(0, 0, 0, 0.34);
   --radius: 8px;
+  --control-radius: 6px;
+  --pill-radius: 999px;
+  --app-space-page: 12px;
+  --app-space-layout: 4px;
+  --app-space-panel: 8px;
+  --app-space-section: 8px;
+  --app-space-gap: 8px;
+  --app-space-control-y: 7px;
+  --app-space-control-x: 9px;
+  --app-space-button-y: 6px;
+  --app-space-button-x: 10px;
+  --app-space-sticky-offset: 16px;
 }
 
 :root[data-theme="light"] {
@@ -77,7 +89,7 @@ button:disabled {
 
 .app-layout {
   min-height: 100vh;
-  padding: 12px;
+  padding: var(--app-space-page);
 }
 
 .button-cluster {
@@ -96,9 +108,9 @@ button:disabled {
   border: 1px solid var(--border-strong);
   background: var(--button-bg);
   color: var(--text);
-  border-radius: 6px;
+  border-radius: var(--control-radius);
   min-height: 32px;
-  padding: 6px 10px;
+  padding: var(--app-space-button-y) var(--app-space-button-x);
   font-weight: 650;
   line-height: 1;
   transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease, transform 0.12s ease;
@@ -148,7 +160,7 @@ button:disabled {
 
 .mini-btn {
   min-height: 24px;
-  padding: 4px 6px;
+  padding: min(var(--app-space-button-y), 4px) min(var(--app-space-button-x), 6px);
   font-size: 11px;
 }
 
@@ -177,10 +189,10 @@ button:disabled {
   width: 100%;
   min-height: 34px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--control-radius);
   background: var(--surface-raised);
   color: var(--text);
-  padding: 7px 9px;
+  padding: var(--app-space-control-y) var(--app-space-control-x);
   outline: none;
 
   &:focus {
@@ -231,8 +243,8 @@ button:disabled {
 
 .pill {
   flex: 0 0 auto;
-  border-radius: 999px;
-  padding: 3px 7px;
+  border-radius: var(--pill-radius);
+  padding: min(var(--app-space-control-y), 3px) min(var(--app-space-control-x), 7px);
   font-size: 11px;
   font-weight: 750;
 
@@ -242,8 +254,111 @@ button:disabled {
   }
 }
 
+.corners-square {
+  --radius: 0;
+  --control-radius: 0;
+  --pill-radius: 0;
+
+  :where(*) {
+    border-radius: 0 !important;
+  }
+}
+
+.spacing-minimal {
+  --app-space-page: 4px;
+  --app-space-layout: 4px;
+  --app-space-panel: 4px;
+  --app-space-section: 4px;
+  --app-space-gap: 4px;
+  --app-space-control-y: 4px;
+  --app-space-control-x: 4px;
+  --app-space-button-y: 4px;
+  --app-space-button-x: 4px;
+  --app-space-sticky-offset: 4px;
+}
+
+.spacing-minimal :where(
+  [class*="__workspace"],
+  [class*="__content"],
+  [class*="__header"],
+  [class*="__body"],
+  [class*="__section"],
+  [class*="__actions"],
+  [class*="__tabs"],
+  [class*="__bar"],
+  [class*="__row"],
+  [class*="__list"],
+  [class*="__group"],
+  [class*="__field"],
+  .button-cluster,
+  .file-management-controls,
+  .layout-config-controls,
+  .filter-controls,
+  .image-row,
+  .dataset-panel__image-list
+) {
+    gap: 4px !important;
+}
+
+.spacing-super-minimal {
+  --app-space-page: 2px;
+  --app-space-layout: 2px;
+  --app-space-panel: 2px;
+  --app-space-section: 2px;
+  --app-space-gap: 2px;
+  --app-space-control-y: 2px;
+  --app-space-control-x: 2px;
+  --app-space-button-y: 2px;
+  --app-space-button-x: 2px;
+  --app-space-sticky-offset: 2px;
+}
+
+.spacing-super-minimal :where(
+  [class*="__workspace"],
+  [class*="__content"],
+  [class*="__header"],
+  [class*="__body"],
+  [class*="__section"],
+  [class*="__actions"],
+  [class*="__tabs"],
+  [class*="__bar"],
+  [class*="__row"],
+  [class*="__list"],
+  [class*="__group"],
+  [class*="__field"],
+  .button-cluster,
+  .file-management-controls,
+  .layout-config-controls,
+  .filter-controls,
+  .image-row,
+  .dataset-panel__image-list
+) {
+    gap: 2px !important;
+}
+
+.spacing-none {
+  --app-space-page: 0px;
+  --app-space-layout: 0px;
+  --app-space-panel: 0px;
+  --app-space-section: 0px;
+  --app-space-gap: 0px;
+  --app-space-control-y: 0px;
+  --app-space-control-x: 0px;
+  --app-space-button-y: 0px;
+  --app-space-button-x: 0px;
+  --app-space-sticky-offset: 0px;
+
+  :where(*) {
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    scroll-margin: 0 !important;
+    scroll-padding: 0 !important;
+  }
+}
+
 .empty-inline {
-  padding: 8px;
+  padding: var(--app-space-panel);
   color: var(--muted);
   font-size: 13px;
 }

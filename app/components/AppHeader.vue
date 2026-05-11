@@ -117,8 +117,8 @@ onBeforeUnmount(() => {
     overflow: auto;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 10px 12px 16px;
+    gap: calc(var(--app-space-gap) * 2);
+    padding: var(--app-space-panel) var(--app-space-page) calc(var(--app-space-panel) * 2);
   }
 
   &__resize {
@@ -138,7 +138,7 @@ onBeforeUnmount(() => {
       content: "";
       display: block;
       height: 2px;
-      border-radius: 999px;
+      border-radius: var(--pill-radius);
       background: transparent;
     }
 
