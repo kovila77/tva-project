@@ -105,6 +105,7 @@ const canRedoDraft = ref(false);
 const focused = ref(false);
 const selectedTagText = ref(valueString(selectedTag.value));
 const labelId = `tag-field-${Math.random().toString(36).slice(2)}`;
+let selectedTagActivated = false;
 
 const styleCompartment = new Compartment();
 const autocompleteCompartment = new Compartment();
@@ -168,16 +169,18 @@ onMounted(() => {
       EditorView.domEventHandlers({
         blur: () => {
           focused.value = false;
-          updateSelectedTagFromView();
           emit("blur");
         },
         focus: () => {
           focused.value = true;
-          updateSelectedTagFromView();
           emit("focus");
         },
-        pointerup: () => updateSelectedTagFromView(),
-        keyup: () => updateSelectedTagFromView()
+        pointerup: () => activateSelectedTagFromView(),
+        keyup: (event) => {
+          if (event.key !== "Tab") {
+            activateSelectedTagFromView();
+          }
+        }
       })
     ]
   });
@@ -187,7 +190,6 @@ onMounted(() => {
     parent: editorHost.value
   });
   updateDraftHistoryState();
-  updateSelectedTagFromView();
 });
 
 onBeforeUnmount(() => {
@@ -333,7 +335,7 @@ function handleEditorUpdate(update: ViewUpdate): void {
     }
   }
 
-  if (update.docChanged || update.selectionSet || update.focusChanged) {
+  if (update.docChanged || update.selectionSet) {
     updateSelectedTagFromView();
   }
 
@@ -377,9 +379,28 @@ function updateDraftHistoryState(): void {
   canRedoDraft.value = Boolean(view && redoDepth(view.state) > 0);
 }
 
+function activateSelectedTagFromView(): void {
+  const wasActivated = selectedTagActivated;
+  selectedTagActivated = true;
+  if (!wasActivated) {
+    refreshStyleDecorations();
+  }
+  updateSelectedTagFromView();
+}
+
+function refreshStyleDecorations(): void {
+  editorView.value?.dispatch({
+    effects: styleCompartment.reconfigure(createStyleExtension())
+  });
+}
+
 function updateSelectedTagFromView(): void {
   const view = editorView.value;
   if (!view || !selectionEnabled.value) {
+    return;
+  }
+
+  if (!selectedTagActivated && !valueString(selectedTag.value)) {
     return;
   }
 
@@ -423,7 +444,7 @@ defineExpose({
 
 function buildDecorations(view: EditorView): DecorationSet {
   const documentText = view.state.doc.toString();
-  const activeRange = selectionEnabled.value ? getActiveTokenRange(view.state) : null;
+  const activeRange = selectionEnabled.value && selectedTagActivated ? getActiveTokenRange(view.state) : null;
   return buildTagTextDecorations(documentText, activeRange, props.styleRules);
 }
 

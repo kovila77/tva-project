@@ -71,13 +71,13 @@
       />
 
       <div class="image-row__actions">
-        <AppIconButton class="image-row__plain-action" icon="filter" title="Filter the dataset by the selected tag." aria-label="Filter by selected tag" :disabled="!image.selectedTag" @click="filterByTag(image.selectedTag)" />
-        <AppIconButton class="image-row__plain-action" icon="filterAdd" title="Append the selected tag to the current filter." aria-label="Add selected tag to filter" :disabled="!image.selectedTag" @click="addSelectedToFilter(image)" />
-        <AppIconButton class="image-row__plain-action" icon="common" title="Add selected tag to common tags, making it available as a row chip." aria-label="Add selected tag to common tags" :disabled="!image.selectedTag" @click="appendConfigTag('commonTagsText', image.selectedTag)" />
-        <AppIconButton class="image-row__plain-action" icon="known" title="Add selected tag to known tags so it is no longer marked unknown." aria-label="Add selected tag to known tags" :disabled="!image.selectedTag" @click="appendConfigTag('knownTagsText', image.selectedTag)" />
-        <AppIconButton class="image-row__plain-action" icon="highlight" title="Add selected tag to highlighted tags." aria-label="Add selected tag to highlighted tags" :disabled="!image.selectedTag" @click="appendConfigTag('highlightTagsText', image.selectedTag)" />
-        <AppIconButton class="image-row__plain-action" icon="text" title="Add selected text/tag to highlighted text fragments." aria-label="Add selected tag to highlighted text" :disabled="!image.selectedTag" @click="appendConfigTag('highlightText', image.selectedTag)" />
-        <AppIconButton class="image-row__plain-action" icon="remove" title="Remove the selected tag from this image and keep it restorable in Deleted tags." aria-label="Remove selected tag" :disabled="!image.selectedTag" danger @click="removeTagFromImage(image, image.selectedTag)" />
+        <AppIconButton class="image-row__plain-action" icon="filter" title="Filter the dataset by the selected tag." aria-label="Filter by selected tag" :disabled="!hasSelectedTag" :active="selectedTagInFilter" @click="filterByTag(selectedTagText)" />
+        <AppIconButton class="image-row__plain-action" icon="filterAdd" title="Append the selected tag to the current filter." aria-label="Add selected tag to filter" :disabled="!hasSelectedTag" :active="selectedTagInFilter" @click="addSelectedToFilter(image)" />
+        <AppIconButton class="image-row__plain-action" icon="common" title="Add selected tag to common tags, making it available as a row chip." aria-label="Add selected tag to common tags" :disabled="!hasSelectedTag" :active="selectedTagInCommon" @click="appendConfigTag('commonTagsText', selectedTagText)" />
+        <AppIconButton class="image-row__plain-action" icon="known" title="Add selected tag to known tags so it is no longer marked unknown." aria-label="Add selected tag to known tags" :disabled="!hasSelectedTag" :active="selectedTagInKnown" @click="appendConfigTag('knownTagsText', selectedTagText)" />
+        <AppIconButton class="image-row__plain-action" icon="highlight" title="Add selected tag to highlighted tags." aria-label="Add selected tag to highlighted tags" :disabled="!hasSelectedTag" :active="selectedTagIsHighlighted" @click="appendConfigTag('highlightTagsText', selectedTagText)" />
+        <AppIconButton class="image-row__plain-action" icon="text" title="Add selected text/tag to highlighted text fragments." aria-label="Add selected tag to highlighted text" :disabled="!hasSelectedTag" :active="selectedTagTextIsHighlighted" @click="appendConfigTag('highlightText', selectedTagText)" />
+        <AppIconButton class="image-row__plain-action" icon="remove" title="Remove the selected tag from this image and keep it restorable in Deleted tags." aria-label="Remove selected tag" :disabled="!hasSelectedTag" danger @click="removeTagFromImage(image, selectedTagText)" />
         <AppIconButton class="image-row__plain-action" icon="undo" :title="imageUndoTitle(image)" :aria-label="`Undo operation for ${image.fileName}`" :disabled="!canUndoImage(image)" @click="undoImage(image)" />
         <AppIconButton class="image-row__plain-action" icon="redo" :title="imageRedoTitle(image)" :aria-label="`Redo operation for ${image.fileName}`" :disabled="!canRedoImage(image)" @click="redoImage(image)" />
         <AppIconButton class="image-row__plain-action" icon="revert" :title="`Restore ${image.fileName} to the tags loaded from disk. This is undoable.`" :aria-label="`Restore original tags for ${image.fileName}`" :disabled="tagsEqual(image.tags, image.originalTags)" @click="revertImage(image)" />
@@ -193,6 +193,7 @@ import TagChip from "~/components/dataset/TagChip.vue";
 import TagField from "~/components/tags/TagField.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { ImageRecord } from "~/types/imageTagger";
+import { parseTags } from "~/utils/tagDataset";
 
 const props = defineProps<{
   image: ImageRecord;
@@ -228,6 +229,9 @@ const {
   config,
   filteredBlinkPatterns,
   commonTags,
+  knownTags,
+  highlightedTags,
+  highlightedText,
   autocompleteTags,
   imageTagTextStyleRules,
   imageMetadataLine,
@@ -282,6 +286,29 @@ const hasVisibleChips = computed(() => (
   Boolean(visibleCommonTags.value.length)
   || Boolean(visibleNonCommonTags.value.length)
   || Boolean(visibleRemovedTags.value.length)
+));
+const selectedTagText = computed(() => props.image.selectedTag.trim());
+const hasSelectedTag = computed(() => Boolean(selectedTagText.value));
+const selectedTagInFilter = computed(() => (
+  hasSelectedTag.value
+  && config.filterTarget === "caption"
+  && (
+    config.filterMode === "tags"
+      ? tagListIncludes(parseTags(config.filterText), selectedTagText.value)
+      : regexListMatchesTag(parseTags(config.filterText, false), selectedTagText.value, config.ignoreCase)
+  )
+));
+const selectedTagInCommon = computed(() => (
+  hasSelectedTag.value && tagListIncludes(commonTags.value, selectedTagText.value)
+));
+const selectedTagInKnown = computed(() => (
+  hasSelectedTag.value && tagListIncludes(knownTags.value, selectedTagText.value)
+));
+const selectedTagIsHighlighted = computed(() => (
+  hasSelectedTag.value && tagListIncludes(highlightedTags.value, selectedTagText.value)
+));
+const selectedTagTextIsHighlighted = computed(() => (
+  hasSelectedTag.value && tagListIncludes(highlightedText.value, selectedTagText.value)
 ));
 const fileNameParts = computed(() => {
   if (config.filterMode !== "regex" || config.filterTarget !== "filename" || !filteredBlinkPatterns.value.length) {
@@ -606,6 +633,20 @@ function resolveChipDropGroup(group: string | undefined): ChipDropGroup {
   return group === "common" || group === "deleted" ? group : "non-common";
 }
 
+function regexListMatchesTag(patterns: string[], tag: string, ignoreCase: boolean): boolean {
+  for (const pattern of patterns) {
+    try {
+      if (new RegExp(pattern, ignoreCase ? "i" : "").test(tag)) {
+        return true;
+      }
+    } catch {
+      // Invalid regexes are handled by filter validation; active button state can ignore them.
+    }
+  }
+
+  return false;
+}
+
 function tagListIncludes(tags: string[], tag: string): boolean {
   return tags.some((item) => sameTag(item, tag));
 }
@@ -846,6 +887,7 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
 
   &__plain-action {
     --app-icon-button-size: 30px;
+    --app-icon-button-active-bg: color-mix(in srgb, var(--blue) 16%, transparent);
   }
 
   &__history {

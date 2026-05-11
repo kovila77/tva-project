@@ -114,7 +114,7 @@ function createPersistedImageState(image: ImageRecord): PersistedImageState {
     tags: [...image.tags],
     originalTags: [...image.originalTags],
     removedTags: [...image.removedTags],
-    selectedTag: image.selectedTag,
+    selectedTag: "",
     editText: image.editText,
     draftDirty: image.draftDirty,
     dirty: image.dirty,
