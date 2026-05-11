@@ -1,10 +1,14 @@
 <template>
   <div v-if="settingsModal.open === true" class="settings-modal" @click.self="closeSettingsModal">
-    <section class="settings-modal__panel" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title" @click.self="closeSettingsModal">
+    <section
+      class="settings-modal__panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-modal-title"
+      @click.self="closeSettingsModal"
+    >
       <header class="settings-modal__header">
-        <div class="settings-modal__titles">
-          <strong id="settings-modal-title" class="settings-modal__title">Settings</strong>
-        </div>
+        <strong id="settings-modal-title" class="settings-modal__title">Settings</strong>
         <AppIconButton
           class="settings-modal__close"
           icon="close"
@@ -17,16 +21,12 @@
 
       <div class="settings-modal__body">
         <section class="settings-modal__section" aria-labelledby="settings-modal-files">
-          <header class="settings-modal__section-header">
-            <strong id="settings-modal-files">Config and image folders</strong>
-          </header>
+          <h3 id="settings-modal-files" class="settings-modal__section-title">Config and image folders</h3>
           <FileManagementControls />
         </section>
 
         <section class="settings-modal__section" aria-labelledby="settings-modal-layout">
-          <header class="settings-modal__section-header">
-            <strong id="settings-modal-layout">Layout config</strong>
-          </header>
+          <h3 id="settings-modal-layout" class="settings-modal__section-title">Layout config</h3>
           <LayoutConfigControls />
         </section>
       </div>
@@ -44,7 +44,6 @@ const {
   settingsModal,
   closeSettingsModal,
 } = useImageTaggerContext();
-
 </script>
 
 <style scoped lang="scss">
@@ -72,18 +71,12 @@ const {
 
   &__header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
     padding: 14px 16px 12px;
     border-bottom: 1px solid var(--border);
     background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, white 6%), var(--surface));
-  }
-
-  &__titles {
-    display: grid;
-    gap: 2px;
-    min-width: 0;
   }
 
   &__title {
@@ -98,14 +91,16 @@ const {
   &__body {
     flex: 1 1 auto;
     min-height: 0;
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
     padding: 16px;
     overflow: auto;
   }
 
   &__section {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 10px;
     padding: 14px;
     border: 1px solid var(--border);
@@ -113,12 +108,31 @@ const {
     background: var(--surface-soft);
   }
 
-  &__section-header {
+  &__section-title {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+
+  :deep(.file-management-controls),
+  :deep(.layout-config-controls) {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: end;
     gap: 8px;
-    min-width: 0;
+  }
+
+  :deep(.field.compact) {
+    flex: 1 1 160px;
+    width: auto;
+  }
+
+  :deep(.file-management-controls__name) {
+    flex: 2 1 220px;
+  }
+
+  :deep(.file-management-controls > .btn) {
+    flex: 0 1 auto;
   }
 }
 

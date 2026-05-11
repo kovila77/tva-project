@@ -11,7 +11,7 @@
           <button v-if="config.statsPlacement === 'tab'" class="btn" type="button" title="Show tag statistics as a separate tab." :class="{ active: activeMainTab === 'stats' }" @click="activeMainTab = 'stats'"><AppIcon name="stats" class="icon" /> Stats</button>
           <button v-if="config.batchToolsPlacement === 'tab'" class="btn" type="button" title="Show batch tools as a separate tab." :class="{ active: activeMainTab === 'batch' }" @click="activeMainTab = 'batch'"><AppIcon name="tools" class="icon" /> Batch</button>
         </div>
-        <button v-if="activeMainTab === 'images'" class="btn" type="button" title="Render another batch of visible images. Large datasets render in batches to keep the browser fast." :disabled="visibleLimit >= visibleImages.length" @click="showMore">
+        <button v-if="activeMainTab === 'images' && visibleLimit < visibleImages.length" class="btn" type="button" title="Render another batch of visible images. Large datasets render in batches to keep the browser fast." @click="showMore">
           <AppIcon name="showMore" class="icon" /> Show More
         </button>
       </div>
