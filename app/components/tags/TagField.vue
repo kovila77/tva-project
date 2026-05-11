@@ -53,10 +53,12 @@ import AppIconButton from "~/components/core/AppIconButton.vue";
 import type { TagTextFieldMode, TagTextStyleRule } from "~/types/imageTagger";
 import {
   buildTagTextDecorations,
+  collectTokenRanges,
   getActiveTokenRange,
   getCompletionToken,
   getSelectedToken,
   normalizeSingleLineValue,
+  type TokenRange,
   valueString
 } from "~/utils/tagTextEditor";
 
@@ -444,8 +446,27 @@ defineExpose({
 
 function buildDecorations(view: EditorView): DecorationSet {
   const documentText = view.state.doc.toString();
-  const activeRange = selectionEnabled.value && selectedTagActivated ? getActiveTokenRange(view.state) : null;
+  const activeRange = selectionEnabled.value
+    ? getDecoratedSelectedTokenRange(view.state, documentText)
+    : null;
   return buildTagTextDecorations(documentText, activeRange, props.styleRules);
+}
+
+function getDecoratedSelectedTokenRange(state: EditorState, documentText: string): TokenRange | null {
+  if (selectedTagActivated) {
+    return getActiveTokenRange(state);
+  }
+
+  const selected = valueString(selectedTag.value).trim();
+  if (!selected) {
+    return null;
+  }
+
+  return collectTokenRanges(documentText).find((token) => sameTag(token.text, selected)) ?? null;
+}
+
+function sameTag(left: string, right: string): boolean {
+  return left.trim().toLowerCase() === right.trim().toLowerCase();
 }
 
 function normalizeValueForMode(value: string): string {

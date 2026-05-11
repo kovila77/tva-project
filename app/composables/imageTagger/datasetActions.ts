@@ -212,7 +212,7 @@ export function createDatasetActions({
           ...imageState,
           file,
           objectUrl: URL.createObjectURL(file),
-          selectedTag: "",
+          selectedTag: imageState.selectedTag ?? "",
           historyOpen: false
         });
       }
