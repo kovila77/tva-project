@@ -12,6 +12,7 @@ import placeholder005Url from "~/assets/placeholder-dataset/placeholder-005.png"
 import type { AppConfig, HistoryState, ImageRecord } from "~/types/imageTagger";
 import { normalizeConfig } from "~/utils/config";
 import {
+  clearPersistedDataset,
   createPersistedDatasetState,
   createPersistedFileRecords,
   loadPersistedDataset,
@@ -197,13 +198,16 @@ export function createDatasetActions({
         return false;
       }
 
+      const missingFile = persisted.state.images.find((imageState) => !persisted.filesById.has(imageState.id));
+      if (missingFile) {
+        await clearPersistedDataset();
+        setStatus(`Discarded incomplete browser cache; missing ${missingFile.fileName}.`);
+        return false;
+      }
+
       const restoredImages: ImageRecord[] = [];
       for (const imageState of persisted.state.images) {
-        const file = persisted.filesById.get(imageState.id);
-        if (!file) {
-          throw new Error(`Cached file is missing for ${imageState.fileName}.`);
-        }
-
+        const file = persisted.filesById.get(imageState.id) as File;
         restoredImages.push({
           ...imageState,
           file,
@@ -276,6 +280,7 @@ export function createDatasetActions({
       datasetName.value = "Placeholder dataset";
       visibleLimit.value = visibleBatchSize;
       recalculateDerivedTags();
+      await persistCurrentDataset(true);
       setStatus("Loaded placeholder dataset.");
     } catch (error) {
       console.error(error);
@@ -293,7 +298,8 @@ export function createDatasetActions({
 
     try {
       const state = createPersistedDatasetState(datasetName.value, images.value);
-      const fileRecords = includeFiles ? createPersistedFileRecords(images.value) : undefined;
+      const shouldIncludeFiles = includeFiles || images.value.every((image) => image.id.startsWith("placeholder-"));
+      const fileRecords = shouldIncludeFiles ? createPersistedFileRecords(images.value) : undefined;
       await savePersistedDataset(state, fileRecords);
     } catch (error) {
       console.error(error);

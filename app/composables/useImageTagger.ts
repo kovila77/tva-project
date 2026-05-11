@@ -343,6 +343,14 @@ function createImageTaggerContext() {
     }, 250);
   }
 
+  function persistCommittedDatasetChange(): void {
+    if (!persistenceReady || !images.value.length) {
+      return;
+    }
+
+    void datasetActions.persistCurrentDataset();
+  }
+
   async function restoreSavedDataset(): Promise<void> {
     const restored = await datasetActions.restorePersistedDataset();
     if (!restored) {
@@ -424,6 +432,11 @@ function createImageTaggerContext() {
       rowTagActions.refreshAllEditTextFormatting(images.value);
       recalculateDerivedTags();
     }
+  );
+
+  watch(
+    () => [history.past.length, history.future.length],
+    persistCommittedDatasetChange
   );
 
   watch(images, scheduleDatasetPersistence, { deep: true });

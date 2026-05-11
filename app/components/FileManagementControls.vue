@@ -12,6 +12,7 @@
         @blur="commitDatasetName"
       >
     </label>
+    <button class="btn" type="button" title="Load the built-in placeholder dataset and cache it for reload restore. This replaces the current in-memory dataset." :disabled="isBusy" @click="loadPlaceholderDataset"><AppIcon name="images" class="icon" /> Load Placeholder</button>
     <button class="btn primary" type="button" title="Upload a local folder containing images and matching .txt prompt files. Files are read into memory only." @click="openFolderPicker"><AppIcon name="upload" class="icon" /> Upload Folder</button>
     <button class="btn" type="button" title="Import editor configuration JSON. This changes UI/tag-set settings, not loaded image files." @click="openConfigPicker"><AppIcon name="import" class="icon" /> Import Config</button>
     <button class="btn" type="button" title="Download the current editor configuration as JSON." @click="exportConfig"><AppIcon name="export" class="icon" /> Export Config</button>
@@ -48,8 +49,10 @@ const {
   configInput,
   images,
   visibleImages,
+  isBusy,
   openFolderPicker,
   openConfigPicker,
+  loadPlaceholderDataset,
   exportConfig,
   exportDatasetZip,
   onFolderSelected,

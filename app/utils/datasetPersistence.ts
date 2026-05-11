@@ -86,6 +86,19 @@ export async function loadPersistedDataset(): Promise<PersistedDataset | null> {
   }
 }
 
+export async function clearPersistedDataset(): Promise<void> {
+  const database = await openPersistenceDatabase();
+
+  try {
+    await runTransaction(database, [stateStoreName, fileStoreName], "readwrite", (transaction) => {
+      transaction.objectStore(stateStoreName).delete(currentStateKey);
+      transaction.objectStore(fileStoreName).clear();
+    });
+  } finally {
+    database.close();
+  }
+}
+
 function createPersistedImageState(image: ImageRecord): PersistedImageState {
   return {
     id: image.id,
