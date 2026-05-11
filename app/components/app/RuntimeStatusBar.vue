@@ -23,10 +23,10 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
-import HeaderPanelToggleButton from "~/components/HeaderPanelToggleButton.vue";
-import HistoryActionButton from "~/components/HistoryActionButton.vue";
-import AppIconButton from "~/components/AppIconButton.vue";
-import SidePanelToggleButton from "~/components/SidePanelToggleButton.vue";
+import HeaderPanelToggleButton from "~/components/app/HeaderPanelToggleButton.vue";
+import HistoryActionButton from "~/components/app/HistoryActionButton.vue";
+import AppIconButton from "~/components/core/AppIconButton.vue";
+import SidePanelToggleButton from "~/components/app/SidePanelToggleButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const {

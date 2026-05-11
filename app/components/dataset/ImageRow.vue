@@ -174,9 +174,9 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from "vue";
-import AppIconButton from "~/components/AppIconButton.vue";
-import TagChip from "~/components/TagChip.vue";
-import TagField from "~/components/TagField.vue";
+import AppIconButton from "~/components/core/AppIconButton.vue";
+import TagChip from "~/components/dataset/TagChip.vue";
+import TagField from "~/components/tags/TagField.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { ImageRecord } from "~/types/imageTagger";
 

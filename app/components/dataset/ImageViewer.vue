@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import AppIconButton from "~/components/AppIconButton.vue";
+import AppIconButton from "~/components/core/AppIconButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const viewerImageRef = ref<HTMLImageElement | null>(null);

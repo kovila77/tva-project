@@ -26,9 +26,9 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount } from "vue";
-import BatchTools from "~/components/BatchTools.vue";
-import TagSetFields from "~/components/TagSetFields.vue";
-import TagStatsList from "~/components/TagStatsList.vue";
+import BatchTools from "~/components/tools/BatchTools.vue";
+import TagSetFields from "~/components/tags/TagSetFields.vue";
+import TagStatsList from "~/components/tags/TagStatsList.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const { config, hasSidePanelContent, hasSideTagSets } = useImageTaggerContext();

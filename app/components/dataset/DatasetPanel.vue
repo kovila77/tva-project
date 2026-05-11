@@ -54,10 +54,10 @@
 </template>
 
 <script setup lang="ts">
-import AppIcon from "~/components/AppIcon.vue";
-import BatchTools from "~/components/BatchTools.vue";
-import ImageRow from "~/components/ImageRow.vue";
-import TagStatsList from "~/components/TagStatsList.vue";
+import AppIcon from "~/components/core/AppIcon.vue";
+import BatchTools from "~/components/tools/BatchTools.vue";
+import ImageRow from "~/components/dataset/ImageRow.vue";
+import TagStatsList from "~/components/tags/TagStatsList.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const {

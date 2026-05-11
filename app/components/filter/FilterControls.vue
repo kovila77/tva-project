@@ -51,8 +51,8 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
-import AppIconButton from "~/components/AppIconButton.vue";
-import TagField from "~/components/TagField.vue";
+import AppIconButton from "~/components/core/AppIconButton.vue";
+import TagField from "~/components/tags/TagField.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const focusFilterEventName = "tva-image-tagger:focus-filter";

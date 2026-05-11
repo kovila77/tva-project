@@ -49,7 +49,7 @@ import { defaultKeymap, history, historyKeymap, redo, redoDepth, undo, undoDepth
 import { Compartment, EditorState, Transaction, type Extension } from "@codemirror/state";
 import { type DecorationSet, drawSelection, EditorView, keymap, placeholder as editorPlaceholder, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
-import AppIconButton from "~/components/AppIconButton.vue";
+import AppIconButton from "~/components/core/AppIconButton.vue";
 import type { TagTextFieldMode, TagTextStyleRule } from "~/types/imageTagger";
 import {
   buildTagTextDecorations,

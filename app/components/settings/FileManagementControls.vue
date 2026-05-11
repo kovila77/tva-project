@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import AppIcon from "~/components/AppIcon.vue";
+import AppIcon from "~/components/core/AppIcon.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import { normalizeConfigName, sanitizeConfigNameInput } from "~/utils/config";
 

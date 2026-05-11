@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import FilterControls from "~/components/FilterControls.vue";
+import FilterControls from "~/components/filter/FilterControls.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const { config } = useImageTaggerContext();

@@ -26,13 +26,13 @@
 </template>
 
 <script setup lang="ts">
-import AppHeader from "~/components/AppHeader.vue";
-import DatasetPanel from "~/components/DatasetPanel.vue";
-import FilterBar from "~/components/FilterBar.vue";
-import ImageViewer from "~/components/ImageViewer.vue";
-import SettingsModal from "~/components/SettingsModal.vue";
-import RuntimeStatusBar from "~/components/RuntimeStatusBar.vue";
-import SidePanel from "~/components/SidePanel.vue";
+import AppHeader from "~/components/app/AppHeader.vue";
+import DatasetPanel from "~/components/dataset/DatasetPanel.vue";
+import FilterBar from "~/components/app/FilterBar.vue";
+import ImageViewer from "~/components/dataset/ImageViewer.vue";
+import SettingsModal from "~/components/settings/SettingsModal.vue";
+import RuntimeStatusBar from "~/components/app/RuntimeStatusBar.vue";
+import SidePanel from "~/components/app/SidePanel.vue";
 import { provideImageTagger } from "~/composables/useImageTagger";
 
 const {

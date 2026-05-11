@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import TagSetFields from "~/components/TagSetFields.vue";
+import TagSetFields from "~/components/tags/TagSetFields.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const { hasHeaderTagSets } = useImageTaggerContext();

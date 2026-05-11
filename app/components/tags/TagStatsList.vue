@@ -73,7 +73,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref } from "vue";
-import AppIconButton from "~/components/AppIconButton.vue";
+import AppIconButton from "~/components/core/AppIconButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { ConfigTextKey } from "~/types/imageTagger";
 

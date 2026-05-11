@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import AppIconButton from "~/components/AppIconButton.vue";
+import AppIconButton from "~/components/core/AppIconButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { AppIconName } from "~/utils/icons";
 

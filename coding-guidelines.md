@@ -11,16 +11,14 @@
 
 - Use TypeScript for app code. Vue files must use `<script setup lang="ts">`; utilities, composables, and shared models should be `.ts`.
 - Keep `ImageTaggerApp.client.vue` as the layout/provider shell only. It should provide the image tagger context, render the major app regions, and avoid owning feature logic.
-- Put reusable UI in focused components under `app/components`. Current component boundaries are:
-  - `AppHeader.vue` and `QuickControls.vue` for the optional top/header tag-set panel.
-  - `RuntimeStatusBar.vue`, `HeaderPanelToggleButton.vue`, `SidePanelToggleButton.vue`, and `HistoryActionButton.vue` for sticky status, global panel toggles, and global undo/redo controls.
-  - `FilterBar.vue` and `FilterControls.vue` for the sticky filter UI.
-  - `SettingsModal.vue`, `FileManagementControls.vue`, `LayoutConfigControls.vue`, `ImageDimensionControl.vue`, and `SectionPlacementButtons.vue` for configuration, folder/config import/export, layout sizing, and placement controls.
-  - `SidePanel.vue`, `BatchTools.vue`, and `TagStatsList.vue` for tools that can live in the side panel or dataset tabs.
-  - `DatasetPanel.vue`, `ImageRow.vue`, `TagChip.vue`, and `ImageViewer.vue` for the main dataset experience.
-  - `TagField.vue` for the shared CodeMirror-based tag/text editor used by image tags, tag sets, filters, and batch regex/tag inputs.
-  - `TagSetFields.vue` for the standard tag-set group built from `TagField.vue`.
-  - `AppIcon.vue` and `AppIconButton.vue` for the Font Awesome icon layer and reusable icon-only buttons.
+- Put reusable UI in focused domain folders under `app/components`. Current folder boundaries are:
+  - `app/` for the provider/layout shell, sticky app chrome, side/header panel toggles, and global undo/redo controls.
+  - `core/` for the Font Awesome icon layer and reusable icon-only button primitive.
+  - `dataset/` for the main dataset panel, image rows, row tag chips, and image viewer.
+  - `filter/` for the sticky filter controls.
+  - `settings/` for the settings modal, folder/config import/export, layout sizing, and section placement controls.
+  - `tags/` for `TagField.vue`, tag-set fields, and tag statistics.
+  - `tools/` for batch tools and other side/tab tools that mutate many images.
 - Keep shared app contracts in `app/types/imageTagger.ts`; update those types before widening component or composable APIs.
 - Keep the injected app context in `app/composables/useImageTagger.ts`. Components should consume that context with `useImageTaggerContext()` instead of duplicating state.
 - Keep stateful action groups under `app/composables/imageTagger`:

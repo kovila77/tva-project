@@ -35,9 +35,9 @@
 </template>
 
 <script setup lang="ts">
-import AppIconButton from "~/components/AppIconButton.vue";
-import FileManagementControls from "~/components/FileManagementControls.vue";
-import LayoutConfigControls from "~/components/LayoutConfigControls.vue";
+import AppIconButton from "~/components/core/AppIconButton.vue";
+import FileManagementControls from "~/components/settings/FileManagementControls.vue";
+import LayoutConfigControls from "~/components/settings/LayoutConfigControls.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const {

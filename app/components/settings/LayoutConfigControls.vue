@@ -101,7 +101,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import ImageDimensionControl from "~/components/ImageDimensionControl.vue";
+import ImageDimensionControl from "~/components/settings/ImageDimensionControl.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { TagSetsPlacement } from "~/types/imageTagger";
 

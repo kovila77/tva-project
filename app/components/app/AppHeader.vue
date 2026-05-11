@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import QuickControls from "~/components/QuickControls.vue";
+import QuickControls from "~/components/app/QuickControls.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const {

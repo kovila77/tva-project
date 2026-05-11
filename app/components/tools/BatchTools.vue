@@ -35,8 +35,8 @@
 </template>
 
 <script setup lang="ts">
-import AppIcon from "~/components/AppIcon.vue";
-import TagField from "~/components/TagField.vue";
+import AppIcon from "~/components/core/AppIcon.vue";
+import TagField from "~/components/tags/TagField.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const {

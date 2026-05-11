@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from "vue";
-import AppIcon from "~/components/AppIcon.vue";
+import AppIcon from "~/components/core/AppIcon.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { AppIconName } from "~/utils/icons";
 

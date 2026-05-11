@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import AppIcon from "~/components/AppIcon.vue";
+import AppIcon from "~/components/core/AppIcon.vue";
 import type { AppIconName } from "~/utils/icons";
 
 defineProps<{

@@ -51,9 +51,9 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import AppIcon from "~/components/AppIcon.vue";
-import SectionPlacementButtons from "~/components/SectionPlacementButtons.vue";
-import TagField from "~/components/TagField.vue";
+import AppIcon from "~/components/core/AppIcon.vue";
+import SectionPlacementButtons from "~/components/settings/SectionPlacementButtons.vue";
+import TagField from "~/components/tags/TagField.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { AppIconName } from "~/utils/icons";
 import type { ConfigTextKey, TagSetsPlacement, TagTextFieldMode } from "~/types/imageTagger";
