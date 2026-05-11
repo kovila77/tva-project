@@ -17,11 +17,13 @@ import type {
   MainTab,
   TagTextStyleRule,
   TagStat,
-  ViewerState
+  ViewerState,
+  SettingsModalState
 } from "~/types/imageTagger";
 import { normalizeConfig } from "~/utils/config";
 import { applyTheme } from "~/utils/imageFiles";
 import { collectKnownTags, countTags, createFilterMatcher, makeDatasetSnapshot, parseTags } from "~/utils/tagDataset";
+import { createSettingsModalActions } from "./imageTagger/settingModalActions";
 
 const configStorageKey = "tva-image-tagger.config.v2";
 const visibleBatchSize = 80;
@@ -60,6 +62,10 @@ function createImageTaggerContext() {
     pointerId: null,
     dragStartX: 0,
     dragStartY: 0
+  });
+
+  const settingsModal = reactive<SettingsModalState>({
+    open: false
   });
 
   const commonTags = computed(() => parseTags(config.commonTagsText));
@@ -140,9 +146,7 @@ function createImageTaggerContext() {
     || config.orderTagsPlacement === "side"
   ));
   const hasHeaderPanelSections = computed(() => (
-    config.fileManagementPlacement === "header"
-    || config.layoutConfigPlacement === "header"
-    || config.filterPlacement === "header"
+    config.filterPlacement === "header"
     || hasHeaderTagSets.value
   ));
   const hasHeaderContent = computed(() => (
@@ -150,9 +154,7 @@ function createImageTaggerContext() {
     && hasHeaderPanelSections.value
   ));
   const hasSidePanelSections = computed(() => (
-    config.fileManagementPlacement === "side"
-    || config.layoutConfigPlacement === "side"
-    || config.filterPlacement === "side"
+    config.filterPlacement === "side"
     || hasSideTagSets.value
     || config.batchToolsPlacement === "side"
     || config.statsPlacement === "side"
@@ -293,6 +295,7 @@ function createImageTaggerContext() {
     setStatus
   });
   const viewerActions = createViewerActions({ viewer });
+  const settingsModalActions = createSettingsModalActions({ settingsModal });
   let persistenceReady = false;
   let persistenceTimer: ReturnType<typeof window.setTimeout> | null = null;
 
@@ -365,6 +368,12 @@ function createImageTaggerContext() {
     if (event.key === "Escape" && viewer.image) {
       event.preventDefault();
       viewerActions.closeViewer();
+      return;
+    }
+
+    if (event.key === "Escape" && settingsModal.open) {
+      event.preventDefault();
+      settingsModalActions.closeSettingsModal();
       return;
     }
 
@@ -484,6 +493,7 @@ function createImageTaggerContext() {
     batch,
     history,
     viewer,
+    settingsModal,
     commonTags,
     knownTags,
     highlightedTags,
@@ -518,7 +528,8 @@ function createImageTaggerContext() {
     ...datasetActions,
     ...batchActions,
     ...exportActions,
-    ...viewerActions
+    ...viewerActions,
+    ...settingsModalActions
   };
 }
 

@@ -1,13 +1,5 @@
 <template>
   <div v-if="hasQuickControls" class="quick-controls" title="Top controls. Sections can be collapsed to keep the image workspace close to the header.">
-    <details v-if="config.layoutConfigPlacement === 'header'" class="quick-controls__section" open>
-      <summary>
-        <span>Layout config</span>
-        <SectionPlacementButtons v-model="config.layoutConfigPlacement" />
-      </summary>
-      <LayoutConfigControls />
-    </details>
-
     <div v-if="hasHeaderTagSets" class="quick-controls__tag-sets">
       <TagSetFields placement="top" collapsible />
     </div>
@@ -26,7 +18,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import FilterControls from "~/components/FilterControls.vue";
-import LayoutConfigControls from "~/components/LayoutConfigControls.vue";
 import SectionPlacementButtons from "~/components/SectionPlacementButtons.vue";
 import TagSetFields from "~/components/TagSetFields.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
@@ -34,8 +25,7 @@ import { useImageTaggerContext } from "~/composables/useImageTagger";
 const { config, hasHeaderTagSets } = useImageTaggerContext();
 
 const hasQuickControls = computed(() => (
-  config.layoutConfigPlacement === "header"
-  || config.filterPlacement === "header"
+  config.filterPlacement === "header"
   || hasHeaderTagSets.value
 ));
 </script>

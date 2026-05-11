@@ -8,6 +8,9 @@
     <HistoryActionButton action="undo" variant="plain" />
     <HistoryActionButton action="redo" variant="plain" />
     <span class="runtime-status-bar__status" :class="{ 'runtime-status-bar__status--busy': isBusy }" :title="statusText">{{ statusText }}</span>
+    <button class="btn icon-btn" type="button" title="Open settings." aria-label="Open settings" @click="openSettingsModal()">
+      <AppIcon name="settings" class="icon" />
+    </button>
     <SidePanelToggleButton v-if="isRightPanel" class="runtime-status-bar__end-toggle" />
     <HeaderPanelToggleButton v-else class="runtime-status-bar__end-toggle" />
   </div>
@@ -26,7 +29,8 @@ const {
   tagStats,
   isBusy,
   statusText,
-  config
+  config,
+  openSettingsModal,
 } = useImageTaggerContext();
 
 const isRightPanel = computed(() => config.sidePanelPosition === "right");

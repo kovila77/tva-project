@@ -22,20 +22,6 @@
       </select>
     </label>
     <label class="field compact">
-      <span>Files</span>
-      <select v-model="config.fileManagementPlacement" class="control" title="Show file and config management in the header or side panel.">
-        <option value="header">Header</option>
-        <option value="side">Side</option>
-      </select>
-    </label>
-    <label class="field compact">
-      <span>Layout</span>
-      <select v-model="config.layoutConfigPlacement" class="control" title="Show layout configuration in the header or side panel.">
-        <option value="header">Header</option>
-        <option value="side">Side</option>
-      </select>
-    </label>
-    <label class="field compact">
       <span>Filter</span>
       <select v-model="config.filterPlacement" class="control" title="Show filter controls in the header or side panel.">
         <option value="header">Header</option>
@@ -140,8 +126,8 @@ const bulkTagSetsPlacement = computed<TagSetsPlacement | "mixed">({
 
 <style scoped lang="scss">
 .layout-config-controls {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 8px;
   align-items: end;
 }

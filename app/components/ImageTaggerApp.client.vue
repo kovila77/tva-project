@@ -20,6 +20,7 @@
     </main>
 
     <ImageViewer />
+    <SettingsModal />
   </div>
 </template>
 
@@ -27,6 +28,7 @@
 import AppHeader from "~/components/AppHeader.vue";
 import DatasetPanel from "~/components/DatasetPanel.vue";
 import ImageViewer from "~/components/ImageViewer.vue";
+import SettingsModal from "~/components/SettingsModal.vue";
 import RuntimeStatusBar from "~/components/RuntimeStatusBar.vue";
 import SidePanel from "~/components/SidePanel.vue";
 import { provideImageTagger } from "~/composables/useImageTagger";
@@ -48,9 +50,9 @@ function hideSidePanel(): void {
     display: grid;
     grid-template-columns: var(--side-panel-width, 340px) minmax(0, 1fr);
     grid-template-areas: "side dataset";
-    gap: 10px;
+    gap: 4px;
     align-items: start;
-    margin-top: 10px;
+    margin-top: 4px;
   }
 
   &__workspace > :deep(.side-panel) {

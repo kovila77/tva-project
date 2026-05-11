@@ -19,7 +19,7 @@ const tagSetPlacements: TagSetsPlacement[] = ["side", "top", "hidden"];
 const filterTargets: FilterTarget[] = ["filename", "caption"];
 const statsPlacements: StatsPlacement[] = ["tab", "side", "hidden"];
 const batchToolsPlacements: BatchToolsPlacement[] = ["tab", "side"];
-const headerSectionPlacements: HeaderSectionPlacement[] = ["header", "side"];
+const headerSectionPlacements: HeaderSectionPlacement[] = ["header"];
 const sidePanelPositions: SidePanelPosition[] = ["left", "right"];
 const rowChipModes: RowChipMode[] = ["hidden", "common-deleted", "deleted", "common", "everything"];
 const imageRowHeightModes: ImageRowHeightMode[] = ["full", "fixed"];
@@ -57,8 +57,8 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     orderTagsPlacement: normalizeTagSetPlacement(source.orderTagsPlacement, source.tagSetsPlacement),
     statsPlacement: includesValue(statsPlacements, source.statsPlacement) ? source.statsPlacement : "tab",
     batchToolsPlacement: includesValue(batchToolsPlacements, source.batchToolsPlacement) ? source.batchToolsPlacement : "side",
-    fileManagementPlacement: includesValue(headerSectionPlacements, source.fileManagementPlacement) ? source.fileManagementPlacement : "header",
-    layoutConfigPlacement: includesValue(headerSectionPlacements, source.layoutConfigPlacement) ? source.layoutConfigPlacement : "header",
+    fileManagementPlacement: "header",
+    layoutConfigPlacement: "header",
     filterPlacement: includesValue(headerSectionPlacements, source.filterPlacement) ? source.filterPlacement : "header",
     sidePanelWidth: normalizeSidePanelWidth(source.sidePanelWidth),
     sidePanelPosition: includesValue(sidePanelPositions, source.sidePanelPosition) ? source.sidePanelPosition : "left",

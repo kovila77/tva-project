@@ -36,7 +36,8 @@ import {
   faTextHeight,
   faTrash,
   faUpload,
-  faXmark
+  faXmark,
+  faGear
 } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
@@ -56,6 +57,7 @@ export const appIcons = {
   download: faDownload,
   export: faFileExport,
   exportFile: faFileArrowDown,
+  settings: faGear,
   filter: faMagnifyingGlass,
   filterAdd: faMagnifyingGlassPlus,
   filterInvert: faCircleHalfStroke,

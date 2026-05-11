@@ -70,13 +70,12 @@ function commitDatasetName(): void {
 
 <style scoped lang="scss">
 .file-management-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) repeat(auto-fit, minmax(150px, max-content));
+  align-items: end;
   gap: 6px;
 
   &__name {
-    width: 220px;
     margin: 0;
   }
 }

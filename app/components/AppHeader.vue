@@ -7,14 +7,6 @@
     title="Dataset files are loaded into browser memory. Source files are not modified."
   >
     <div class="app-header__content">
-      <details v-if="config.fileManagementPlacement === 'header'" class="app-header__section" open>
-        <summary>
-          <span>Config and image folders</span>
-          <SectionPlacementButtons v-model="config.fileManagementPlacement" />
-        </summary>
-        <FileManagementControls />
-      </details>
-
       <QuickControls />
     </div>
     <button
@@ -29,9 +21,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import FileManagementControls from "~/components/FileManagementControls.vue";
 import QuickControls from "~/components/QuickControls.vue";
-import SectionPlacementButtons from "~/components/SectionPlacementButtons.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const {
@@ -129,26 +119,6 @@ onBeforeUnmount(() => {
     flex-direction: column;
     gap: 16px;
     padding: 10px 12px 16px;
-  }
-
-  &__section {
-    border-top: 1px solid var(--border);
-    padding-top: 8px;
-
-    summary {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      font-weight: 750;
-      list-style: none;
-
-      &::-webkit-details-marker {
-        display: none;
-      }
-    }
   }
 
   &__resize {

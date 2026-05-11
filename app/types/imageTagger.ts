@@ -188,6 +188,10 @@ export interface ViewerState {
   dragStartY: number;
 }
 
+export interface SettingsModalState {
+  open: boolean;
+}
+
 export interface TagStat {
   tag: string;
   count: number;
