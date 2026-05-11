@@ -1,5 +1,6 @@
 <template>
   <article
+    ref="rowElement"
     class="image-row"
     :class="{
       'image-row--dirty': image.dirty,
@@ -78,69 +79,92 @@
       </div>
     </div>
 
-    <div v-if="showChipColumn" class="image-row__tag-column" title="Clickable row tags. Use display controls to choose which chips are shown.">
+    <div
+      v-if="showChipColumn"
+      ref="tagColumnElement"
+      class="image-row__tag-column"
+      title="Clickable row tags. Use display controls to choose which chips are shown."
+    >
+      <span
+        v-if="chipDropCursor"
+        class="image-row__chip-drop-cursor"
+        :style="chipDropCursorStyle"
+        aria-hidden="true"
+      />
       <div
         v-if="visibleCommonTags.length"
         class="image-row__chip-group"
         data-tag-drop-target="active"
+        data-tag-drop-group="common"
       >
-        <TagChip
-          v-for="tag in visibleCommonTags"
-          :key="`${image.id}-common-${tag}`"
-          :tag="tag"
-          :image-id="image.id"
-          drag-source="active"
-          variant="common"
-          :icon="hasTag(image, tag) ? 'remove' : 'add'"
-          :active="hasTag(image, tag)"
-          :title="hasTag(image, tag) ? `Remove common tag '${tag}' from this image. Undoable.` : `Add common tag '${tag}' to this image. Undoable.`"
-          data-tag-drop-target="active"
-          :data-before-tag="tag"
-          @tag-drop="onChipTagDrop"
-          @click="toggleTag(image, tag)"
-        />
+        <template v-for="tag in visibleCommonTags" :key="`${image.id}-common-${tag}`">
+          <TagChip
+            :tag="tag"
+            :image-id="image.id"
+            drag-source="active"
+            variant="common"
+            :icon="hasTag(image, tag) ? 'remove' : 'add'"
+            :active="hasTag(image, tag)"
+            :title="hasTag(image, tag) ? `Remove common tag '${tag}' from this image. Undoable.` : `Add common tag '${tag}' to this image. Undoable.`"
+            data-tag-drop-target="active"
+            data-tag-drop-group="common"
+            :data-before-tag="tag"
+            @tag-drag-move="onChipTagDragMove"
+            @tag-drag-end="clearChipDropCursor"
+            @tag-drop="onChipTagDrop"
+            @click="toggleTag(image, tag)"
+          />
+        </template>
       </div>
 
       <div
         v-if="visibleNonCommonTags.length"
         class="image-row__chip-group"
         data-tag-drop-target="active"
+        data-tag-drop-group="non-common"
       >
-        <TagChip
-          v-for="tag in visibleNonCommonTags"
-          :key="`${image.id}-tag-${tag}`"
-          :tag="tag"
-          :image-id="image.id"
-          drag-source="active"
-          icon="remove"
-          :title="`Remove tag '${tag}' and store it in Deleted tags. Undoable.`"
-          data-tag-drop-target="active"
-          :data-before-tag="tag"
-          @tag-drop="onChipTagDrop"
-          @click="removeTagFromImage(image, tag, false)"
-        />
+        <template v-for="tag in visibleNonCommonTags" :key="`${image.id}-tag-${tag}`">
+          <TagChip
+            :tag="tag"
+            :image-id="image.id"
+            drag-source="active"
+            icon="remove"
+            :title="`Remove tag '${tag}' and store it in Deleted tags. Undoable.`"
+            data-tag-drop-target="active"
+            data-tag-drop-group="non-common"
+            :data-before-tag="tag"
+            @tag-drag-move="onChipTagDragMove"
+            @tag-drag-end="clearChipDropCursor"
+            @tag-drop="onChipTagDrop"
+            @click="removeTagFromImage(image, tag, false)"
+          />
+        </template>
       </div>
 
       <div
         v-if="visibleRemovedTags.length"
         class="image-row__chip-group image-row__deleted-tags"
         data-tag-drop-target="deleted"
+        data-tag-drop-group="deleted"
       >
         <span class="image-row__chip-heading">Deleted</span>
-        <TagChip
-          v-for="tag in visibleRemovedTags"
-          :key="`${image.id}-removed-${tag}`"
-          :tag="tag"
-          :image-id="image.id"
-          drag-source="deleted"
-          icon="add"
-          variant="removed"
-          :decorate-states="false"
-          :title="`Return deleted tag '${tag}' to this image. Undoable.`"
-          data-tag-drop-target="deleted"
-          @tag-drop="onChipTagDrop"
-          @click="restoreRemovedTag(image, tag)"
-        />
+        <template v-for="tag in visibleRemovedTags" :key="`${image.id}-removed-${tag}`">
+          <TagChip
+            :tag="tag"
+            :image-id="image.id"
+            drag-source="deleted"
+            icon="add"
+            variant="removed"
+            :decorate-states="false"
+            :title="`Return deleted tag '${tag}' to this image. Undoable.`"
+            data-tag-drop-target="deleted"
+            data-tag-drop-group="deleted"
+            @tag-drag-move="onChipTagDragMove"
+            @tag-drag-end="clearChipDropCursor"
+            @tag-drop="onChipTagDrop"
+            @click="restoreRemovedTag(image, tag)"
+          />
+        </template>
       </div>
 
       <div v-if="!hasVisibleChips" class="image-row__chip-placeholder">...</div>
@@ -149,7 +173,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
 import AppIconButton from "~/components/AppIconButton.vue";
 import TagChip from "~/components/TagChip.vue";
 import TagField from "~/components/TagField.vue";
@@ -159,6 +183,32 @@ import type { ImageRecord } from "~/types/imageTagger";
 const props = defineProps<{
   image: ImageRecord;
 }>();
+
+type ChipDropTarget = "active" | "deleted";
+type ChipDropGroup = "common" | "non-common" | "deleted";
+type ChipDropMarkerSide = "before" | "after" | "end";
+
+interface ChipDragEvent {
+  clientX: number;
+  clientY: number;
+  source: ChipDropTarget;
+  tag: string;
+}
+
+interface ChipDropPlacement {
+  target: ChipDropTarget;
+  group: ChipDropGroup;
+  beforeTag: string;
+  draggedTag: string;
+  markerTag: string;
+  markerSide: ChipDropMarkerSide;
+}
+
+interface ChipDropCursor {
+  left: number;
+  top: number;
+  height: number;
+}
 
 const {
   config,
@@ -224,6 +274,18 @@ const fileNameParts = computed(() => {
 
   return splitRegexMatches(props.image.fileName, filteredBlinkPatterns.value, config.ignoreCase);
 });
+const rowElement = ref<HTMLElement | null>(null);
+const tagColumnElement = ref<HTMLElement | null>(null);
+const chipDropCursor = ref<ChipDropCursor | null>(null);
+const chipDropCursorStyle = computed(() => (
+  chipDropCursor.value
+    ? {
+        height: `${chipDropCursor.value.height}px`,
+        left: `${chipDropCursor.value.left}px`,
+        top: `${chipDropCursor.value.top}px`
+      }
+    : undefined
+));
 
 let resizeStartX = 0;
 let resizeStartWidth = 0;
@@ -248,31 +310,210 @@ function stopImageWidthResize(): void {
   window.removeEventListener("pointermove", resizeImageWidth);
 }
 
-function onChipTagDrop(event: { clientX: number; clientY: number; source: "active" | "deleted"; tag: string }): void {
-  const dropTarget = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-tag-drop-target]");
-  const target = dropTarget?.dataset.tagDropTarget;
-  if (target !== "active" && target !== "deleted") {
+function onChipTagDragMove(event: ChipDragEvent): void {
+  const placement = resolveChipDropPlacement(event);
+  chipDropCursor.value = placement ? resolveChipDropCursor(placement) : null;
+}
+
+function clearChipDropCursor(): void {
+  chipDropCursor.value = null;
+}
+
+function onChipTagDrop(event: ChipDragEvent): void {
+  const placement = resolveChipDropPlacement(event);
+  clearChipDropCursor();
+  if (!placement) {
     return;
   }
 
-  if (target === "deleted") {
+  if (placement.target === "deleted") {
     if (event.source === "active") {
       moveTagToDeleted(props.image, event.tag);
     }
     return;
   }
 
-  const beforeTag = dropTarget?.dataset.beforeTag ?? "";
   if (event.source === "deleted") {
-    moveDeletedTagToImage(props.image, event.tag, beforeTag);
+    moveDeletedTagToImage(props.image, event.tag, placement.beforeTag);
     return;
   }
 
-  reorderImageTag(props.image, event.tag, beforeTag);
+  reorderImageTag(props.image, event.tag, placement.beforeTag);
+}
+
+function resolveChipDropPlacement(event: ChipDragEvent): ChipDropPlacement | null {
+  const dropTarget = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-tag-drop-target]");
+  if (!dropTarget || !rowElement.value?.contains(dropTarget)) {
+    return null;
+  }
+
+  const target = dropTarget?.dataset.tagDropTarget;
+  if (target !== "active" && target !== "deleted") {
+    return null;
+  }
+
+  if (target === "deleted") {
+    if (event.source !== "active" || !hasTag(props.image, event.tag)) {
+      return null;
+    }
+
+    return {
+      target,
+      group: "deleted",
+      beforeTag: "",
+      draggedTag: event.tag,
+      markerTag: "",
+      markerSide: "end"
+    };
+  }
+
+  if (event.source === "active" && !hasTag(props.image, event.tag)) {
+    return null;
+  }
+
+  if (event.source === "deleted" && !tagListIncludes(props.image.removedTags, event.tag)) {
+    return null;
+  }
+
+  const hoveredTag = resolveChipElementTag(dropTarget);
+  const insertionSide = resolveChipInsertionSide(dropTarget, event.clientX);
+  const beforeTag = resolveActiveDropBeforeTag(hoveredTag, insertionSide, event.tag);
+  const marker = resolveActiveDropMarker(hoveredTag, insertionSide, event.tag);
+  const group = resolveChipDropGroup(dropTarget?.dataset.tagDropGroup);
+  return {
+    target,
+    group,
+    beforeTag,
+    draggedTag: event.tag,
+    markerTag: marker.tag,
+    markerSide: marker.side
+  };
+}
+
+function resolveChipDropCursor(placement: ChipDropPlacement): ChipDropCursor | null {
+  const tagColumn = tagColumnElement.value;
+  const markerRect = resolveChipDropMarkerRect(placement);
+  if (!tagColumn || !markerRect) {
+    return null;
+  }
+
+  const columnRect = tagColumn.getBoundingClientRect();
+  return {
+    left: markerRect.left - columnRect.left + tagColumn.scrollLeft,
+    top: markerRect.top - columnRect.top + tagColumn.scrollTop,
+    height: markerRect.height
+  };
+}
+
+function resolveChipDropMarkerRect(placement: ChipDropPlacement): DOMRect | null {
+  const groupElement = findChipDropGroupElement(placement.group);
+  if (!groupElement) {
+    return null;
+  }
+
+  if (placement.markerSide !== "end" && placement.markerTag) {
+    const beforeElement = chipElementsInGroup(groupElement, placement.draggedTag)
+      .find((element) => sameTag(resolveChipElementTag(element), placement.markerTag));
+    const rect = beforeElement?.getBoundingClientRect();
+    if (rect) {
+      return new DOMRect(
+        placement.markerSide === "after" ? rect.right : rect.left,
+        rect.top,
+        0,
+        rect.height
+      );
+    }
+  }
+
+  const chips = chipElementsInGroup(groupElement, placement.draggedTag);
+  const lastChipRect = chips.at(-1)?.getBoundingClientRect();
+  if (lastChipRect) {
+    return new DOMRect(lastChipRect.right, lastChipRect.top, 0, lastChipRect.height);
+  }
+
+  const groupRect = groupElement.getBoundingClientRect();
+  return new DOMRect(groupRect.left, groupRect.top, 0, Math.max(22, groupRect.height));
+}
+
+function findChipDropGroupElement(group: ChipDropGroup): HTMLElement | null {
+  return Array.from(rowElement.value?.querySelectorAll<HTMLElement>(".image-row__chip-group") ?? [])
+    .find((element) => element.dataset.tagDropGroup === group) ?? null;
+}
+
+function chipElementsInGroup(groupElement: HTMLElement, draggedTag: string): HTMLElement[] {
+  return Array.from(groupElement.querySelectorAll<HTMLElement>("[data-tag-drop-target]"))
+    .filter((element) => (
+      element.dataset.tagDropGroup === groupElement.dataset.tagDropGroup
+      && !sameTag(element.dataset.tagValue ?? "", draggedTag)
+    ));
+}
+
+function resolveActiveDropBeforeTag(hoveredTag: string, side: ChipDropMarkerSide, draggedTag: string): string {
+  const cleanHoveredTag = hoveredTag.trim();
+  if (!cleanHoveredTag || !tagListIncludes(props.image.tags, cleanHoveredTag)) {
+    return "";
+  }
+
+  if (sameTag(cleanHoveredTag, draggedTag) || side === "after") {
+    return tagAfterInImageTags(cleanHoveredTag, draggedTag);
+  }
+
+  return cleanHoveredTag;
+}
+
+function resolveActiveDropMarker(
+  hoveredTag: string,
+  side: ChipDropMarkerSide,
+  draggedTag: string
+): { tag: string; side: ChipDropMarkerSide } {
+  const cleanHoveredTag = hoveredTag.trim();
+  if (!cleanHoveredTag || sameTag(cleanHoveredTag, draggedTag) || !tagListIncludes(props.image.tags, cleanHoveredTag)) {
+    return { tag: "", side: "end" };
+  }
+
+  return {
+    tag: cleanHoveredTag,
+    side
+  };
+}
+
+function resolveChipElementTag(element: HTMLElement): string {
+  return element.dataset.beforeTag ?? element.dataset.tagValue ?? "";
+}
+
+function resolveChipInsertionSide(element: HTMLElement, clientX: number): ChipDropMarkerSide {
+  if (!element.dataset.beforeTag && !element.dataset.tagValue) {
+    return "end";
+  }
+
+  const rect = element.getBoundingClientRect();
+  return clientX > rect.left + rect.width / 2 ? "after" : "before";
+}
+
+function tagAfterInImageTags(tag: string, draggedTag: string): string {
+  const tagIndex = props.image.tags.findIndex((item) => sameTag(item, tag));
+  if (tagIndex < 0) {
+    return "";
+  }
+
+  return props.image.tags.slice(tagIndex + 1).find((item) => !sameTag(item, draggedTag)) ?? "";
+}
+
+function resolveChipDropGroup(group: string | undefined): ChipDropGroup {
+  return group === "common" || group === "deleted" ? group : "non-common";
+}
+
+function tagListIncludes(tags: string[], tag: string): boolean {
+  return tags.some((item) => sameTag(item, tag));
+}
+
+function sameTag(left: string, right: string): boolean {
+  return left.trim().toLowerCase() === right.trim().toLowerCase();
 }
 
 onBeforeUnmount(() => {
   stopImageWidthResize();
+  clearChipDropCursor();
 });
 
 function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean): Array<{ key: string; text: string; highlighted: boolean }> {
@@ -504,6 +745,7 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
   }
 
   &__tag-column {
+    position: relative;
     overflow: visible;
   }
 
@@ -519,6 +761,17 @@ function splitRegexMatches(text: string, patterns: string[], ignoreCase: boolean
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
+  }
+
+  &__chip-drop-cursor {
+    position: absolute;
+    z-index: 4;
+    width: 3px;
+    border-radius: var(--pill-radius);
+    background: var(--blue);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--blue) 20%, transparent);
+    pointer-events: none;
+    transform: translateX(-1px);
   }
 
   &__deleted-tags {

@@ -5,15 +5,20 @@
     :class="[
       stateClasses,
       `tag-chip--${variant}`,
-      { 'tag-chip--active': active }
+      {
+        'tag-chip--active': active,
+        'tag-chip--dragging': dragging
+      }
     ]"
     type="button"
     :title="title"
     :style="dragStyle"
+    :data-tag-value="tag"
+    :data-tag-dragging="dragging ? 'true' : undefined"
     @click="onClick"
-    @pointerdown="startDragDelay"
-    @pointerup="clearDragDelay"
-    @pointercancel="clearDragDelay"
+    @pointerdown="startChipPress"
+    @pointerup="stopChipPress"
+    @pointercancel="stopChipPress"
     @pointermove="moveDraggedChip"
   >
     <AppIcon :name="icon" class="icon" />
@@ -55,6 +60,8 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   click: [];
   tagDrop: [event: { clientX: number; clientY: number; source: "active" | "deleted"; tag: string }];
+  tagDragMove: [event: { clientX: number; clientY: number; source: "active" | "deleted"; tag: string }];
+  tagDragEnd: [];
 }>();
 
 const {
@@ -63,6 +70,7 @@ const {
 } = useImageTaggerContext();
 
 const stateClasses = computed(() => (props.decorateStates ? tagClass(props.tag) : {}));
+const dragStartDistance = 5;
 const chipElement = ref<HTMLElement | null>(null);
 const dragging = ref(false);
 const clickSuppressed = ref(false);
@@ -71,53 +79,46 @@ const dragY = ref(0);
 let dragPointerId: number | null = null;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
-let lastPointerX = 0;
-let lastPointerY = 0;
-let dragDelayTimer: ReturnType<typeof window.setTimeout> | null = null;
+let dragOriginLeft = 0;
+let dragOriginTop = 0;
+let pointerStartX = 0;
+let pointerStartY = 0;
 
 const dragStyle = computed(() => dragging.value
   ? {
-      left: `${dragX.value}px`,
-      top: `${dragY.value}px`
+      transform: `translate3d(${dragX.value}px, ${dragY.value}px, 0)`
     }
   : undefined);
 
-function startDragDelay(event: PointerEvent): void {
+function startChipPress(event: PointerEvent): void {
   if (event.button !== 0) {
     return;
   }
 
-  clearDragDelay();
+  stopChipPress();
   clickSuppressed.value = false;
   dragPointerId = event.pointerId;
-  lastPointerX = event.clientX;
-  lastPointerY = event.clientY;
+  pointerStartX = event.clientX;
+  pointerStartY = event.clientY;
   chipElement.value?.setPointerCapture?.(event.pointerId);
-
-  dragDelayTimer = window.setTimeout(() => {
-    dragDelayTimer = null;
-    beginDrag(lastPointerX, lastPointerY);
-  }, 40);
 }
 
-function clearDragDelay(event?: PointerEvent): void {
-  if (dragDelayTimer) {
-    window.clearTimeout(dragDelayTimer);
-    dragDelayTimer = null;
-  }
+function stopChipPress(event?: PointerEvent): void {
+  const wasDragging = dragging.value;
 
-  if (dragging.value && event) {
+  if (wasDragging && event) {
     emit("tagDrop", {
       clientX: event.clientX,
       clientY: event.clientY,
       source: props.dragSource,
       tag: props.tag
     });
-    endDrag();
-    return;
   }
 
   endDrag();
+  if (wasDragging) {
+    emit("tagDragEnd");
+  }
 }
 
 function beginDrag(clientX: number, clientY: number): void {
@@ -129,8 +130,10 @@ function beginDrag(clientX: number, clientY: number): void {
   const rect = element.getBoundingClientRect();
   dragOffsetX = clientX - rect.left;
   dragOffsetY = clientY - rect.top;
-  dragX.value = rect.left;
-  dragY.value = rect.top;
+  dragOriginLeft = rect.left;
+  dragOriginTop = rect.top;
+  dragX.value = 0;
+  dragY.value = 0;
   dragging.value = true;
   clickSuppressed.value = true;
   element.setPointerCapture?.(dragPointerId);
@@ -138,14 +141,32 @@ function beginDrag(clientX: number, clientY: number): void {
 }
 
 function moveDraggedChip(event: PointerEvent): void {
-  lastPointerX = event.clientX;
-  lastPointerY = event.clientY;
-  if (!dragging.value || event.pointerId !== dragPointerId) {
+  if (event.pointerId !== dragPointerId) {
     return;
   }
 
-  dragX.value = event.clientX - dragOffsetX;
-  dragY.value = event.clientY - dragOffsetY;
+  if (!dragging.value) {
+    const movedX = event.clientX - pointerStartX;
+    const movedY = event.clientY - pointerStartY;
+    if (Math.hypot(movedX, movedY) < dragStartDistance) {
+      return;
+    }
+
+    beginDrag(pointerStartX, pointerStartY);
+  }
+
+  if (!dragging.value) {
+    return;
+  }
+
+  dragX.value = event.clientX - dragOffsetX - dragOriginLeft;
+  dragY.value = event.clientY - dragOffsetY - dragOriginTop;
+  emit("tagDragMove", {
+    clientX: event.clientX,
+    clientY: event.clientY,
+    source: props.dragSource,
+    tag: props.tag
+  });
 }
 
 function endDrag(): void {
@@ -154,6 +175,8 @@ function endDrag(): void {
   }
   dragPointerId = null;
   dragging.value = false;
+  dragX.value = 0;
+  dragY.value = 0;
   document.body.style.userSelect = "";
   window.setTimeout(() => {
     clickSuppressed.value = false;
@@ -168,7 +191,7 @@ function onClick(): void {
   emit("click");
 }
 
-onBeforeUnmount(clearDragDelay);
+onBeforeUnmount(stopChipPress);
 </script>
 
 <style scoped lang="scss">
@@ -187,8 +210,8 @@ onBeforeUnmount(clearDragDelay);
   overflow-wrap: anywhere;
   touch-action: none;
 
-  &[style*="left"] {
-    position: fixed;
+  &--dragging {
+    position: relative;
     z-index: 3000;
     pointer-events: none;
   }
