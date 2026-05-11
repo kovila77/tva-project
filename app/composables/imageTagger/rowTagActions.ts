@@ -1,4 +1,4 @@
-import type { ComputedRef, Ref } from "vue";
+import type { ComputedRef, Ref, ShallowRef } from "vue";
 import type { AppConfig, ConfigTextKey, ImageRecord, ImageSnapshot, OperationChange } from "~/types/imageTagger";
 import {
   addTag,
@@ -11,6 +11,7 @@ import {
 } from "~/utils/tagDataset";
 
 interface RowTagActionOptions {
+  images: ShallowRef<ImageRecord[]>;
   config: AppConfig;
   commonTags: ComputedRef<string[]>;
   knownTags: ComputedRef<string[]>;
@@ -25,6 +26,7 @@ interface RowTagActionOptions {
 }
 
 export function createRowTagActions({
+  images,
   config,
   commonTags,
   knownTags,
@@ -38,39 +40,51 @@ export function createRowTagActions({
   setStatus
 }: RowTagActionOptions) {
   function commitEditor(image: ImageRecord, label: string): void {
-    if (!image) {
+    const currentImage = getCurrentImage(image);
+    if (!currentImage) {
       return;
     }
 
-    const nextTags = orderTags(parseTags(image.editText), orderTagsText.value);
+    const nextTags = orderTags(parseTags(currentImage.editText), orderTagsText.value);
+    const nextRemovedTags = reconcileRemovedTags(currentImage.tags, nextTags, currentImage.removedTags);
     const nextEditText = formatTags(nextTags);
-    const currentEditText = formatTags(image.tags);
-    if (!image.draftDirty && image.editText === currentEditText) {
+    const currentEditText = formatTags(currentImage.tags);
+    if (!currentImage.draftDirty && currentImage.editText === currentEditText) {
       return;
     }
 
     const committed = commitOperation(label, [
       {
-        image,
+        image: currentImage,
         after: {
-          ...snapshotImage(image),
+          ...snapshotImage(currentImage),
           tags: nextTags,
+          removedTags: nextRemovedTags,
+          selectedTag: includesTag(nextTags, currentImage.selectedTag) ? currentImage.selectedTag : "",
           editText: nextEditText
         }
       }
     ]);
 
     if (committed) {
-      setStatus(`Applied tags for ${image.fileName}.`);
+      setStatus(`Applied tags for ${currentImage.fileName}.`);
     } else {
-      image.editText = nextEditText;
-      image.draftDirty = false;
+      currentImage.editText = nextEditText;
+      currentImage.removedTags = nextRemovedTags;
+      currentImage.selectedTag = includesTag(nextTags, currentImage.selectedTag) ? currentImage.selectedTag : "";
+      currentImage.draftDirty = false;
       refreshImages();
     }
   }
 
   function markDraftDirty(image: ImageRecord): void {
-    image.draftDirty = true;
+    const currentImage = getCurrentImage(image);
+    if (!currentImage) {
+      return;
+    }
+
+    currentImage.editText = image.editText;
+    currentImage.draftDirty = true;
     refreshImages();
   }
 
@@ -79,24 +93,30 @@ export function createRowTagActions({
   }
 
   function hasTag(image: ImageRecord, tag: string): boolean {
-    return includesTag(image.tags, tag);
+    return includesTag(getCurrentImage(image)?.tags ?? image.tags, tag);
   }
 
   function nonCommonTags(image: ImageRecord): string[] {
+    const currentImage = getCurrentImage(image) ?? image;
     const common = new Set(commonTags.value.map((tag) => tag.toLowerCase()));
-    return image.tags.filter((tag) => !common.has(tag.toLowerCase()));
+    return currentImage.tags.filter((tag) => !common.has(tag.toLowerCase()));
   }
 
   function toggleTag(image: ImageRecord, tag: string): void {
-    const active = hasTag(image, tag);
-    const nextTags = active ? removeTag(image.tags, tag) : addTag(image.tags, tag);
-    const nextRemovedTags = active ? addTag(image.removedTags, tag) : removeTag(image.removedTags, tag);
+    const currentImage = getCurrentImage(image);
+    if (!currentImage) {
+      return;
+    }
+
+    const active = hasTag(currentImage, tag);
+    const nextTags = active ? removeTag(currentImage.tags, tag) : addTag(currentImage.tags, tag);
+    const nextRemovedTags = active ? addTag(currentImage.removedTags, tag) : removeTag(currentImage.removedTags, tag);
     const orderedTags = orderTags(nextTags, orderTagsText.value);
 
     commitOperation(`Toggle ${tag}`, [{
-      image,
+      image: currentImage,
       after: {
-        ...snapshotImage(image),
+        ...snapshotImage(currentImage),
         tags: orderedTags,
         removedTags: nextRemovedTags,
         editText: formatTags(orderedTags)
@@ -105,30 +125,40 @@ export function createRowTagActions({
   }
 
   function removeTagFromImage(image: ImageRecord, tag: string, selectRemoved = true): void {
-    const nextTags = removeTag(image.tags, tag);
-    const nextRemovedTags = addTag(image.removedTags, tag);
+    const currentImage = getCurrentImage(image);
+    if (!currentImage) {
+      return;
+    }
+
+    const nextTags = removeTag(currentImage.tags, tag);
+    const nextRemovedTags = addTag(currentImage.removedTags, tag);
     commitOperation(`Remove ${tag}`, [{
-      image,
+      image: currentImage,
       after: {
-        ...snapshotImage(image),
+        ...snapshotImage(currentImage),
         tags: nextTags,
         removedTags: nextRemovedTags,
-        selectedTag: selectRemoved ? tag : image.selectedTag === tag ? "" : image.selectedTag,
+        selectedTag: selectRemoved ? tag : currentImage.selectedTag === tag ? "" : currentImage.selectedTag,
         editText: formatTags(nextTags)
       }
     }]);
   }
 
   function restoreRemovedTag(image: ImageRecord, tag: string): void {
-    const nextTags = orderTags(addTag(image.tags, tag), orderTagsText.value);
-    const nextRemovedTags = removeTag(image.removedTags, tag);
+    const currentImage = getCurrentImage(image);
+    if (!currentImage) {
+      return;
+    }
+
+    const nextTags = orderTags(addTag(currentImage.tags, tag), orderTagsText.value);
+    const nextRemovedTags = removeTag(currentImage.removedTags, tag);
     commitOperation(`Restore ${tag}`, [{
-      image,
+      image: currentImage,
       after: {
-        ...snapshotImage(image),
+        ...snapshotImage(currentImage),
         tags: nextTags,
         removedTags: nextRemovedTags,
-        selectedTag: image.selectedTag,
+        selectedTag: currentImage.selectedTag,
         editText: formatTags(nextTags)
       }
     }]);
@@ -140,11 +170,12 @@ export function createRowTagActions({
   }
 
   function setSelectedTag(image: ImageRecord, tag: string): void {
-    if (!image || image.selectedTag === tag) {
+    const currentImage = getCurrentImage(image);
+    if (!currentImage || currentImage.selectedTag === tag) {
       return;
     }
 
-    image.selectedTag = tag;
+    currentImage.selectedTag = tag;
     refreshImages();
   }
 
@@ -239,10 +270,27 @@ export function createRowTagActions({
     tagsEqual,
     formatTags
   };
+
+  function getCurrentImage(image: ImageRecord | null | undefined): ImageRecord | null {
+    if (!image) {
+      return null;
+    }
+
+    return images.value.find((item) => item.id === image.id) ?? null;
+  }
 }
 
 function tagsEqual(left: string[] | null | undefined, right: string[] | null | undefined): boolean {
   const leftTags = left ?? [];
   const rightTags = right ?? [];
   return leftTags.length === rightTags.length && leftTags.every((tag, index) => tag === rightTags[index]);
+}
+
+function reconcileRemovedTags(previousTags: string[], nextTags: string[], removedTags: string[]): string[] {
+  const nextKeys = new Set(nextTags.map((tag) => tag.toLowerCase()));
+  const restoredKeys = new Set(nextTags.map((tag) => tag.toLowerCase()));
+  const removedByEdit = previousTags.filter((tag) => !nextKeys.has(tag.toLowerCase()));
+  const stillRemoved = removedTags.filter((tag) => !restoredKeys.has(tag.toLowerCase()));
+
+  return distinctTags([...stillRemoved, ...removedByEdit]);
 }

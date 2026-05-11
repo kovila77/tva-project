@@ -200,7 +200,7 @@ function createImageTaggerContext() {
   const renderedImages = computed(() => visibleImages.value.slice(0, visibleLimit.value));
 
   function refreshImages(): void {
-    images.value = [...images.value];
+    images.value = images.value.map((image) => ({ ...image }));
   }
 
   function recalculateDerivedTags(): void {
@@ -249,6 +249,7 @@ function createImageTaggerContext() {
     onFilterExecuted: blinkFilteredTags
   });
   const rowTagActions = createRowTagActions({
+    images,
     config,
     commonTags,
     knownTags,
