@@ -31,7 +31,7 @@
   "sidePanelPosition": "right",
   "headerHeight": 0,
   "showTagsColumn": true,
-  "rowChipMode": "common-deleted",
+  "rowChipMode": "hidden",
   "imageRowHeightMode": "full",
   "imageRowFixedHeight": 360,
   "imageWidthMode": "compact",
