@@ -1,21 +1,17 @@
 <template>
-  <button
+  <AppIconButton
     v-if="hasSidePanelSections"
     class="side-panel-toggle"
-    type="button"
+    :icon="arrowIcon"
     :title="title"
     :aria-label="title"
     @click="toggleSidePanel"
-  >
-    <AppIcon v-if="showArrowBefore" :name="arrowIcon" class="icon side-panel-toggle__icon" />
-    <AppIcon v-if="!showArrowBefore" :name="arrowIcon" class="icon side-panel-toggle__icon" />
-    <AppIcon name="bars" class="icon side-panel-toggle__icon side-panel-toggle__bars" />
-  </button>
+  />
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
-import AppIcon from "~/components/AppIcon.vue";
+import AppIconButton from "~/components/AppIconButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { AppIconName } from "~/utils/icons";
 
@@ -25,7 +21,6 @@ const isHidden = computed(() => config.sidePanelMode === "hidden");
 const isRight = computed(() => config.sidePanelPosition === "right");
 const label = computed(() => isHidden.value ? "Show side" : "Hide side");
 const title = computed(() => `${label.value} panel`);
-const showArrowBefore = computed(() => !isHidden.value);
 const arrowIcon = computed<AppIconName>(() => {
   if (isHidden.value) {
     return isRight.value ? "arrowLeft" : "arrowRight";
@@ -41,36 +36,9 @@ function toggleSidePanel(): void {
 
 <style scoped lang="scss">
 .side-panel-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 28px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--muted);
-  padding: 2px 4px;
+  --app-icon-button-size: 28px;
+  --app-icon-size: 1em;
   font-size: 13px;
   font-weight: 800;
-  line-height: 1;
-
-  &:hover,
-  &:focus-visible {
-    color: var(--text);
-  }
-
-  &__icon {
-    width: 1em;
-    min-width: 1em;
-  }
-
-  &__bars {
-    width: 1.1em;
-    min-width: 1.1em;
-  }
-
-  span {
-    white-space: nowrap;
-  }
 }
 </style>

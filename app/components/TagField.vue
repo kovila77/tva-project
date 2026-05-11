@@ -3,28 +3,24 @@
     <div v-if="label || showHistoryButtons" class="tag-field__header">
       <span v-if="label" :id="labelId" class="tag-field__label">{{ label }}</span>
       <div v-if="showHistoryButtons" class="tag-field__actions">
-        <button
-          class="btn icon-btn tag-field__history-btn"
-          type="button"
+        <AppIconButton
+          class="tag-field__history-btn"
+          icon="undo"
           title="Undo editor draft change."
           aria-label="Undo editor draft change"
           :disabled="!canUndoDraft"
           @mousedown.prevent
           @click="undoDraft"
-        >
-          <AppIcon name="undo" class="icon" />
-        </button>
-        <button
-          class="btn icon-btn tag-field__history-btn"
-          type="button"
+        />
+        <AppIconButton
+          class="tag-field__history-btn"
+          icon="redo"
           title="Redo editor draft change."
           aria-label="Redo editor draft change"
           :disabled="!canRedoDraft"
           @mousedown.prevent
           @click="redoDraft"
-        >
-          <AppIcon name="redo" class="icon" />
-        </button>
+        />
       </div>
     </div>
 
@@ -53,7 +49,7 @@ import { defaultKeymap, history, historyKeymap, redo, redoDepth, undo, undoDepth
 import { Compartment, EditorState, Transaction, type Extension } from "@codemirror/state";
 import { type DecorationSet, drawSelection, EditorView, keymap, placeholder as editorPlaceholder, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
-import AppIcon from "~/components/AppIcon.vue";
+import AppIconButton from "~/components/AppIconButton.vue";
 import type { TagTextFieldMode, TagTextStyleRule } from "~/types/imageTagger";
 import {
   buildTagTextDecorations,
@@ -468,9 +464,7 @@ function normalizeValueForMode(value: string): string {
   }
 
   &__history-btn {
-    min-width: 28px;
-    min-height: 28px;
-    padding: 5px 6px;
+    --app-icon-button-size: 28px;
   }
 
   &__editor {

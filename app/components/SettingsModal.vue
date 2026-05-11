@@ -5,15 +5,14 @@
         <div class="settings-modal__titles">
           <strong id="settings-modal-title" class="settings-modal__title">Settings</strong>
         </div>
-        <button
-          class="btn danger icon-btn settings-modal__close"
-          type="button"
+        <AppIconButton
+          class="settings-modal__close"
+          icon="close"
           title="Close settings."
           aria-label="Close settings"
+          danger
           @click="closeSettingsModal"
-        >
-          <AppIcon name="close" class="icon" />
-        </button>
+        />
       </header>
 
       <div class="settings-modal__body">
@@ -36,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import AppIcon from "~/components/AppIcon.vue";
+import AppIconButton from "~/components/AppIconButton.vue";
 import FileManagementControls from "~/components/FileManagementControls.vue";
 import LayoutConfigControls from "~/components/LayoutConfigControls.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";

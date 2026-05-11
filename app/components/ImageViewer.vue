@@ -4,11 +4,11 @@
       <div class="image-viewer__bar">
         <strong>{{ viewer.image.fileName }}</strong>
         <div class="image-viewer__actions">
-          <button class="btn icon-btn" type="button" title="Zoom image preview out." aria-label="Zoom out" @click="zoomViewer(0.85)"><AppIcon name="zoomOut" class="icon" /></button>
+          <AppIconButton icon="zoomOut" title="Zoom image preview out." aria-label="Zoom out" @click="zoomViewer(0.85)" />
           <span>{{ Math.round(viewer.scale * 100) }}%</span>
-          <button class="btn icon-btn" type="button" title="Zoom image preview in." aria-label="Zoom in" @click="zoomViewer(1.15)"><AppIcon name="zoomIn" class="icon" /></button>
-          <button class="btn icon-btn" type="button" title="Reset preview zoom and pan." aria-label="Reset preview" @click="resetViewer"><AppIcon name="reset" class="icon" /></button>
-          <button class="btn danger icon-btn" type="button" title="Close image preview." aria-label="Close image preview" @click="closeViewer"><AppIcon name="close" class="icon" /></button>
+          <AppIconButton icon="zoomIn" title="Zoom image preview in." aria-label="Zoom in" @click="zoomViewer(1.15)" />
+          <AppIconButton icon="reset" title="Reset preview zoom and pan." aria-label="Reset preview" @click="resetViewer" />
+          <AppIconButton icon="close" title="Close image preview." aria-label="Close image preview" danger @click="closeViewer" />
         </div>
       </div>
       <div
@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import AppIcon from "~/components/AppIcon.vue";
+import AppIconButton from "~/components/AppIconButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const viewerImageRef = ref<HTMLImageElement | null>(null);

@@ -1,19 +1,17 @@
 <template>
-  <button
+  <AppIconButton
     v-if="hasHeaderPanelSections"
     class="header-panel-toggle"
-    type="button"
+    :icon="arrowIcon"
     :title="title"
     :aria-label="title"
     @click="toggleHeaderPanel"
-  >
-    <AppIcon :name="arrowIcon" class="icon header-panel-toggle__icon" />
-  </button>
+  />
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
-import AppIcon from "~/components/AppIcon.vue";
+import AppIconButton from "~/components/AppIconButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { AppIconName } from "~/utils/icons";
 
@@ -31,31 +29,9 @@ function toggleHeaderPanel(): void {
 
 <style scoped lang="scss">
 .header-panel-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 28px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--muted);
-  padding: 2px 4px;
+  --app-icon-button-size: 28px;
+  --app-icon-size: 1em;
   font-size: 13px;
   font-weight: 800;
-  line-height: 1;
-
-  &:hover,
-  &:focus-visible {
-    color: var(--text);
-  }
-
-  &__icon {
-    width: 1em;
-    min-width: 1em;
-  }
-
-  span {
-    white-space: nowrap;
-  }
 }
 </style>

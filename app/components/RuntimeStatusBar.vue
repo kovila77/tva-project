@@ -8,9 +8,7 @@
     <HistoryActionButton action="undo" variant="plain" />
     <HistoryActionButton action="redo" variant="plain" />
     <span class="runtime-status-bar__status" :class="{ 'runtime-status-bar__status--busy': isBusy }" :title="statusText">{{ statusText }}</span>
-    <button class="btn icon-btn" type="button" title="Open settings." aria-label="Open settings" @click="openSettingsModal()">
-      <AppIcon name="settings" class="icon" />
-    </button>
+    <AppIconButton icon="settings" title="Open settings." aria-label="Open settings" @click="openSettingsModal()" />
     <SidePanelToggleButton v-if="isRightPanel" class="runtime-status-bar__end-toggle" />
     <HeaderPanelToggleButton v-else class="runtime-status-bar__end-toggle" />
   </div>
@@ -20,6 +18,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import HeaderPanelToggleButton from "~/components/HeaderPanelToggleButton.vue";
 import HistoryActionButton from "~/components/HistoryActionButton.vue";
+import AppIconButton from "~/components/AppIconButton.vue";
 import SidePanelToggleButton from "~/components/SidePanelToggleButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 

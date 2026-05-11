@@ -42,9 +42,9 @@
       </label>
 
       <div class="filter-controls__actions">
-        <button class="filter-controls__action" type="button" title="Search images with the current filter. Shortcut: Ctrl+K focuses this filter." aria-label="Search images" @click="applyFilter"><AppIcon name="filter" class="icon" /></button>
-        <button class="filter-controls__action" type="button" title="Invert the current filter, showing images that do not match." aria-label="Invert filter" @click="invertFilter"><AppIcon name="filterInvert" class="icon" /></button>
-        <button class="filter-controls__action" type="button" title="Clear the filter and show all loaded images." aria-label="Clear filter" @click="clearFilter"><AppIcon name="clear" class="icon" /></button>
+        <AppIconButton class="filter-controls__action" icon="filter" title="Search images with the current filter. Shortcut: Ctrl+K focuses this filter." aria-label="Search images" @click="applyFilter" />
+        <AppIconButton class="filter-controls__action" icon="filterInvert" title="Invert the current filter, showing images that do not match." aria-label="Invert filter" @click="invertFilter" />
+        <AppIconButton class="filter-controls__action" icon="clear" title="Clear the filter and show all loaded images." aria-label="Clear filter" @click="clearFilter" />
       </div>
     </div>
   </div>
@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
-import AppIcon from "~/components/AppIcon.vue";
+import AppIconButton from "~/components/AppIconButton.vue";
 import TagField from "~/components/TagField.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 
@@ -186,28 +186,9 @@ onBeforeUnmount(() => {
   }
 
   &__action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    min-width: 26px;
-    height: 26px;
-    border: 0;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--muted);
-    padding: 0;
-    line-height: 1;
-
-    &:hover:not(:disabled),
-    &:focus-visible {
-      color: var(--text);
-    }
-
-    .icon {
-      width: 14px;
-      height: 14px;
-    }
+    --app-icon-button-size: 26px;
+    --app-icon-button-radius: 4px;
+    --app-icon-size: 14px;
   }
 }
 

@@ -6,7 +6,6 @@ import {
   faArrowRotateLeft,
   faArrowRotateRight,
   faArrowsRotate,
-  faBars,
   faBroom,
   faChartColumn,
   faCheck,
@@ -20,6 +19,7 @@ import {
   faFileImport,
   faHashtag,
   faImages,
+  faEllipsis,
   faList,
   faMagnifyingGlass,
   faMagnifyingGlassMinus,
@@ -48,7 +48,6 @@ export const appIcons = {
   arrowLeft: faArrowLeft,
   arrowRight: faArrowRight,
   arrowUp: faArrowUp,
-  bars: faBars,
   clean: faBroom,
   clear: faXmark,
   close: faXmark,
@@ -83,7 +82,8 @@ export const appIcons = {
   zoomIn: faMagnifyingGlassPlus,
   zoomOut: faMagnifyingGlassMinus,
   redo: faArrowRotateRight,
-  hashtag: faHashtag
+  hashtag: faHashtag,
+  more: faEllipsis
 } satisfies Record<string, IconDefinition>;
 
 export type AppIconName = keyof typeof appIcons;

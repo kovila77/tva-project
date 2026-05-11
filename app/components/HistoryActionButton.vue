@@ -1,20 +1,18 @@
 <template>
-  <button
+  <AppIconButton
     class="history-action-button"
     :class="buttonClasses"
-    type="button"
+    :icon="iconName"
     :title="title"
     :aria-label="label"
     :disabled="disabled"
     @click="runAction"
-  >
-    <AppIcon :name="iconName" class="icon history-action-button__icon" />
-  </button>
+  />
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
-import AppIcon from "~/components/AppIcon.vue";
+import AppIconButton from "~/components/AppIconButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { AppIconName } from "~/utils/icons";
 
@@ -58,28 +56,16 @@ function runAction(): void {
 
 <style scoped lang="scss">
 .history-action-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  min-width: 34px;
-  height: 32px;
-  padding: 0;
-  border-radius: 6px;
+  --app-icon-button-width: 34px;
+  --app-icon-button-height: 32px;
+  --app-icon-size: 1.25em;
+  --app-icon-button-hover-transform: translateY(-1px);
   color: var(--text);
-  line-height: 1;
-  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease, transform 0.12s ease;
 
-  &__icon {
-    width: 1.25em;
+  :deep(.app-icon-button__icon) {
     height: 1.15em;
-    min-width: 1.25em;
     stroke: currentColor;
     stroke-width: 18;
-  }
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
   }
 
   &--filled {
@@ -93,14 +79,7 @@ function runAction(): void {
   }
 
   &--plain {
-    border: 0;
-    background: transparent;
     color: var(--muted);
-
-    &:hover:not(:disabled),
-    &:focus-visible {
-      color: var(--text);
-    }
   }
 }
 </style>

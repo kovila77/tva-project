@@ -50,23 +50,21 @@
       </div>
       <span class="tag-stats__count" :title="`${item.count} images contain this tag.`">{{ item.count }}</span>
       <div class="tag-stats__actions">
-        <button class="tag-stats__action" type="button" title="Filter dataset by this tag." :aria-label="`Filter dataset by ${item.tag}`" @click="filterByTag(item.tag)"><AppIcon name="filter" class="icon" /></button>
+        <AppIconButton class="tag-stats__action" icon="filter" title="Filter dataset by this tag." :aria-label="`Filter dataset by ${item.tag}`" @click="filterByTag(item.tag)" />
         <div class="tag-stats__menu">
-          <button class="tag-stats__action" type="button" title="More tag actions." :aria-label="`More actions for ${item.tag}`" @click="toggleMoreMenu(item.tag)">
-            <AppIcon name="bars" class="icon" />
-          </button>
+          <AppIconButton class="tag-stats__action" icon="more" title="More tag actions." :aria-label="`More actions for ${item.tag}`" @click="toggleMoreMenu(item.tag)" />
           <div v-if="openMenuTag === item.tag" class="tag-stats__menu-popover">
-            <button class="tag-stats__action" type="button" title="Append this tag to the current filter." :aria-label="`Add ${item.tag} to filter`" @click="appendTagToFilter(item.tag)"><AppIcon name="filterAdd" class="icon" /></button>
-            <button class="tag-stats__action" type="button" title="Add this tag to common tags." :aria-label="`Add ${item.tag} to common tags`" @click="addConfigTagAndClose('commonTagsText', item.tag)"><AppIcon name="common" class="icon" /></button>
-            <button class="tag-stats__action" type="button" title="Add this tag to known tags." :aria-label="`Add ${item.tag} to known tags`" @click="addConfigTagAndClose('knownTagsText', item.tag)"><AppIcon name="known" class="icon" /></button>
-            <button class="tag-stats__action" type="button" title="Add this tag to highlighted tags." :aria-label="`Add ${item.tag} to highlighted tags`" @click="addConfigTagAndClose('highlightTagsText', item.tag)"><AppIcon name="highlight" class="icon" /></button>
-            <button class="tag-stats__action" type="button" title="Add this tag to highlighted text fragments." :aria-label="`Add ${item.tag} to highlighted text`" @click="addConfigTagAndClose('highlightText', item.tag)"><AppIcon name="text" class="icon" /></button>
-            <button class="tag-stats__action" type="button" title="Move this tag to the start of every prompt where it appears. Undoable." :aria-label="`Move ${item.tag} to prompt start`" @click="moveTagAndClose(item.tag, 'start')"><AppIcon name="arrowUp" class="icon" /></button>
-            <button class="tag-stats__action" type="button" title="Move this tag to the end of every prompt where it appears. Undoable." :aria-label="`Move ${item.tag} to prompt end`" @click="moveTagAndClose(item.tag, 'end')"><AppIcon name="arrowDown" class="icon" /></button>
-            <button class="tag-stats__action tag-stats__action--danger" type="button" title="Remove this tag only from currently visible images. Undoable." :aria-label="`Remove ${item.tag} from visible images`" @click="removeVisibleAndClose(item.tag)"><AppIcon name="removeItem" class="icon" /></button>
+            <AppIconButton class="tag-stats__action" icon="filterAdd" title="Append this tag to the current filter." :aria-label="`Add ${item.tag} to filter`" @click="appendTagToFilter(item.tag)" />
+            <AppIconButton class="tag-stats__action" icon="common" title="Add this tag to common tags." :aria-label="`Add ${item.tag} to common tags`" @click="addConfigTagAndClose('commonTagsText', item.tag)" />
+            <AppIconButton class="tag-stats__action" icon="known" title="Add this tag to known tags." :aria-label="`Add ${item.tag} to known tags`" @click="addConfigTagAndClose('knownTagsText', item.tag)" />
+            <AppIconButton class="tag-stats__action" icon="highlight" title="Add this tag to highlighted tags." :aria-label="`Add ${item.tag} to highlighted tags`" @click="addConfigTagAndClose('highlightTagsText', item.tag)" />
+            <AppIconButton class="tag-stats__action" icon="text" title="Add this tag to highlighted text fragments." :aria-label="`Add ${item.tag} to highlighted text`" @click="addConfigTagAndClose('highlightText', item.tag)" />
+            <AppIconButton class="tag-stats__action" icon="arrowUp" title="Move this tag to the start of every prompt where it appears. Undoable." :aria-label="`Move ${item.tag} to prompt start`" @click="moveTagAndClose(item.tag, 'start')" />
+            <AppIconButton class="tag-stats__action" icon="arrowDown" title="Move this tag to the end of every prompt where it appears. Undoable." :aria-label="`Move ${item.tag} to prompt end`" @click="moveTagAndClose(item.tag, 'end')" />
+            <AppIconButton class="tag-stats__action" icon="removeItem" title="Remove this tag only from currently visible images. Undoable." :aria-label="`Remove ${item.tag} from visible images`" danger @click="removeVisibleAndClose(item.tag)" />
           </div>
         </div>
-        <button class="tag-stats__action tag-stats__action--danger" type="button" title="Remove this tag across loaded images and keep it restorable per image. Undoable." :aria-label="`Remove ${item.tag} from loaded images`" @click="removeTagEverywhere(item.tag)"><AppIcon name="removeItem" class="icon" /></button>
+        <AppIconButton class="tag-stats__action" icon="removeItem" title="Remove this tag across loaded images and keep it restorable per image. Undoable." :aria-label="`Remove ${item.tag} from loaded images`" danger @click="removeTagEverywhere(item.tag)" />
       </div>
     </div>
     <div v-if="!visibleTagStats.length" class="empty-inline">{{ statsSearch.trim() ? "No matching tags." : "No tags loaded." }}</div>
@@ -75,7 +73,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref } from "vue";
-import AppIcon from "~/components/AppIcon.vue";
+import AppIconButton from "~/components/AppIconButton.vue";
 import { useImageTaggerContext } from "~/composables/useImageTagger";
 import type { ConfigTextKey } from "~/types/imageTagger";
 
@@ -286,32 +284,9 @@ function removeVisibleAndClose(tag: string): void {
   }
 
   &__action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    min-width: 24px;
-    height: 24px;
-    border: 0;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--muted);
-    padding: 0;
-    line-height: 1;
-
-    &:hover:not(:disabled),
-    &:focus-visible {
-      color: var(--text);
-    }
-
-    &--danger {
-      color: var(--red);
-    }
-
-    .icon {
-      width: 13px;
-      height: 13px;
-    }
+    --app-icon-button-size: 24px;
+    --app-icon-button-radius: 4px;
+    --app-icon-size: 13px;
   }
 }
 </style>
