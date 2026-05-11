@@ -79,40 +79,66 @@
     </div>
 
     <div v-if="showChipColumn" class="image-row__tag-column" title="Clickable row tags. Use display controls to choose which chips are shown.">
-      <div v-if="visibleCommonTags.length" class="image-row__chip-group">
+      <div
+        v-if="visibleCommonTags.length"
+        class="image-row__chip-group"
+        data-tag-drop-target="active"
+      >
         <TagChip
           v-for="tag in visibleCommonTags"
           :key="`${image.id}-common-${tag}`"
           :tag="tag"
+          :image-id="image.id"
+          drag-source="active"
           variant="common"
           :icon="hasTag(image, tag) ? 'remove' : 'add'"
           :active="hasTag(image, tag)"
           :title="hasTag(image, tag) ? `Remove common tag '${tag}' from this image. Undoable.` : `Add common tag '${tag}' to this image. Undoable.`"
+          data-tag-drop-target="active"
+          :data-before-tag="tag"
+          @tag-drop="onChipTagDrop"
           @click="toggleTag(image, tag)"
         />
       </div>
 
-      <div v-if="visibleNonCommonTags.length" class="image-row__chip-group">
+      <div
+        v-if="visibleNonCommonTags.length"
+        class="image-row__chip-group"
+        data-tag-drop-target="active"
+      >
         <TagChip
           v-for="tag in visibleNonCommonTags"
           :key="`${image.id}-tag-${tag}`"
           :tag="tag"
+          :image-id="image.id"
+          drag-source="active"
           icon="remove"
           :title="`Remove tag '${tag}' and store it in Deleted tags. Undoable.`"
+          data-tag-drop-target="active"
+          :data-before-tag="tag"
+          @tag-drop="onChipTagDrop"
           @click="removeTagFromImage(image, tag, false)"
         />
       </div>
 
-      <div v-if="visibleRemovedTags.length" class="image-row__chip-group image-row__deleted-tags">
+      <div
+        v-if="visibleRemovedTags.length"
+        class="image-row__chip-group image-row__deleted-tags"
+        data-tag-drop-target="deleted"
+      >
         <span class="image-row__chip-heading">Deleted</span>
         <TagChip
           v-for="tag in visibleRemovedTags"
           :key="`${image.id}-removed-${tag}`"
           :tag="tag"
+          :image-id="image.id"
+          drag-source="deleted"
           icon="add"
           variant="removed"
           :decorate-states="false"
           :title="`Return deleted tag '${tag}' to this image. Undoable.`"
+          data-tag-drop-target="deleted"
+          @tag-drop="onChipTagDrop"
           @click="restoreRemovedTag(image, tag)"
         />
       </div>
@@ -162,7 +188,10 @@ const {
   hasTag,
   toggleTag,
   nonCommonTags,
-  restoreRemovedTag
+  restoreRemovedTag,
+  moveTagToDeleted,
+  moveDeletedTagToImage,
+  reorderImageTag
 } = useImageTaggerContext();
 
 const showChipColumn = computed(() => config.rowChipMode !== "hidden");
@@ -217,6 +246,29 @@ function stopImageWidthResize(): void {
   document.body.style.cursor = "";
   document.body.style.userSelect = "";
   window.removeEventListener("pointermove", resizeImageWidth);
+}
+
+function onChipTagDrop(event: { clientX: number; clientY: number; source: "active" | "deleted"; tag: string }): void {
+  const dropTarget = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-tag-drop-target]");
+  const target = dropTarget?.dataset.tagDropTarget;
+  if (target !== "active" && target !== "deleted") {
+    return;
+  }
+
+  if (target === "deleted") {
+    if (event.source === "active") {
+      moveTagToDeleted(props.image, event.tag);
+    }
+    return;
+  }
+
+  const beforeTag = dropTarget?.dataset.beforeTag ?? "";
+  if (event.source === "deleted") {
+    moveDeletedTagToImage(props.image, event.tag, beforeTag);
+    return;
+  }
+
+  reorderImageTag(props.image, event.tag, beforeTag);
 }
 
 onBeforeUnmount(() => {

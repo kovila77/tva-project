@@ -164,6 +164,47 @@ export function createRowTagActions({
     }]);
   }
 
+  function moveTagToDeleted(image: ImageRecord, tag: string): void {
+    removeTagFromImage(image, tag, false);
+  }
+
+  function moveDeletedTagToImage(image: ImageRecord, tag: string, beforeTag = ""): void {
+    const currentImage = getCurrentImage(image);
+    if (!currentImage) {
+      return;
+    }
+
+    const nextTags = insertTagBefore(currentImage.tags, tag, beforeTag);
+    const nextRemovedTags = removeTag(currentImage.removedTags, tag);
+    commitOperation(`Restore ${tag}`, [{
+      image: currentImage,
+      after: {
+        ...snapshotImage(currentImage),
+        tags: nextTags,
+        removedTags: nextRemovedTags,
+        selectedTag: currentImage.selectedTag,
+        editText: formatTags(nextTags)
+      }
+    }]);
+  }
+
+  function reorderImageTag(image: ImageRecord, tag: string, beforeTag = ""): void {
+    const currentImage = getCurrentImage(image);
+    if (!currentImage || !includesTag(currentImage.tags, tag)) {
+      return;
+    }
+
+    const nextTags = insertTagBefore(removeTag(currentImage.tags, tag), tag, beforeTag);
+    commitOperation(`Move ${tag}`, [{
+      image: currentImage,
+      after: {
+        ...snapshotImage(currentImage),
+        tags: nextTags,
+        editText: formatTags(nextTags)
+      }
+    }]);
+  }
+
   function appendConfigTag(key: ConfigTextKey, tag: string): void {
     const tags = addTag(parseTags(config[key]), tag);
     config[key] = formatTags(tags);
@@ -262,6 +303,9 @@ export function createRowTagActions({
     toggleTag,
     removeTagFromImage,
     restoreRemovedTag,
+    moveTagToDeleted,
+    moveDeletedTagToImage,
+    reorderImageTag,
     appendConfigTag,
     setSelectedTag,
     tagClass,
@@ -278,6 +322,30 @@ export function createRowTagActions({
 
     return images.value.find((item) => item.id === image.id) ?? null;
   }
+}
+
+function insertTagBefore(tags: string[], tag: string, beforeTag: string): string[] {
+  const cleanTag = String(tag ?? "").trim();
+  if (!cleanTag) {
+    return distinctTags(tags);
+  }
+
+  const withoutTag = removeTag(tags, cleanTag);
+  const targetKey = String(beforeTag ?? "").trim().toLowerCase();
+  if (!targetKey || targetKey === cleanTag.toLowerCase()) {
+    return distinctTags([...withoutTag, cleanTag]);
+  }
+
+  const index = withoutTag.findIndex((item) => item.toLowerCase() === targetKey);
+  if (index < 0) {
+    return distinctTags([...withoutTag, cleanTag]);
+  }
+
+  return distinctTags([
+    ...withoutTag.slice(0, index),
+    cleanTag,
+    ...withoutTag.slice(index)
+  ]);
 }
 
 function tagsEqual(left: string[] | null | undefined, right: string[] | null | undefined): boolean {
