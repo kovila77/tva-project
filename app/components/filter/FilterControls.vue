@@ -42,8 +42,8 @@
 
       <div class="filter-controls__actions">
         <AppIconButton class="filter-controls__action" icon="filter" title="Search images with the current filter. Shortcut: Ctrl+K focuses this filter." aria-label="Search images" @click="applyFilter" />
-        <AppIconButton class="filter-controls__action" icon="filterInvert" title="Invert the current filter, showing images that do not match." aria-label="Invert filter" @click="invertFilter" />
-        <AppIconButton class="filter-controls__action" icon="clear" title="Clear the filter and show all loaded images." aria-label="Clear filter" @click="clearFilter" />
+        <AppIconButton class="filter-controls__action" icon="filterInvert" title="Invert the current filter, showing images that do not match." aria-label="Invert filter" :active="filterInverted" @click="invertFilter" />
+        <AppIconButton class="filter-controls__action" icon="filterClear" title="Clear the filter and show all loaded images." aria-label="Clear filter" @click="clearFilter" />
       </div>
     </div>
   </div>
@@ -59,6 +59,7 @@ const focusFilterEventName = "tva-image-tagger:focus-filter";
 
 const {
   config,
+  filterInverted,
   autocompleteTags,
   filterTextStyleRules,
   applyFilter,

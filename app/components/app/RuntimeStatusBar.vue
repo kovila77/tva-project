@@ -19,6 +19,20 @@
       :active="config.filterBarMode === 'open'"
       @click="toggleFilterBar"
     />
+    <AppIconButton
+      icon="filterInvert"
+      title="Invert the current filter, showing images that do not match."
+      aria-label="Invert filter"
+      :active="filterInverted"
+      @click="invertFilter"
+    />
+    <AppIconButton
+      icon="filterClear"
+      title="Clear the filter and show all loaded images."
+      aria-label="Clear filter"
+      :disabled="!hasFilterState"
+      @click="clearFilter"
+    />
     <AppIconButton icon="settings" title="Open settings." aria-label="Open settings" @click="openSettingsModal()" />
     <SidePanelToggleButton v-if="isRightPanel" class="runtime-status-bar__end-toggle" />
     <HeaderPanelToggleButton v-else class="runtime-status-bar__end-toggle" />
@@ -42,11 +56,15 @@ const {
   isBusy,
   statusText,
   config,
+  filterInverted,
+  invertFilter,
+  clearFilter,
   openSettingsModal,
 } = useImageTaggerContext();
 
 const isRightPanel = computed(() => config.sidePanelPosition === "right");
 const filterToggleTitle = computed(() => config.filterBarMode === "open" ? "Hide filter bar" : "Show filter bar");
+const hasFilterState = computed(() => Boolean(config.filterText.trim()) || filterInverted.value);
 const statusBarElement = ref<HTMLElement | null>(null);
 let resizeObserver: ResizeObserver | null = null;
 

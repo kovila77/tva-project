@@ -9,7 +9,6 @@ import {
   faBroom,
   faChartColumn,
   faCheck,
-  faCircleHalfStroke,
   faClockRotateLeft,
   faCopy,
   faDownload,
@@ -30,6 +29,7 @@ import {
   faRightLeft,
   faRotateLeft,
   faScrewdriverWrench,
+  faSlash,
   faStar,
   faTag,
   faTags,
@@ -40,6 +40,14 @@ import {
   faGear
 } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+
+interface LayeredAppIcon {
+  base: IconDefinition;
+  overlays: Array<{
+    icon: IconDefinition;
+    transform: string;
+  }>;
+}
 
 export const appIcons = {
   add: faPlus,
@@ -59,7 +67,19 @@ export const appIcons = {
   settings: faGear,
   filter: faMagnifyingGlass,
   filterAdd: faMagnifyingGlassPlus,
-  filterInvert: faCircleHalfStroke,
+  filterClear: {
+    base: faMagnifyingGlass,
+    overlays: [
+      { icon: faSlash, transform: "shrink-2 right-1" },
+      { icon: faSlash, transform: "shrink-2 left-1 flip-h" }
+    ]
+  },
+  filterInvert: {
+    base: faMagnifyingGlass,
+    overlays: [
+      { icon: faRotateLeft, transform: "shrink-5 right-7 down-5" }
+    ]
+  },
   highlight: faStar,
   history: faClockRotateLeft,
   images: faImages,
@@ -84,6 +104,8 @@ export const appIcons = {
   redo: faArrowRotateRight,
   hashtag: faHashtag,
   more: faEllipsis
-} satisfies Record<string, IconDefinition>;
+} satisfies Record<string, IconDefinition | LayeredAppIcon>;
 
 export type AppIconName = keyof typeof appIcons;
+export type AppIconSpec = (typeof appIcons)[AppIconName];
+export type { LayeredAppIcon };

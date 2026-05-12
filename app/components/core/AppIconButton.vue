@@ -56,7 +56,6 @@ defineProps<{
   &--active {
     background: var(--app-icon-button-active-bg, transparent);
     color: var(--text);
-    cursor: default;
   }
 
   &--danger {
