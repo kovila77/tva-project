@@ -21,6 +21,7 @@ import type {
   SettingsModalState
 } from "~/types/imageTagger";
 import { normalizeConfig } from "~/utils/config";
+import { clearPersistedDataset } from "~/utils/datasetPersistence";
 import { applyTheme } from "~/utils/imageFiles";
 import { collectKnownTags, countTags, createFilterMatcher, makeDatasetSnapshot, parseTags } from "~/utils/tagDataset";
 import { createSettingsModalActions } from "./imageTagger/settingModalActions";
@@ -460,6 +461,34 @@ function createImageTaggerContext() {
     window.dispatchEvent(new CustomEvent(focusFilterEventName));
   }
 
+  async function resetAppState(): Promise<void> {
+    const confirmed = window.confirm("Clear saved app state, including the browser dataset cache and layout config, then reload the page?");
+    if (!confirmed) {
+      return;
+    }
+
+    isBusy.value = true;
+    loadError.value = "";
+    setStatus("Clearing saved app state...");
+
+    try {
+      if (persistenceTimer) {
+        window.clearTimeout(persistenceTimer);
+        persistenceTimer = null;
+      }
+      persistenceReady = false;
+      localStorage.removeItem(configStorageKey);
+      await clearPersistedDataset();
+      Object.assign(config, normalizeConfig(defaultConfig as Record<string, unknown>));
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      loadError.value = `Could not clear saved app state: ${getErrorMessage(error)}`;
+      setStatus("App state reset failed.");
+      isBusy.value = false;
+    }
+  }
+
   function onGlobalKeydown(event: KeyboardEvent): void {
     const target = event.target;
     const isTyping = target instanceof HTMLInputElement
@@ -665,6 +694,7 @@ function createImageTaggerContext() {
     imageRedoTitle,
     imageHistoryTitle,
     moveImageRow,
+    resetAppState,
     ...historyActions,
     ...filterActions,
     ...rowTagActions,
