@@ -1,8 +1,14 @@
 <template>
   <aside
     v-if="hasSidePanelContent"
+    ref="sidePanelElement"
     class="side-panel"
-    :class="{ 'side-panel--right': config.sidePanelPosition === 'right' }"
+    :class="{
+      'side-panel--right': config.sidePanelPosition === 'right',
+      'side-panel--scroll-visible': scrollVisible
+    }"
+    @pointermove="updateScrollVisibility"
+    @pointerleave="hideScroll"
   >
     <button
       class="side-panel__resize"
@@ -25,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount } from "vue";
+import { onBeforeUnmount, ref } from "vue";
 import BatchTools from "~/components/tools/BatchTools.vue";
 import TagSetFields from "~/components/tags/TagSetFields.vue";
 import TagStatsList from "~/components/tags/TagStatsList.vue";
@@ -33,10 +39,28 @@ import { useImageTaggerContext } from "~/composables/useImageTagger";
 
 const { config, hasSidePanelContent, hasSideTagSets } = useImageTaggerContext();
 
+const sidePanelElement = ref<HTMLElement | null>(null);
+const scrollVisible = ref(false);
 const minimumSidePanelWidth = 260;
 const maximumSidePanelWidth = 720;
+const scrollbarRevealEdge = 18;
 let resizeStartX = 0;
 let resizeStartWidth = 0;
+
+function updateScrollVisibility(event: PointerEvent): void {
+  const panel = sidePanelElement.value;
+  if (!panel) {
+    scrollVisible.value = false;
+    return;
+  }
+
+  const rect = panel.getBoundingClientRect();
+  scrollVisible.value = rect.right - event.clientX <= scrollbarRevealEdge;
+}
+
+function hideScroll(): void {
+  scrollVisible.value = false;
+}
 
 function startResize(event: PointerEvent): void {
   resizeStartX = event.clientX;
@@ -72,11 +96,41 @@ onBeforeUnmount(stopResize);
   top: calc(var(--app-header-height, 0px) + var(--app-runtime-status-height, 0px) + var(--app-filter-bar-height, 0px) + var(--app-space-sticky-offset));
   max-height: calc(100vh - var(--app-header-height, 0px) - var(--app-runtime-status-height, 0px) - var(--app-filter-bar-height, 0px) - var(--app-space-sticky-offset) - var(--app-space-page));
   overflow: auto;
+  scrollbar-color: transparent transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
   padding: var(--app-space-panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow);
+
+  &--scroll-visible,
+  &:focus-within {
+    scrollbar-color: var(--muted) transparent;
+  }
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+
+  &--scroll-visible::-webkit-scrollbar-thumb,
+  &:focus-within::-webkit-scrollbar-thumb {
+    border: 3px solid var(--surface);
+    border-radius: 999px;
+    background: var(--muted);
+  }
+
+  &--scroll-visible::-webkit-scrollbar-thumb:hover,
+  &:focus-within::-webkit-scrollbar-thumb:hover {
+    background: var(--text);
+  }
 
   &__resize {
     position: absolute;
