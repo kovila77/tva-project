@@ -192,6 +192,7 @@ export function makeDatasetSnapshot(config: AppConfig): AppConfig {
     imageRowHeightMode: config.imageRowHeightMode,
     imageRowFixedHeight: config.imageRowFixedHeight,
     imageWidthMode: config.imageWidthMode,
-    imageFixedWidth: config.imageFixedWidth
+    imageFixedWidth: config.imageFixedWidth,
+    showMoreEnabled: config.showMoreEnabled
   };
 }

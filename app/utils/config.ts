@@ -76,7 +76,8 @@ export function normalizeConfig(source: ConfigSource = {}): AppConfig {
     imageRowHeightMode: includesValue(imageRowHeightModes, source.imageRowHeightMode) ? source.imageRowHeightMode : "full",
     imageRowFixedHeight: normalizeFixedDimension(source.imageRowFixedHeight, defaultFixedRowHeight),
     imageWidthMode: normalizeImageWidthMode(source.imageWidthMode),
-    imageFixedWidth: normalizeFixedDimension(source.imageFixedWidth, defaultFixedImageWidth)
+    imageFixedWidth: normalizeFixedDimension(source.imageFixedWidth, defaultFixedImageWidth),
+    showMoreEnabled: source.showMoreEnabled === true
   };
 }
 

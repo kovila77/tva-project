@@ -65,6 +65,7 @@ export interface AppConfig {
   imageRowFixedHeight: number;
   imageWidthMode: ImageWidthMode;
   imageFixedWidth: number;
+  showMoreEnabled: boolean;
 }
 
 export interface ImageMetadata {

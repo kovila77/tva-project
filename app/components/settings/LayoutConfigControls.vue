@@ -61,6 +61,10 @@
         <option value="tab">Tab</option>
       </select>
     </label>
+    <label class="check-field layout-config-controls__check" title="Enable batched image rendering and the Show More button for large datasets.">
+      <input v-model="config.showMoreEnabled" type="checkbox">
+      <span>Show More</span>
+    </label>
     <label class="field compact">
       <span>Row chips</span>
       <select v-model="config.rowChipMode" class="control" title="Choose which clickable tag chips are shown beside each image.">
@@ -139,5 +143,9 @@ const bulkTagSetsPlacement = computed<TagSetsPlacement | "mixed">({
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: var(--app-space-gap);
   align-items: end;
+
+  &__check {
+    align-self: end;
+  }
 }
 </style>

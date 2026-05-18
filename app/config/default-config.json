@@ -35,5 +35,6 @@
   "imageRowHeightMode": "full",
   "imageRowFixedHeight": 360,
   "imageWidthMode": "compact",
-  "imageFixedWidth": 240
+  "imageFixedWidth": 240,
+  "showMoreEnabled": false
 }

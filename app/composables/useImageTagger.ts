@@ -200,7 +200,11 @@ function createImageTaggerContext() {
       : matched;
   });
 
-  const renderedImages = computed(() => visibleImages.value.slice(0, visibleLimit.value));
+  const renderedImages = computed(() => (
+    config.showMoreEnabled
+      ? visibleImages.value.slice(0, visibleLimit.value)
+      : visibleImages.value
+  ));
   const canReorderImages = computed(() => (
     images.value.length > 1
     && visibleImages.value.length === images.value.length
